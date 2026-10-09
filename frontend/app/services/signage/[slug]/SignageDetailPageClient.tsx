@@ -22,6 +22,7 @@ import {
 import productDetailData from "../../../data/product-detail.json";
 import { getProductFaqs, ProductFaqItem } from "../../../data/Product-faqs-data";
 import Link from "next/link";
+import FaqAccordion from "@/app/Components/FaqAccordion";
 
 type PackageId = string;
 type TabId = "description" | "spec" | "file-setup";
@@ -1222,8 +1223,6 @@ function FaqsTab({
   faqs: ProductFaqItem[];
   productName: string;
 }) {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
-
   if (!faqs || faqs.length === 0) return null;
 
   return (
@@ -1235,65 +1234,10 @@ function FaqsTab({
         Clear answers for common questions about our {productName.toLowerCase()}.
       </p>
 
-      <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 sm:gap-4">
-        {faqs.map((faq, index) => {
-          const isOpen = openIndex === index;
-          const panelId = `signage-faq-panel-${index}`;
-          const buttonId = `signage-faq-button-${index}`;
-
-          return (
-            <div
-              key={faq.question}
-              style={isOpen ? { borderColor: "var(--color-primary)" } : undefined}
-              className={`overflow-hidden rounded-xl border-2 transition-all duration-300 sm:rounded-2xl ${isOpen
-                ? "bg-white shadow-lg"
-                : "border-transparent bg-white shadow-md hover:translate-y-[-2px] hover:shadow-lg"
-                }`}
-            >
-              <h3 className="m-0">
-                <button
-                  id={buttonId}
-                  type="button"
-                  onClick={() =>
-                    setOpenIndex((prev) => (prev === index ? null : index))
-                  }
-                  aria-expanded={isOpen}
-                  aria-controls={panelId}
-                  className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6 sm:py-5"
-                >
-                  <span
-                    style={isOpen ? { color: "var(--color-primary)" } : undefined}
-                    className="text-sm font-semibold leading-snug text-primary-dark sm:text-base"
-                  >
-                    {faq.question}
-                  </span>
-                  <ChevronDown
-                    style={isOpen ? { color: "var(--color-primary)" } : undefined}
-                    className={`h-5 w-5 shrink-0 text-primary-dark transition-transform duration-300 ${isOpen ? "rotate-180" : ""
-                      }`}
-                  />
-                </button>
-              </h3>
-
-              <div
-                id={panelId}
-                role="region"
-                aria-labelledby={buttonId}
-                className={`grid transition-all duration-300 ease-in-out ${isOpen
-                  ? "grid-rows-[1fr] opacity-100"
-                  : "grid-rows-[0fr] opacity-0"
-                  }`}
-              >
-                <div className="overflow-hidden">
-                  <p className="px-5 pb-4 text-sm leading-relaxed text-primary-dark/60 sm:px-6 sm:pb-5 sm:text-base">
-                    {faq.answer}
-                  </p>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      <FaqAccordion
+        items={faqs}
+        name={`signage-detail-faq-${productName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+      />
     </div>
   );
 }

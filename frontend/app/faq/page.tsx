@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Script from "next/script";
 import Link from "next/link";
+import FaqAccordion from "@/app/Components/FaqAccordion";
 import {
   absoluteUrl,
   buildBreadcrumbSchema,
@@ -232,16 +233,13 @@ export default function FaqPage() {
               <h2 className="text-2xl font-bold text-primary mb-6 pb-2 border-b border-primary-light">
                 {cat.category}
               </h2>
-              <div className="space-y-6">
-                {cat.questions.map((item) => (
-                  <div key={item.q} className="bg-white rounded-2xl shadow-sm border border-primary-light p-6">
-                    <h3 className="text-lg font-semibold text-primary-dark mb-3">
-                      {item.q}
-                    </h3>
-                    <p className="text-primary-dark/70 leading-relaxed">{item.a}</p>
-                  </div>
-                ))}
-              </div>
+              <FaqAccordion
+                items={cat.questions.map((item) => ({
+                  question: item.q,
+                  answer: item.a,
+                }))}
+                name={`faq-${cat.category.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`}
+              />
             </div>
           ))}
         </div>

@@ -77,10 +77,7 @@ export default function Page() {
                   Home
                 </Link>
                 <span className="mx-2 text-lg">&gt;</span>
-                <Link
-                  href="/about"
-                  className="text-primary-dark text-lg"
-                >
+                <Link href="/about" className="text-primary-dark text-lg">
                   About us
                 </Link>
               </p>
@@ -101,12 +98,11 @@ export default function Page() {
 
                   {/* Description */}
                   <p className="text-primary-dark/70 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0">
-                    Our first priority is to satisfy our customers. We value the
-                    time and money of our clients and work for their business.
-                    If you place your trust in us, you will undoubtedly be able
-                    to verify that our assertion that consumers come first is
-                    true. Our clients get to experience a hassle free,
-                    consistent, top quality, and best time saving services.
+                    FBS Prints provides printing, signage, direct mailing, web
+                    design, and SEO solutions for businesses. We focus on
+                    delivering reliable, high-quality services tailored to help
+                    businesses strengthen their brand and achieve their
+                    marketing goals.
                   </p>
                 </div>
 
@@ -180,10 +176,7 @@ export default function Page() {
 
                 <h2 className="text-4xl md:text-5xl font-extrabold leading-tight">
                   Printing that’s
-                  <span className="text-primary">
-                    {" "}
-                    fast, bold & reliable
-                  </span>
+                  <span className="text-primary"> fast, bold & reliable</span>
                 </h2>
 
                 <p className="text-primary-dark/70 text-base md:text-xl leading-relaxed max-w-2xl mx-auto lg:mx-0">
@@ -208,7 +201,10 @@ export default function Page() {
               </div>
 
               {/* RIGHT IMAGE */}
-              <div data-aos="fade-left" className="relative group cursor-pointer">
+              <div
+                data-aos="fade-left"
+                className="relative group cursor-pointer"
+              >
                 <div className="relative overflow-hidden rounded-3xl shadow-md transition-all duration-500 ease-in-out group-hover:-translate-y-2">
                   <Image
                     src="/images/about/about_industrial_people_work.jpeg"
@@ -318,13 +314,7 @@ export default function Page() {
                 </span>
               </h2>
               <p className="text-primary-dark/60 mt-3 text-xl">
-                Every project is different, and we at our organization work
-                closely with our clients to make sure we match their particular
-                demands and specifications. Graphic design, big format printing,
-                car wraps, and other services are among the many printing and
-                signage solutions we provide. We have the knowledge and
-                experience to complete any task, whether it’s a straightforward
-                banner or a complicated advertising campaign.
+                Every project has different requirements, and FBS Prints works closely with clients to understand their needs and specifications. Our services include graphic design, large-format printing, car wraps, and a range of printing and signage solutions. From business banners and signs to larger advertising projects, we provide services designed to meet each client’s specific requirements. 
               </p>
             </div>
 

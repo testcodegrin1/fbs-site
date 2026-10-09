@@ -1,12 +1,12 @@
 "use client";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import "aos/dist/aos.css";
 import Link from "next/link";
+import webDesignFaqs from "@/app/data/web-design-faq.json";
+import FaqAccordion from "@/app/Components/FaqAccordion";
 
 export default function Page() {
-  const [loaderDone, setLoaderDone] = useState(false);
-
   useEffect(() => {
     const initAOS = async () => {
       const AOS = (await import("aos")).default;
@@ -110,7 +110,6 @@ export default function Page() {
 
   return (
     <>
-
       <main>
         {/* Section - 1 */}
         <section className="bg-linear-to-br mt-24 xl:mt-20 from-white to-primary-light">
@@ -145,11 +144,14 @@ export default function Page() {
                   </h1>
                   {/* Description */}
                   <p className="text-primary-dark/70 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0">
-                    At FBS Prints, we create modern, user-friendly websites
-                    that not only look great but also work seamlessly across
-                    all devices. Our web design blends creativity with
-                    functionality - helping your brand stand out, engage
-                    visitors, and drive real results.
+                    FBS Prints provides professional web design services focused
+                    on creating responsive, user-friendly websites for
+                    businesses. We combine modern design, clear navigation,
+                    mobile responsiveness, and functionality to create websites
+                    that represent your brand and provide a smooth experience
+                    for visitors. Each website is designed around the
+                    business&apos;s
+                    goals, content, and user requirements.
                   </p>
                 </div>
 
@@ -224,11 +226,11 @@ export default function Page() {
               {/* Right Content */}
               <div data-aos="fade-left">
                 <p className="text-base md:text-lg text-primary-light leading-relaxed text-center lg:text-start">
-                  FBS Prints crafts visually striking, responsive, and
-                  conversion-focused websites tailored to your brand. From
-                  clean layouts to smooth user experiences, we ensure your
-                  online presence makes a lasting impact and turns visitors
-                  into customers.
+                  FBS Prints creates responsive, visually engaging websites
+                  tailored to each business and its audience. From page
+                  structure and navigation to visual design and user experience,
+                  we focus on creating websites that are easy to use, consistent
+                  with the brand, and designed to support business goals.
                 </p>
               </div>
             </div>
@@ -293,21 +295,20 @@ export default function Page() {
                 className="space-y-8 text-center lg:text-left"
               >
                 <h2 className="text-4xl lg:text-6xl font-extrabold leading-tight text-primary-dark">
-                  We help brands{" "}
+                  We Help{" "}
                   <span className="bg-linear-to-r from-primary to-primary-dark bg-clip-text text-transparent">
-                    you take your business
+                    Businesses Build
                   </span>{" "}
-                  to the next level
+                  Better Websites
                 </h2>
 
                 <p className="text-xl text-primary-dark/70 max-w-3xl mx-auto lg:mx-0">
-                  We go beyond design - we build digital solutions that fuel
-                  growth. Whether you need a powerful website, stronger online
-                  visibility, or better customer engagement, our team helps
-                  you create an online presence that drives sales and builds
-                  trust. With the right blend of creativity, strategy, and
-                  technology, we'll take your business to the next level and
-                  keep you ahead of the competition.
+                  We go beyond visual design to create websites with responsive
+                  layouts, clear navigation, practical functionality, and a
+                  consistent brand experience. FBS Prints works with businesses
+                  to understand their content, audience, and requirements,
+                  creating professional, user-friendly websites that support
+                  their goals.
                 </p>
               </div>
             </div>
@@ -387,8 +388,7 @@ export default function Page() {
             <p className="text-center text-3xl lg:text-4xl xl:text-5xl font-bold mx-auto text-primary">
               &quot;Designing{" "}
               <span className="bg-linear-to-r from-primary to-primary-dark bg-clip-text text-transparent">
-                Digital Experiences That Captivate, Inspire, And Leave a
-                Lasting
+                Digital Experiences That Captivate, Inspire, And Leave a Lasting
               </span>{" "}
               Impression.&quot;
             </p>
@@ -443,9 +443,9 @@ export default function Page() {
 
               <p className="mt-6 text-primary-dark/70 text-lg md:text-xl leading-relaxed">
                 We build intuitive, high-performing digital experiences for
-                businesses of all sizes. From strategy and design to
-                development and optimization, everything we do is focused on
-                real growth and measurable results.
+                businesses of all sizes. From strategy and design to development
+                and optimization, everything we do is focused on real growth and
+                measurable results.
               </p>
             </div>
 
@@ -492,6 +492,33 @@ export default function Page() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Section - 7: Frequently Asked Questions */}
+        <section
+          id="faqs"
+          className="scroll-mt-24 bg-linear-to-b from-white to-primary-light/40"
+        >
+          <div className="container section-padding">
+            <div className="mx-auto max-w-4xl">
+              <div className="mb-10 text-center" data-aos="fade-up">
+                <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+                  Common Questions
+                </p>
+                <h2 className="text-4xl font-extrabold tracking-tight text-primary-dark md:text-5xl">
+                  Web Design FAQs
+                </h2>
+                <p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-primary-dark/70">
+                  Answers to common questions about our website design process,
+                  timelines, features, and ongoing support.
+                </p>
+              </div>
+
+              <div data-aos="fade-up">
+                <FaqAccordion items={webDesignFaqs} name="web-design-faq" />
+              </div>
             </div>
           </div>
         </section>

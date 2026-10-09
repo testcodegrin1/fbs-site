@@ -103,7 +103,7 @@ export default function ServicesPage() {
 
                 <p className="text-primary-dark/70 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0 leading-relaxed">
                   From premium commercial printing and custom business signage to direct mail
-                  campaigns, website design, and search engine optimization — FBS Signs provides all
+                  campaigns, website design, and search engine optimization - FBS Signs provides all
                   the tools your business needs to stand out and scale.
                 </p>
               </div>

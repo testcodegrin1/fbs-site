@@ -76,7 +76,7 @@ export function SidebarLayout({
 
   const sidebarContent = (
     <>
-      {/* Brand Header — real logo */}
+      {/* Brand Header - real logo */}
       <div>
         <div
           className={`relative border-b border-white/10 px-3 ${
@@ -91,7 +91,7 @@ export function SidebarLayout({
             className={`flex items-center justify-center overflow-hidden ${
               collapsed ? "w-10 h-10" : "w-[148px] h-10"
             }`}
-            title="FBS Prints — Home"
+            title="FBS Prints - Home"
             onClick={() => setMobileOpen(false)}
           >
             <Image
@@ -106,7 +106,7 @@ export function SidebarLayout({
             />
           </Link>
 
-          {/* Collapse — absolute right when expanded; under logo when collapsed */}
+          {/* Collapse - absolute right when expanded; under logo when collapsed */}
           <Button
             type="button"
             variant="ghost"
@@ -122,7 +122,7 @@ export function SidebarLayout({
             {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
           </Button>
 
-          {/* Mobile close — right side */}
+          {/* Mobile close - right side */}
           <Button
             type="button"
             variant="ghost"
@@ -304,7 +304,7 @@ export function SidebarLayout({
           <p className="text-sm text-slate-500 mt-0.5">{subtitle}</p>
         </div>
 
-        {/* Content Container — scrollable viewport area */}
+        {/* Content Container - scrollable viewport area */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-5 lg:p-6 xl:p-8 w-full max-w-[1400px] mx-auto">
           {children}
         </main>

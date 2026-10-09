@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 /**
- * FBS Signs — Home Hero Section
+ * FBS Signs - Home Hero Section
  * Brand colors pulled from the logo:
  *   cyan/blue  #16A8E2
  *   magenta    #E91580
@@ -175,7 +175,7 @@ export default function NewHeroSection() {
           {/* ---- Right: Hero Images ---- */}
           <div className="relative z-10 flex w-full items-center justify-center lg:justify-start">
             <div className="hidden md:block relative h-[330px] w-full max-w-[420px] sm:h-[430px] sm:max-w-[540px] md:h-[520px] md:max-w-[660px] lg:h-[565px] lg:max-w-[800px] xl:h-[590px] xl:max-w-[860px]">
-              {/* Main mockup — notebook, business cards, brochure (kept in front) */}
+              {/* Main mockup - notebook, business cards, brochure (kept in front) */}
               <Image
                 src="/images/home/Home-1-v2.png"
                 alt="FBS Signs branded notebook, business cards, and brochure mockup"
@@ -187,7 +187,7 @@ export default function NewHeroSection() {
                 sm:w-[122%] lg:left-[47%] lg:top-[33%] xl:top-[53%] lg:h-[100%] lg:w-[100%] xl:h-[116%] xl:w-[116%]"
               />
 
-              {/* Plant — small accent tucked behind the mockup, upper-right */}
+              {/* Plant - small accent tucked behind the mockup, upper-right */}
               <Image
                 src="/images/home/Home-port.png"
                 alt="Decorative plant beside FBS Signs branded print materials"

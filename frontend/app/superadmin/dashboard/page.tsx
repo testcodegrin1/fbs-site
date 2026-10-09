@@ -141,7 +141,7 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
 
   async function loadData(opts?: { refreshDetails?: boolean }) {
     try {
-      // Parallel list loads (remote MySQL — avoid serial wait)
+      // Parallel list loads (remote MySQL - avoid serial wait)
       const [pData, dData] = await Promise.all([
         canvasApi.listProjects(search),
         canvasApi.listDiagramTemplates(),
@@ -383,7 +383,7 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
       activeTab={activeTab}
       onTabChange={setActiveTab}
     >
-      {/* TAB 1: CLIENT PROJECTS — same workspace UI as designer */}
+      {/* TAB 1: CLIENT PROJECTS - same workspace UI as designer */}
       {activeTab === "projects" && (
         <div className="space-y-5">
           {/* Full-width top toolbar */}

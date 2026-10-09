@@ -34,13 +34,10 @@ const nextConfig: NextConfig = {
     return [
       {
         source: "/((?!api/).*)",
-        headers: [
-          {
-            key: "Cache-Control",
-            value: "public, s-maxage=3600, stale-while-revalidate=86400",
-          },
-          ...securityHeaders,
-        ],
+        // Let Next.js set the appropriate cache policy for HTML, RSC payloads,
+        // and immutable assets. A shared public cache header here can serve old
+        // HTML alongside a newer client bundle and cause hydration mismatches.
+        headers: securityHeaders,
       },
     ];
   },

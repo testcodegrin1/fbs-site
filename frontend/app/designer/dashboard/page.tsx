@@ -689,7 +689,7 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
     }
   }
 
-  /** Optional designer reply — does not change approval status (statusAction: comment) */
+  /** Optional designer reply - does not change approval status (statusAction: comment) */
   async function handleDesignerReply(imageId?: number | null) {
     if (!targetCanvas?.latestVersion || !selectedProject) return;
     const key = imageId ?? 0;
@@ -834,7 +834,7 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
       activeTab={activeTab}
       onTabChange={setActiveTab}
     >
-      {/* SECTION 1: CLIENT PROJECTS — matches project workspace layout */}
+      {/* SECTION 1: CLIENT PROJECTS - matches project workspace layout */}
       {activeTab === "projects" && (
         <div className="space-y-5">
           {/* Full-width top toolbar */}
@@ -1709,7 +1709,7 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
         </div>
       )}
 
-      {/* MODAL 4: EDIT CANVAS — matches designer photo-tile edit UI */}
+      {/* MODAL 4: EDIT CANVAS - matches designer photo-tile edit UI */}
       {showEditCanvasModal && targetCanvas && (
         <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6">
           <div className="bg-white rounded-[1.5rem] max-w-3xl w-full shadow-2xl animate-in fade-in zoom-in duration-200 max-h-[90vh] flex flex-col overflow-hidden border border-slate-200/80">
@@ -1750,7 +1750,7 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
               onWheel={(e) => e.stopPropagation()}
               className="overflow-y-auto flex-1 min-h-0 px-5 sm:px-6 py-5 space-y-5 scroll-smooth overscroll-contain"
             >
-              {/* Optional rename — compact */}
+              {/* Optional rename - compact */}
               <div className="flex items-center gap-2">
                 <Input
                   type="text"

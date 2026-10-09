@@ -38,7 +38,7 @@ body {
   overflow-x: hidden;
 }
 
-/* Portal dashboards (designer / user / superadmin) — larger base type */
+/* Portal dashboards (designer / user / superadmin) - larger base type */
 .portal-dashboard {
   font-size: 15px;
   line-height: 1.5;

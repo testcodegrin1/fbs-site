@@ -126,7 +126,7 @@ export async function ensureCanvasCollageSchema(): Promise<void> {
       // Column exists
     }
 
-    // Indexes for hosted MySQL (high RTT — keep queries index-friendly)
+    // Indexes for hosted MySQL (high RTT - keep queries index-friendly)
     const indexQueries = [
       `CREATE INDEX idx_canvases_project ON canvases(project_id)`,
       `CREATE INDEX idx_versions_canvas ON canvas_versions(canvas_id)`,
