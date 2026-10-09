@@ -5,6 +5,8 @@ import HomeStats from "./Components/HomeStats";
 import HomeVideoHover from "./Components/HomeVideoHover";
 import HomeContactSection from "./Components/HomeContactSection";
 import NewHeroSection from "./Components/NewHeroSection";
+import FaqAccordion from "./Components/FaqAccordion";
+import homeFaqs from "./data/home-faq.json";
 
 const ourServices = [
   {
@@ -57,7 +59,6 @@ export default function Home() {
                 >
                   <div className="flex justify-center lg:justify-start">
                     <div className="inline-flex items-center gap-3 bg-primary-light text-primary px-5 py-2 rounded-full shadow-lg">
-                      <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
                       <span className="text-[11px] font-bold uppercase tracking-widest">
                         Printing &amp; Branding Experts
                       </span>
@@ -76,9 +77,7 @@ export default function Home() {
                   </h1>
 
                   <p className="text-primary-dark/70 text-base sm:text-lg max-w-xl mx-auto lg:mx-0">
-                    FBS Signs delivers custom business signage, large-format printing,
-                    direct mail, web design, and SEO services for businesses across
-                    Illinois and nationwide. Price guarantee on all services.
+                    FBS Prints provides custom printing, business signage, large-format printing, direct mail, web design, and SEO services for businesses in Illinois. From printed marketing materials and custom signs to direct mail , FBS helps businesses build consistent and visible brands. 
                   </p>
 
                   <div className="flex justify-center lg:justify-start pt-4">
@@ -315,6 +314,43 @@ export default function Home() {
               referrerPolicy="no-referrer-when-downgrade"
               title="FBS Signs service area map"
             />
+          </div>
+        </section>
+
+        {/* FAQ Section */}
+        <section
+          id="faqs"
+          className="scroll-mt-24 bg-linear-to-b from-white to-primary-light/50"
+        >
+          <div className="container section-padding">
+            <div className="mx-auto max-w-4xl">
+              <div className="mb-10 text-center" data-aos="fade-up">
+                <span className="mb-3 block text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+                  Helpful Answers
+                </span>
+                <h2 className="text-4xl font-extrabold tracking-tight text-primary-dark md:text-5xl">
+                  Frequently Asked Questions
+                </h2>
+                <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-primary-dark/70 sm:text-lg">
+                  Learn more about our printing, signage, direct mail, and
+                  digital services.
+                </p>
+              </div>
+
+              <div data-aos="fade-up">
+                <FaqAccordion items={homeFaqs} name="home-faq" />
+              </div>
+
+              <div className="mt-8 text-center">
+                <Link
+                  href="/faq"
+                  className="inline-flex items-center gap-2 font-semibold text-primary transition-colors hover:text-primary-dark"
+                >
+                  View all frequently asked questions
+                  <span aria-hidden="true">&rarr;</span>
+                </Link>
+              </div>
+            </div>
           </div>
         </section>
       </main>

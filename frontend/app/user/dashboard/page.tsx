@@ -137,7 +137,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
             </div>
           </div>
 
-          {/* Proofs list only — click opens review */}
+          {/* Proofs list only - click opens review */}
           {loading ? (
             <Card className="p-10 text-center text-xs text-slate-500">
               Loading your project proofs...

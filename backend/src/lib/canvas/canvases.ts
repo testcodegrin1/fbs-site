@@ -704,7 +704,7 @@ async function bumpCanvasVersionForEdit(
         canvas_id, actor_user_id, actor_name, old_status, new_status, note
       ) VALUES (?, ?, 'Designer', ?, 'pending_review', ?)
     `,
-    [canvasId, uploadedBy, oldStatus, `Uploaded Revision V${nextVer} — ${note}`],
+    [canvasId, uploadedBy, oldStatus, `Uploaded Revision V${nextVer} - ${note}`],
   );
 
   // Keep parent project status in sync (e.g. leave changes_requested → in_review)

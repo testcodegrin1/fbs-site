@@ -26,12 +26,12 @@ import {
   Layers,
   ChevronRight,
   ChevronLeft,
-  ChevronDown,
   HelpCircle,
 } from "lucide-react";
 
 // Shared format data (same JSON used by app/services/direct-mailing/[slug]/page.tsx)
 import rawData from "../../data/direct-mailing.json";
+import FaqAccordion from "@/app/Components/FaqAccordion";
 
 interface MailFormat {
   id: string;
@@ -78,13 +78,6 @@ export default function DirectMailingPage() {
   const [selectedMailer, setSelectedMailer] = useState("postcard");
   const [selectedService, setSelectedService] = useState("eddm");
   const [selectedQuantity, setSelectedQuantity] = useState("2500");
-
-  // FAQ Accordion State
-  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
-
-  const toggleFaq = (idx: number) => {
-    setOpenFaqIndex((prev) => (prev === idx ? null : idx));
-  };
 
   useEffect(() => {
     const initAOS = async () => {
@@ -166,7 +159,6 @@ export default function DirectMailingPage() {
               >
                 <div className="flex justify-center lg:justify-start">
                   <div className="inline-flex items-center gap-2 sm:gap-3 rounded-full border border-primary-light bg-white px-4 py-1.5 sm:px-5 sm:py-2 shadow-sm">
-                    <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
                     <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] text-primary">
                       Print & Post Solutions
                     </span>
@@ -179,9 +171,7 @@ export default function DirectMailingPage() {
                 </h1>
 
                 <p className="mx-auto max-w-2xl text-sm text-primary-dark/70 sm:text-lg lg:mx-0">
-                  Reach target demographics and neighborhoods directly in their mailboxes.
-                  From premium printing and addressing to mail-list building and direct postal drop-offs,
-                  we handle everything under one roof.
+               FBS Prints provides direct mailing services that help businesses reach targeted customers through professionally printed and mailed materials. From direct mail design and printing to addressing, mailing lists, postage, and delivery preparation, we manage the mailing process from start to finish. Our direct mailing solutions can be tailored to different campaigns, audiences, and business requirements.
                 </p>
 
                 <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-3 sm:gap-4">
@@ -498,7 +488,59 @@ export default function DirectMailingPage() {
           </div>
         </section>
 
-        {/* Section 5: Industries we serve */}
+        {/* Section 5: Why Choose FBS Prints */}
+        <section className="container py-10 sm:py-14 md:py-20">
+          <div
+            className="relative overflow-hidden rounded-[28px] bg-primary-dark px-6 py-12 text-white shadow-xl sm:px-10 sm:py-16 lg:px-16"
+            data-aos="fade-up"
+          >
+            <Image
+              src="/images/services/direct-mail/full-service-direct-mail.webp"
+              alt="Direct mail being delivered to customer mailboxes"
+              fill
+              sizes="(max-width: 1280px) 100vw, 1280px"
+              className="object-cover object-center"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 bg-linear-to-r from-primary-dark/55 via-primary-dark/20 to-transparent"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-white/10 blur-2xl"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute -bottom-28 -left-20 h-72 w-72 rounded-full bg-primary-light/20 blur-2xl"
+            />
+
+            <div className="relative z-10 grid max-w-5xl items-center gap-8 rounded-3xl border border-white/15 bg-primary-dark/85 p-6 shadow-2xl backdrop-blur-sm sm:p-8 lg:grid-cols-[auto_1fr] lg:gap-10">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/25 ring-1 ring-white/20 sm:h-20 sm:w-20">
+                <ShieldCheck className="h-8 w-8 sm:h-10 sm:w-10" aria-hidden="true" />
+              </div>
+
+              <div>
+                <span className="mb-3 block text-xs font-semibold uppercase tracking-[0.2em] text-primary sm:text-sm">
+                  Print-to-Delivery Support
+                </span>
+                <h2 className="text-3xl font-extrabold leading-tight sm:text-4xl md:text-5xl">
+                  Why Choose <span className="text-primary">FBS Prints</span>
+                </h2>
+                <p className="mt-5 max-w-5xl text-base leading-relaxed text-white/80 sm:text-lg">
+                  FBS Prints handles the key stages of direct mailing in one
+                  place, from preparing printed materials and addressing mail
+                  pieces to organizing mailing lists and postage requirements.
+                  Our team works with businesses to coordinate each campaign
+                  according to its audience, materials, and mailing
+                  requirements, helping simplify the process from print to
+                  delivery.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 6: Industries we serve */}
         <section className="bg-linear-to-br from-primary-light via-white to-primary-light py-10 sm:py-16 md:py-24">
           <div className="container">
             <div className="mx-auto mb-10 sm:mb-16 max-w-3xl text-center" data-aos="fade-up">
@@ -559,7 +601,7 @@ export default function DirectMailingPage() {
           </div>
         </section>
 
-        {/* Section 6: Interactive Cost Estimator & Contact */}
+        {/* Section 7: Interactive Cost Estimator & Contact */}
         <section id="estimator" className="container py-10 sm:py-14 md:py-20">
           <div className="grid items-start gap-8 lg:grid-cols-2 lg:gap-12">
             {/* Left Column: Information Card */}
@@ -739,7 +781,7 @@ export default function DirectMailingPage() {
           </div>
         </section>
 
-        {/* Section 7: FAQs (Accordion Style) */}
+        {/* Section 8: FAQs (Accordion Style) */}
         <section className="container py-14 md:py-20 border-t border-primary-light">
           <div className="mx-auto mb-12 max-w-3xl text-center">
             <span className="mb-2 block text-sm font-semibold uppercase tracking-widest text-primary">
@@ -753,49 +795,13 @@ export default function DirectMailingPage() {
             </p>
           </div>
 
-          <div className="mx-auto max-w-4xl space-y-4">
-            {faqs.map((faq, idx) => {
-              const isOpen = openFaqIndex === idx;
-              return (
-                <div
-                  key={idx}
-                  className={`overflow-hidden rounded-2xl border bg-white shadow-sm transition-all duration-300 ${isOpen
-                    ? "border-primary shadow-md"
-                    : "border-primary-light hover:border-primary-light"
-                    }`}
-                >
-                  <button
-                    type="button"
-                    onClick={() => toggleFaq(idx)}
-                    aria-expanded={isOpen}
-                    className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
-                  >
-                    <span
-                      className={`text-base font-bold sm:text-lg ${isOpen ? "text-primary" : "text-primary-dark"
-                        }`}
-                    >
-                      {faq.q}
-                    </span>
-                    <ChevronDown
-                      className={`h-5 w-5 shrink-0 text-primary-dark/60 transition-transform duration-300 ${isOpen ? "rotate-180 text-primary" : "rotate-0"
-                        }`}
-                    />
-                  </button>
-
-                  <div
-                    className={`grid transition-all duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-                      }`}
-                  >
-                    <div className="overflow-hidden">
-                      <p className="px-6 pb-5 text-sm leading-relaxed text-primary-dark/70 sm:text-base">
-                        {faq.a}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+          <FaqAccordion
+            items={faqs.map((faq) => ({
+              question: faq.q,
+              answer: faq.a,
+            }))}
+            name="direct-mailing-faq"
+          />
         </section>
       </main>
     </>

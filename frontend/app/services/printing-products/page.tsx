@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import "aos/dist/aos.css";
 import { TiBusinessCard } from "react-icons/ti";
 import { ImFilesEmpty } from "react-icons/im";
@@ -14,10 +14,10 @@ import {
 } from "react-icons/fa";
 import { RiBillLine } from "react-icons/ri";
 import Link from "next/link";
+import printingProductsFaqs from "@/app/data/printing-products-faq.json";
+import FaqAccordion from "@/app/Components/FaqAccordion";
 
 export default function Page() {
-  const [loaderDone, setLoaderDone] = useState(false);
-
   useEffect(() => {
     const initAOS = async () => {
       const AOS = (await import("aos")).default;
@@ -37,55 +37,55 @@ export default function Page() {
       id: 1,
       text: "Business Card",
       Icon: TiBusinessCard,
-      slug: "business-cards"
+      slug: "business-cards",
     },
     {
       id: 2,
       text: "Brochures",
       Icon: FaRegNewspaper,
-      slug: "brochures"
+      slug: "brochures",
     },
     {
       id: 3,
       text: "Copy services",
       Icon: ImFilesEmpty,
-      slug: "copy-services"
+      slug: "copy-services",
     },
     {
       id: 4,
       text: "T-shirt Prints",
       Icon: FaTshirt,
-      slug: "t-shirt-prints"
+      slug: "t-shirt-prints",
     },
     {
       id: 5,
       text: "Calendars",
       Icon: FaCalendarAlt,
-      slug: "calendars"
+      slug: "calendars",
     },
     {
       id: 6,
       text: "Banners",
       Icon: FaSign,
-      slug: "banners"
+      slug: "banners",
     },
     {
       id: 7,
       text: "Carbonless Forms",
       Icon: RiBillLine,
-      slug: "carbonless-forms"
+      slug: "carbonless-forms",
     },
     {
       id: 8,
       text: "Carryout Menus",
       Icon: RiBillLine,
-      slug: "carryout-menus"
+      slug: "carryout-menus",
     },
     {
       id: 9,
       text: "Canvas",
       Icon: FaRegFileImage,
-      slug: "canvas"
+      slug: "canvas",
     },
   ];
 
@@ -122,14 +122,15 @@ export default function Page() {
 
                   {/* Description */}
                   <p className="text-primary-dark/70 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0">
-                    We offer a comprehensive range of printing services for
-                    products like business cards, brochures, flyers, posters,
-                    and more. To ensure that your printed items are of the
-                    greatest caliber, we use the most up-to-date printing
-                    technology and premium materials. From design to finished
-                    product, our team of qualified experts will collaborate with
-                    you to make sure your project is finished to your
-                    satisfaction.
+                    FBS Prints offers a comprehensive range of custom printing
+                    products, including business cards, brochures, flyers,
+                    posters, banners, menus, calendars, and more. We use quality
+                    printing technology and materials to produce sharp,
+                    professional, and reliable printed materials for businesses.
+                    From selecting the right print product to the finished
+                    piece, our team works closely with you to understand your
+                    requirements and deliver results that meet your
+                    expectations.
                   </p>
                 </div>
 
@@ -191,25 +192,20 @@ export default function Page() {
               {/* Left Content */}
               <div data-aos="fade-right">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-center lg:text-start">
-                  Get your
+                  Custom 
                   <br />
                   <span className="text-black hover:text-primary-light">
-                    Printing Product
+                    Printing Products
                   </span>
                   <br />
-                  in Best Price.
+                  at Competitive Prices.
                 </h2>
               </div>
 
               {/* Right Content */}
               <div data-aos="fade-left">
                 <p className="text-base md:text-lg text-primary-light leading-relaxed text-center lg:text-start">
-                  We offer a complete range of printing solutions to meet every
-                  need - from business cards, brochures, and banners to t-shirt
-                  prints, calendars, and custom canvas. Whether it’s carryout
-                  menus, carbonless forms, or simple copy services, our prints
-                  are sharp, vibrant, and tailored to your vision, ensuring your
-                  brand stands out everywhere.
+                 We offer a complete range of custom printing solutions, from business cards, brochures, and banners to t-shirt prints, calendars, and canvas prints. Whether you need carryout menus, carbonless forms, or copy services, our prints are produced with quality materials and attention to detail. Every product is tailored to your requirements, helping you save time, present your brand professionally, and make a lasting impression.
                 </p>
               </div>
             </div>
@@ -228,7 +224,6 @@ export default function Page() {
                   href={`/services/printing-products/${item.slug}`}
                 >
                   <div
-
                     className="
                     group flex h-[220px] bg-primary-light
                     rounded-2xl items-center justify-center
@@ -264,7 +259,49 @@ export default function Page() {
           </div>
         </section>
 
-        {/* Section - 4 */}
+        {/* Section - 4: Why Choose FBS Prints */}
+        <section className="container section-padding">
+          <div className="grid overflow-hidden rounded-3xl border border-primary-light bg-primary-dark shadow-xl lg:grid-cols-2">
+            <div
+              className="flex flex-col justify-center px-6 py-12 text-white sm:px-10 lg:px-14 lg:py-16"
+              data-aos="fade-right"
+            >
+              <span className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+                Why Choose FBS Prints
+              </span>
+              <h2 className="text-3xl font-extrabold leading-tight sm:text-4xl lg:text-5xl">
+                Why Choose FBS Prints for Your Printing Needs?
+              </h2>
+              <p className="mt-6 text-base leading-relaxed text-white/80 sm:text-lg">
+                FBS Prints combines quality materials, professional printing,
+                and a range of customizable products to meet different business
+                and promotional needs. From everyday business cards and
+                brochures to banners, menus, and specialty print products, we
+                help businesses create professional printed materials tailored
+                to their requirements.
+              </p>
+            </div>
+
+            <div
+              className="relative min-h-[300px] sm:min-h-[400px] lg:min-h-full"
+              data-aos="fade-left"
+            >
+              <Image
+                src="/images/services/printing/printing-products-service.webp"
+                alt="A coordinated collection of professionally printed business materials"
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                className="object-cover"
+              />
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 bg-linear-to-t from-primary-dark/35 to-transparent lg:bg-linear-to-r"
+              />
+            </div>
+          </div>
+        </section>
+
+        {/* Section - 5: What We Print */}
         <section className="container section-padding">
           <div className="max-w-6xl mx-auto px-6">
             {/* Heading */}
@@ -278,13 +315,7 @@ export default function Page() {
                 Print
               </h2>
               <p className="text-primary-dark/60 mt-3 text-xl">
-                Every project is different, and we at our organization work
-                closely with our clients to make sure we match their particular
-                demands and specifications. Graphic design, big format printing,
-                car wraps, and other services are among the many printing and
-                signage solutions we provide. We have the knowledge and
-                experience to complete any task, whether it’s a straightforward
-                banner or a complicated advertising campaign.
+                From everyday business printing to promotional materials, FBS Prints offers a wide range of custom print products. Our printing services include business cards, brochures, flyers, banners, menus, calendars, carbonless forms, t-shirt prints, canvas prints, and copy services. Each product can be tailored to your project requirements, helping you create professional materials for your business and marketing needs.  
               </p>
             </div>
 
@@ -308,6 +339,35 @@ export default function Page() {
           </div>
         </section>
 
+        {/* Section - 6: Frequently Asked Questions */}
+        <section
+          id="faqs"
+          className="scroll-mt-24 bg-linear-to-b from-white to-primary-light/50"
+        >
+          <div className="container section-padding">
+            <div className="mx-auto max-w-4xl">
+              <div className="mb-10 text-center" data-aos="fade-up">
+                <span className="mb-3 block text-sm font-semibold uppercase tracking-[0.2em] text-primary">
+                  Printing Support
+                </span>
+                <h2 className="text-4xl font-extrabold tracking-tight text-primary-dark md:text-5xl">
+                  Printing Products FAQs
+                </h2>
+                <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-primary-dark/70 sm:text-lg">
+                  Answers to common questions about custom products, artwork,
+                  quantities, and ordering.
+                </p>
+              </div>
+
+              <div data-aos="fade-up">
+                <FaqAccordion
+                  items={printingProductsFaqs}
+                  name="printing-products-faq"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
     </>
   );

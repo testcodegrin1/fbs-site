@@ -14,6 +14,7 @@ import {
   websiteId,
 } from "@/app/lib/seo";
 import { getLocationMarkets } from "@/app/lib/service-location-pages";
+import FaqAccordion from "@/app/Components/FaqAccordion";
 
 interface PageProps {
   params: Promise<{ city: string }>;
@@ -515,35 +516,7 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
             </h2>
           </div>
 
-          <div className="space-y-4">
-            {area.faqs.map((faq, index) => (
-              <details
-                key={index}
-                className="group border border-primary-light bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition-all duration-300 [&_summary::-webkit-details-marker]:hidden"
-              >
-                <summary className="flex items-center justify-between cursor-pointer focus:outline-none">
-                  <h3 className="text-lg font-bold text-primary-dark group-hover:text-primary transition-colors">
-                    {faq.question}
-                  </h3>
-                  <span className="ml-1.5 flex-shrink-0 rounded-full bg-primary-light text-primary p-1.5 group-open:rotate-180 transition-transform duration-300">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth="2.5"
-                      stroke="currentColor"
-                      className="w-5 h-5"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
-                    </svg>
-                  </span>
-                </summary>
-                <p className="mt-4 text-primary-dark/70 leading-relaxed text-sm border-t border-primary-light/50 pt-4">
-                  {faq.answer}
-                </p>
-              </details>
-            ))}
-          </div>
+          <FaqAccordion items={area.faqs} name={`service-area-faq-${area.slug}`} />
         </section>
 
         {/* Nearby Cities Matrix */}

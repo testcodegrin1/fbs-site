@@ -533,7 +533,7 @@ export default function SecureCanvasReviewPage() {
 
         {/* Main workspace: canvases left · overall feedback + history right */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-          {/* LEFT — project canvases */}
+          {/* LEFT - project canvases */}
           <div className="lg:col-span-8 space-y-4">
             <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-4">
               <div className="flex items-center justify-between gap-3">
@@ -597,7 +597,7 @@ export default function SecureCanvasReviewPage() {
                               {isDiagram
                                 ? "Diagram proof (blueprint layout + photos composited together)"
                                 : isCollage
-                                  ? "Auto collage of photo tiles — review each photo separately"
+                                  ? "Auto collage of photo tiles - review each photo separately"
                                   : "Individual canvas proof"}
                             </p>
                           </div>
@@ -786,7 +786,7 @@ export default function SecureCanvasReviewPage() {
             </div>
           </div>
 
-          {/* RIGHT — Overall Feedback + Activity */}
+          {/* RIGHT - Overall Feedback + Activity */}
           <div className="lg:col-span-4 space-y-4 sticky top-[4.25rem]">
             {/* Overall Feedback card */}
             <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-3">

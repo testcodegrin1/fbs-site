@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useMemo, useId } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import "aos/dist/aos.css";
+import FaqAccordion from "@/app/Components/FaqAccordion";
 
 // Icons for UI
 import {
@@ -638,7 +639,10 @@ export default function ProductDetailPageClient({
             </p>
           </div>
 
-          <FaqAccordion faqs={product.faqs} />
+          <FaqAccordion
+            items={product.faqs}
+            name={`printing-product-detail-faq-${product.slug}`}
+          />
         </section>
 
         {/* Section 6: Other Printing Products */}
@@ -1014,77 +1018,3 @@ function FieldSelect({
   );
 }
 
-/**
- * FaqAccordion
- * Flat, single-open accordion styled with simple gray rows and a
- * bordered "active" state (matches the reference design):
- * - Closed rows: light gray background, no border, chevron pointing down
- * - Open row: white background, dark rounded border, chevron pointing up,
- *   with the answer text sitting directly beneath the question
- */
-function FaqAccordion({ faqs }: { faqs: FAQ[] }) {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
-
-  const toggle = (index: number) => {
-    setOpenIndex((prev) => (prev === index ? null : index));
-  };
-
-  return (
-    <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 sm:gap-4">
-      {faqs.map((faq, index) => {
-        const isOpen = openIndex === index;
-        const panelId = `faq-panel-${index}`;
-        const buttonId = `faq-button-${index}`;
-
-        return (
-          <div
-            key={faq.question}
-            style={isOpen ? { borderColor: "var(--color-primary)" } : undefined}
-            className={`overflow-hidden rounded-xl border-2 transition-all duration-300 sm:rounded-2xl ${isOpen
-              ? "bg-white shadow-lg"
-              : "border-transparent bg-white shadow-md duration-100 translate-y-0 hover:translate-y-[-2px] hover:shadow-lg"
-              }`}
-          >
-            <h3 className="m-0">
-              <button
-                id={buttonId}
-                type="button"
-                onClick={() => toggle(index)}
-                aria-expanded={isOpen}
-                aria-controls={panelId}
-                className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6 sm:py-5"
-              >
-                <span
-                  style={isOpen ? { color: "var(--color-primary)" } : undefined}
-                  className="text-sm font-semibold leading-snug text-primary-dark sm:text-base"
-                >
-                  {faq.question}
-                </span>
-
-                <ChevronDown
-                  style={isOpen ? { color: "var(--color-primary)" } : undefined}
-                  className={`h-5 w-5 shrink-0 text-primary-dark transition-transform duration-300 ${isOpen ? "rotate-180" : ""
-                    }`}
-                />
-              </button>
-            </h3>
-
-            <div
-              id={panelId}
-              role="region"
-              aria-labelledby={buttonId}
-              className={`grid transition-all duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-                }`}
-            >
-              <div className="overflow-hidden">
-                <p className="px-5 pb-4 text-sm leading-relaxed text-primary-dark/60 sm:px-6 sm:pb-5 sm:text-base">
-                  {faq.answer}
-                </p>
-              </div>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}

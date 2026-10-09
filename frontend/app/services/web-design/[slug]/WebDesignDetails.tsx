@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -14,13 +13,13 @@ import {
   ShoppingCart,
   Store,
   Check,
-  ChevronDown,
   ChevronRight,
   ArrowRight,
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import servicesData from "@/app/data/web-design.json";
+import FaqAccordion from "@/app/Components/FaqAccordion";
 
 interface Faq {
   q: string;
@@ -62,73 +61,6 @@ const iconMap: Record<string, LucideIcon> = {
   ShoppingCart,
   Store,
 };
-
-function FaqAccordion({ faqs }: { faqs: Faq[] }) {
-  const [openIndex, setOpenIndex] = useState<number | null>(0);
-
-  const toggle = (index: number) => {
-    setOpenIndex((prev) => (prev === index ? null : index));
-  };
-
-  return (
-    <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 sm:gap-4">
-      {faqs.map((faq, index) => {
-        const isOpen = openIndex === index;
-        const panelId = `faq-panel-${index}`;
-        const buttonId = `faq-button-${index}`;
-
-        return (
-          <div
-            key={faq.q}
-            style={isOpen ? { borderColor: "var(--color-primary)" } : undefined}
-            className={`overflow-hidden rounded-xl border-2 transition-all duration-300 sm:rounded-2xl ${isOpen
-              ? "bg-white shadow-lg"
-              : "border-transparent bg-white shadow-md duration-100 translate-y-0 hover:translate-y-[-2px] hover:shadow-lg"
-              }`}
-          >
-            <h3 className="m-0">
-              <button
-                id={buttonId}
-                type="button"
-                onClick={() => toggle(index)}
-                aria-expanded={isOpen}
-                aria-controls={panelId}
-                className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6 sm:py-5"
-              >
-                <span
-                  style={isOpen ? { color: "var(--color-primary)" } : undefined}
-                  className="text-sm font-semibold leading-snug text-primary-dark sm:text-base"
-                >
-                  {faq.q}
-                </span>
-
-                <ChevronDown
-                  style={isOpen ? { color: "var(--color-primary)" } : undefined}
-                  className={`h-5 w-5 shrink-0 text-primary-dark transition-transform duration-300 ${isOpen ? "rotate-180" : ""
-                    }`}
-                />
-              </button>
-            </h3>
-
-            <div
-              id={panelId}
-              role="region"
-              aria-labelledby={buttonId}
-              className={`grid transition-all duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
-                }`}
-            >
-              <div className="overflow-hidden">
-                <p className="px-5 pb-4 text-sm leading-relaxed text-primary-dark/60 sm:px-6 sm:pb-5 sm:text-base">
-                  {faq.a}
-                </p>
-              </div>
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
 
 export default function WebDesignDetails({ service }: { service: Service }) {
   const Icon = iconMap[service.icon] ?? LayoutGrid;
@@ -410,7 +342,13 @@ export default function WebDesignDetails({ service }: { service: Service }) {
               Answers to common questions about {service.title.toLowerCase()}.
             </p>
 
-            <FaqAccordion faqs={service.faqs} />
+            <FaqAccordion
+              items={service.faqs.map((faq) => ({
+                question: faq.q,
+                answer: faq.a,
+              }))}
+              name={`web-design-detail-faq-${service.slug}`}
+            />
           </div>
         </section>
       )}

@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import portfolioData from "../../data/portfolio-content.json";
+import FaqAccordion from "@/app/Components/FaqAccordion";
 
 type FAQ = { q: string; a: string };
 type ProcessStep = { step: number; title: string; detail: string };
@@ -513,22 +514,13 @@ export default function OurWorkDetailClient({ item }: { item: PortfolioItem }) {
       {!!item.faqs.length && (
         <section id="faqs" className="container scroll-mt-24 py-12 sm:py-16 md:py-20 lg:py-24">
           <SectionTitle first="Frequently Asked" highlight="Questions" />
-          <div className="mx-auto max-w-3xl space-y-4">
-            {item.faqs.map((faq) => (
-              <details
-                key={faq.q}
-                className="group rounded-xl bg-white p-4 shadow-md transition-shadow open:shadow-lg sm:rounded-2xl sm:p-6"
-              >
-                <summary className="flex cursor-pointer list-none items-start justify-between gap-4 text-sm font-semibold leading-relaxed text-primary-dark sm:items-center sm:text-base">
-                  {faq.q}
-                  <span className="text-xl text-primary transition-transform group-open:rotate-45">
-                    +
-                  </span>
-                </summary>
-                <p className="mt-4 leading-relaxed text-primary-dark/70">{faq.a}</p>
-              </details>
-            ))}
-          </div>
+          <FaqAccordion
+            items={item.faqs.map((faq) => ({
+              question: faq.q,
+              answer: faq.a,
+            }))}
+            name={`portfolio-faq-${item.slug}`}
+          />
         </section>
       )}
 

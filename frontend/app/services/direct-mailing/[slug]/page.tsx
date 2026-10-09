@@ -6,7 +6,6 @@ import Script from "next/script";
 import * as LucideIcons from "lucide-react";
 import {
   CheckCircle2,
-  ChevronDown,
   ChevronRight,
   Clock,
   Layers,
@@ -15,6 +14,7 @@ import {
   Sparkles,
   Tag,
 } from "lucide-react";
+import FaqAccordion from "@/app/Components/FaqAccordion";
 import rawData from "../../../data/direct-mailing.json";
 import {
   absoluteUrl,
@@ -524,28 +524,10 @@ export default async function DirectMailFormatPage({ params }: PageProps) {
               Answers to common questions about {format.title.toLowerCase()}.
             </p>
 
-            <div className="mx-auto grid max-w-4xl grid-cols-1 gap-3 sm:gap-4">
-              {format.faqs.map((faq, index) => (
-                <details
-                  key={index}
-                  name="direct-mailing-faq"
-                  className="group overflow-hidden rounded-xl border-2 border-transparent bg-white shadow-md transition-all duration-300 hover:-translate-y-[2px] hover:shadow-lg open:border-primary open:shadow-lg sm:rounded-2xl"
-                  open={index === 0}
-                >
-                  <summary className="list-none cursor-pointer flex w-full items-center justify-between gap-4 px-5 py-4 text-left sm:px-6 sm:py-5 marker:content-none [&::-webkit-details-marker]:hidden">
-                    <span className="text-sm font-semibold leading-snug text-primary-dark transition-colors duration-300 group-open:text-primary sm:text-base">
-                      {faq.question}
-                    </span>
-                    <ChevronDown className="h-5 w-5 shrink-0 text-primary-dark transition-transform duration-300 group-open:rotate-180 group-open:text-primary" />
-                  </summary>
-                  <div className="overflow-hidden px-5 pb-4 sm:px-6 sm:pb-5">
-                    <p className="text-sm leading-relaxed text-primary-dark/60 sm:text-base">
-                      {faq.answer}
-                    </p>
-                  </div>
-                </details>
-              ))}
-            </div>
+            <FaqAccordion
+              items={format.faqs}
+              name={`direct-mailing-detail-faq-${format.slug}`}
+            />
           </div>
         </section>
       )}

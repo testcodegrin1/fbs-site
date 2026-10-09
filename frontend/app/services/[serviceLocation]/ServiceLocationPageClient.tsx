@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import "aos/dist/aos.css";
 import { serviceAreas } from "@/app/data/service-areas-data";
+import FaqAccordion from "@/app/Components/FaqAccordion";
 
 export default function ServiceLocationPageClient({
   page,
@@ -325,21 +326,10 @@ export default function ServiceLocationPageClient({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {page.faqs.map((faq) => (
-              <div
-                key={faq.question}
-                className="rounded-2xl p-6 bg-white shadow-lg"
-              >
-                <h3 className="text-xl font-semibold text-primary-dark">
-                  {faq.question}
-                </h3>
-                <p className="mt-3 text-primary-dark/70 leading-relaxed">
-                  {faq.answer}
-                </p>
-              </div>
-            ))}
-          </div>
+          <FaqAccordion
+            items={page.faqs}
+            name={`service-location-faq-${page.location.slug}`}
+          />
         </section>
 
         <section className="container section-padding">
