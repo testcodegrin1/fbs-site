@@ -35,16 +35,16 @@ initial credentials.
 
 ## Endpoints
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/health` | Health check |
-| POST | `/api/auth/login` | Login + set session cookie |
-| POST | `/api/auth/logout` | Clear session cookie |
-| GET | `/api/auth/me` | Current user |
-| GET/POST | `/api/users` | List / create users |
-| PATCH/DELETE | `/api/users/:id` | Update / delete user |
-| GET | `/api/roles` | List roles + permissions |
-| PATCH | `/api/roles/:role/permissions` | Update role permissions |
+| Method     | Path                           | Description                |
+| ---------- | ------------------------------ | -------------------------- |
+| GET        | `/health`                      | Health check               |
+| POST       | `/api/auth/login`              | Login + set session cookie |
+| POST       | `/api/auth/logout`             | Clear session cookie       |
+| GET        | `/api/auth/me`                 | Current user               |
+| GET/POST   | `/api/users`                   | List / create users        |
+| put/DELETE | `/api/users/:id`               | Update / delete user       |
+| GET        | `/api/roles`                   | List roles + permissions   |
+| put        | `/api/roles/:role/permissions` | Update role permissions    |
 
 ## Environment
 

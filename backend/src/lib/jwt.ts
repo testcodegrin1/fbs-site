@@ -4,6 +4,7 @@ export type AuthTokenPayload = {
   tid: string;
   sub: number;
   roles: string[];
+  franchiseId?: number;
   exp: number;
 };
 

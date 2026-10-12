@@ -35,7 +35,9 @@ class ApiClientError extends Error {
 }
 
 function apiUrl(path: string) {
-  const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:4000";
+  const base =
+    process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ??
+    "http://localhost:4000";
   return `${base}${path}`;
 }
 
@@ -69,10 +71,15 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export const authApi = {
-  async login(role: AuthRole, email: string, password: string) {
+  async login(
+    role: AuthRole,
+    email: string,
+    password: string,
+    franchiseId?: number,
+  ) {
     const res = await request<LoginResponse>("/api/auth/login", {
       method: "POST",
-      body: JSON.stringify({ role, email, password }),
+      body: JSON.stringify({ role, email, password, franchiseId }),
     });
 
     if (res.token) {
@@ -83,6 +90,19 @@ export const authApi = {
     }
 
     return res;
+  },
+
+  listFranchises() {
+    return request<{
+      franchises: Array<{
+        id: number;
+        name: string;
+        slug: string;
+        brandingLogoUrl: string | null;
+        description: string | null;
+        isActive: boolean;
+      }>;
+    }>("/api/auth/franchises");
   },
 
   async register(name: string, email: string, password: string) {
@@ -123,7 +143,7 @@ export const authApi = {
 
   updateUser(id: number, payload: Partial<UserPayload>) {
     return request<{ user: AuthUser }>(`/api/users/${id}`, {
-      method: "PATCH",
+      method: "put",
       body: JSON.stringify(payload),
     });
   },
@@ -137,9 +157,12 @@ export const authApi = {
   },
 
   updateRolePermissions(role: AuthRole, permissions: Permission[]) {
-    return request<Pick<RoleResponse, "roles">>(`/api/roles/${role}/permissions`, {
-      method: "PATCH",
-      body: JSON.stringify({ permissions }),
-    });
+    return request<Pick<RoleResponse, "roles">>(
+      `/api/roles/${role}/permissions`,
+      {
+        method: "put",
+        body: JSON.stringify({ permissions }),
+      },
+    );
   },
 };

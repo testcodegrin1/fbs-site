@@ -10,7 +10,10 @@ export type Permission =
   | "roles:read"
   | "roles:update"
   | "designer:dashboard"
-  | "user:dashboard";
+  | "user:dashboard"
+  | "franchises:manage"
+  | "vendors:manage"
+  | "banner_templates:manage";
 
 export type AuthUser = {
   id: number;
@@ -19,6 +22,8 @@ export type AuthUser = {
   isActive: boolean;
   roles: AuthRole[];
   permissions: Permission[];
+  franchiseId?: number | null;
+  franchiseName?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -34,4 +39,85 @@ export type UserPayload = {
   role: AuthRole;
   password?: string;
   isActive?: boolean;
+};
+
+export type FranchiseModel = {
+  id: number;
+  name: string;
+  brandingLogoUrl: string | null;
+  description: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type FranchiseAccessStatus = "pending" | "approved" | "rejected";
+
+export type UserFranchiseRequestModel = {
+  id: number;
+  userId: number;
+  franchiseId: number;
+  franchiseName?: string;
+  userEmail?: string;
+  userName?: string;
+  status: FranchiseAccessStatus;
+  rejectionReason: string | null;
+  approvedBy: number | null;
+  approvedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type BannerOrientation = "landscape" | "portrait" | "square";
+
+export type BannerTemplateImageModel = {
+  id: number;
+  templateId: number;
+  imageUrl: string;
+  imageName?: string | null;
+  sortOrder: number;
+  createdAt: string;
+  updatedAt: string;
+  title?: string | null;
+  imageType?: string;
+  franchiseId?: number;
+  isActive?: boolean;
+};
+
+export type BannerImageModel = BannerTemplateImageModel;
+
+export type BannerTemplateModel = {
+  id: number;
+  franchiseId: number;
+  franchiseName?: string;
+  name: string;
+  description: string | null;
+  widthPx: number;
+  heightPx: number;
+  dimensionsLabel: string | null;
+  orientation: BannerOrientation;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  fields?: BannerTemplateFieldModel[];
+  images?: BannerTemplateImageModel[];
+};
+
+export type BannerTemplateFieldModel = {
+  id: number;
+  templateId: number;
+  fieldKey: string;
+  fieldLabel: string;
+  fieldType: string;
+  positionX: number;
+  positionY: number;
+  fontSize: number | null;
+  fontColor: string | null;
+  fontFamily: string | null;
+  textAlign: string;
+  maxLength: number | null;
+  isRequired: boolean;
+  isEditable: boolean;
+  defaultValue: string | null;
+  createdAt: string;
 };
