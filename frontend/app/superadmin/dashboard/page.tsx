@@ -15,6 +15,8 @@ import {
 } from "@/app/Components/ui";
 import { UserManagement } from "@/app/super-admin/dashboard/UserManagement";
 import { RolePermissionManagement } from "@/app/super-admin/dashboard/RolePermissionManagement";
+import { FranchiseManagement } from "@/app/super-admin/Franchise";
+import { BannerTemplateManagement } from "@/app/super-admin/dashboard/BannerTemplateManagement";
 import {
   canvasApi,
   type ProjectModel,
@@ -42,6 +44,8 @@ import {
   List,
   LayoutGrid,
   FileImage,
+  Building2,
+  LayoutTemplate,
 } from "lucide-react";
 
 export default function SuperAdminDashboardPage() {
@@ -137,6 +141,8 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
     { id: "users", label: "User Accounts", icon: ShieldCheck },
     { id: "roles", label: "Role Permissions", icon: SlidersHorizontal },
     { id: "diagrams", label: "Diagram Templates", icon: Layers, badge: diagrams.length },
+    { id: "franchises", label: "Franchises", icon: Building2 },
+    { id: "banner-templates", label: "Banner Templates", icon: LayoutTemplate },
   ];
 
   async function loadData(opts?: { refreshDetails?: boolean }) {
@@ -375,7 +381,7 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
   return (
     <SidebarLayout
       title="Super Admin Command Center"
-      subtitle="Full control of User Accounts, Role Permissions, Projects Directory & Diagram Blueprints"
+      subtitle="Full control of Projects, Users, Roles, Diagrams, Franchises & Banner Templates"
       roleName="Super Admin"
       userEmail={superAdminUser.email}
       userName={superAdminUser.name}
@@ -831,6 +837,12 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
           </div>
         </div>
       )}
+
+      {/* TAB 5: FRANCHISES */}
+      {activeTab === "franchises" && <FranchiseManagement />}
+
+      {/* TAB 6: BANNER TEMPLATES */}
+      {activeTab === "banner-templates" && <BannerTemplateManagement />}
 
       {/* MODAL: CREATE / EDIT DIAGRAM TEMPLATE */}
       {showDiagramModal && (
