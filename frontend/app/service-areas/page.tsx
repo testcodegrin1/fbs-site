@@ -10,9 +10,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const canonical = absoluteUrl("/service-areas", baseUrl);
 
   return {
-    title: "Service Areas in Illinois | Custom Signage & Printing | FBS Signs",
+    title: "FBS Prints Service Areas in Illinois | Signage, Printing & SEO",
     description:
-      "Explore FBS Signs' service areas across 25+ cities in Illinois. We provide custom signage, commercial printing, direct mailing, web design, and SEO services.",
+      "Explore FBS Prints service areas across Illinois for custom signage, printing, direct mail, web design, and SEO services for local businesses.",
     alternates: {
       canonical,
     },
@@ -25,9 +25,9 @@ export async function generateMetadata(): Promise<Metadata> {
       locale: siteConfig.locale,
       url: canonical,
       siteName: siteConfig.name,
-      title: "Service Areas in Illinois | Custom Signage & Printing | FBS Signs",
+      title: "FBS Prints Service Areas in Illinois | Signage, Printing & SEO",
       description:
-        "Explore FBS Signs' service areas across 25+ cities in Illinois. We provide custom signage, commercial printing, direct mailing, web design, and SEO services.",
+        "Explore FBS Prints service areas across Illinois for custom signage, printing, direct mail, web design, and SEO services for local businesses.",
       images: [
         {
           url: absoluteUrl("/images/services/signage/signage-service.webp", baseUrl),
@@ -39,9 +39,9 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: "Service Areas in Illinois | Custom Signage & Printing | FBS Signs",
+      title: "FBS Prints Service Areas in Illinois | Signage, Printing & SEO",
       description:
-        "Explore FBS Signs' service areas across 25+ cities in Illinois. We provide custom signage, commercial printing, direct mailing, web design, and SEO services.",
+        "Explore FBS Prints service areas across Illinois for custom signage, printing, direct mail, web design, and SEO services for local businesses.",
       images: [absoluteUrl("/images/services/signage/signage-service.webp", baseUrl)],
     },
   };
@@ -76,8 +76,8 @@ export default async function ServiceAreasListingPage() {
     "@context": "https://schema.org",
     "@type": "WebPage",
     "@id": `${canonical}#webpage`,
-    name: "Service Areas in Illinois | FBS Signs",
-    description: "Explore FBS Signs' service areas across 25+ cities in Illinois. We provide custom signage, commercial printing, direct mailing, web design, and SEO services.",
+    name: "FBS Prints Service Areas in Illinois | Signage, Printing & SEO",
+    description: "Explore FBS Prints service areas across Illinois for custom signage, printing, direct mail, web design, and SEO services for local businesses.",
     url: canonical,
     inLanguage: "en-US",
     isPartOf: {
@@ -122,9 +122,7 @@ export default async function ServiceAreasListingPage() {
               </span>
             </h1>
             <p className="text-primary-light/80 text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed">
-              FBS Signs provides custom commercial signage, large-format printing,
-              targeted direct mail, web design, and SEO services across northeastern Illinois.
-              Find your city below to explore dedicated local services.
+              FBS Signs provides signage, printing, direct mail, web design, and SEO services across northeastern Illinois. Explore our service areas below to find local services and solutions tailored to your business needs.
             </p>
           </div>
         </section>

@@ -6,12 +6,19 @@ export interface ServiceAreaCity {
   county: string;
   introduction: string;
   servicesDescription: string;
+  whyChooseTitle?: string;
   whyChooseUs: {
     title: string;
     description: string;
   }[];
   localSeoContent: string;
   landmarks: string[];
+  quickAnswersTitle?: string;
+  quickAnswers?: {
+    question: string;
+    answer: string;
+  }[];
+  faqTitle?: string;
   faqs: {
     question: string;
     answer: string;
@@ -28,37 +35,70 @@ export const serviceAreas: ServiceAreaCity[] = [
     state: "Illinois",
     stateCode: "IL",
     county: "DuPage and Will Counties",
-    introduction: "Naperville, Illinois, is one of the most vibrant and economically diverse communities in the Midwest. Regularly ranking among the best places to live in the United States, Naperville boasts a rich business ecosystem that ranges from corporate headquarters along the Interstate 88 technology corridor to boutique retailers and family-owned restaurants in its historic downtown district. Serving the local community means understanding the high standards of visual and brand communication required to stand out in this competitive market.",
+    introduction: "Naperville, Illinois, is a thriving western Chicago suburb with a vibrant downtown and diverse business community. FBS Signs provides custom business signage, commercial printing, direct mail, web design, and local SEO services for businesses throughout Naperville, IL. From storefront signs and printed marketing materials to targeted direct mail campaigns and search optimization, we help Naperville businesses build a consistent and professional presence across physical and digital channels.",
     servicesDescription: "We provide comprehensive business solutions in Naperville, including custom exterior and interior signage, commercial printing products like brochures and business cards, targeted Every Door Direct Mail (EDDM) campaigns, custom web design, and SEO services. Whether you operate a retail shop on Jefferson Avenue, a medical facility near Edward Hospital, or a business office along the I-88 corridor, our local printing and design workflow is tailored to deliver professional results.",
+    whyChooseTitle: "Why Choose FBS Signs in Naperville",
     whyChooseUs: [
       {
-        title: "Local Signage Experts",
-        description: "We are deeply familiar with Naperville's municipal sign codes and local zoning regulations, ensuring that your storefront sign, awning, or LED sign is fully compliant and professionally installed."
+        title: "Custom Signage for Naperville Businesses",
+        description: "FBS Signs creates custom business signage for storefronts, restaurants, offices, retail locations, and commercial properties throughout Naperville. From channel letters and monument signs to window graphics and banners, we help businesses create clear and professional brand visibility."
       },
       {
-        title: "Coordinated Print & Digital Workflow",
-        description: "From physical business cards and menus to responsive web design and search engine optimization, we maintain visual and structural consistency across all channels."
+        title: "One Partner for Print & Digital Marketing",
+        description: "FBS Signs brings signage, commercial printing, direct mail, web design, and local SEO together under one roof. This allows Naperville businesses to maintain consistent branding across their physical marketing and digital presence."
       },
       {
-        title: "Fast Turnaround & Price Guarantee",
-        description: "We offer local businesses in Naperville highly competitive rates with a price match guarantee and quick production times for repeat orders."
+        title: "Local Marketing Built Around Your Business",
+        description: "Whether you operate in Downtown Naperville, along Route 59, or in another commercial area, FBS Signs can tailor marketing materials and digital services to your business needs. Our goal is to help local businesses present their brand professionally and reach customers through both traditional and digital channels."
       }
     ],
     localSeoContent: "Our service coverage spans all of Naperville, including the historic Downtown Naperville shopping area, the Route 59 commercial corridor, South Naperville, and the northern business parks near Warrenville. We design marketing materials that appeal to local residents throughout the DuPage and Will county regions, utilizing geographical terms and neighborhood targeting to boost your brand's prominence in local search queries.",
     landmarks: ["Naperville Riverwalk", "Centennial Beach", "Naper Settlement", "North Central College", "Route 59 Corridor"],
-    faqs: [
+    quickAnswersTitle: "Local Quick Answers: Services in Naperville, IL",
+    quickAnswers: [
       {
-        question: "Does FBS Signs design signs according to Naperville's city guidelines?",
-        answer: "Yes, we design, fabricate, and install signs that comply with Naperville's municipal sign ordinance. We help coordinate the permitting process for storefront signs, channel letters, and window graphics."
+        question: "What signage and printing services does FBS Signs offer in Naperville?",
+        answer: "FBS Signs provides storefront signs, LED channel letters, monument signs, vehicle graphics, banners, business cards, brochures, menus, and other branded materials for Naperville businesses."
       },
       {
-        question: "Can we order direct mail campaigns targeting specific Naperville zip codes?",
-        answer: "Absolutely. We manage full EDDM and direct mailing campaigns targeting key Naperville zip codes (such as 60540, 60563, 60564, and 60565) to reach your local customers directly."
+        question: "Does FBS Signs provide custom business signs in Naperville?",
+        answer: "Yes. We create custom signage for businesses across Downtown Naperville, Route 59, Ogden Avenue, and other commercial areas."
+      },
+      {
+        question: "Can FBS Signs help with direct mail campaigns in Naperville?",
+        answer: "Yes. We coordinate printed mailers, addressing, mailing lists, and postage, including EDDM campaigns targeting selected Naperville carrier routes."
+      },
+      {
+        question: "Does FBS Signs provide local SEO services for Naperville businesses?",
+        answer: "Yes. Our local SEO services focus on location-based pages, website optimization, local search visibility, and other strategies for Naperville businesses."
+      }
+    ],
+    faqTitle: "Frequently Asked Questions",
+    faqs: [
+      {
+        question: "Do you provide custom business signs in Naperville?",
+        answer: "Yes. FBS Signs provides custom business signage for storefronts, offices, restaurants, retail locations, and commercial properties in Naperville."
+      },
+      {
+        question: "What types of signage can FBS Signs create?",
+        answer: "FBS Signs offers options such as channel letters, monument signs, pylon signs, window graphics, banners, vehicle graphics, and other custom signage solutions."
+      },
+      {
+        question: "Can FBS Signs handle commercial printing for Naperville businesses?",
+        answer: "Yes. FBS Signs provides commercial printing for business cards, brochures, menus, banners, flyers, and other branded marketing materials."
+      },
+      {
+        question: "Does FBS Signs provide direct mail services in Naperville?",
+        answer: "Yes. FBS Signs can coordinate printed materials, addressing, mailing lists, and postal requirements for direct mail campaigns serving Naperville businesses and local audiences."
+      },
+      {
+        question: "Does FBS Signs offer local SEO services in Naperville?",
+        answer: "Yes. FBS Signs provides local SEO services focused on website optimization, local search visibility, location-based content, and other strategies that help businesses reach customers searching for their services."
       }
     ],
     nearbyCities: ["Lisle", "Downers Grove", "Aurora", "Bolingbrook", "Oswego"],
     nearbyCitySlugs: ["lisle", "downers-grove", "aurora", "bolingbrook", "oswego"],
-    updatedAt: "2026-07-06"
+    updatedAt: "2026-10-13"
   },
   {
     slug: "schaumburg",
@@ -66,37 +106,70 @@ export const serviceAreas: ServiceAreaCity[] = [
     state: "Illinois",
     stateCode: "IL",
     county: "Cook County",
-    introduction: "Schaumburg, Illinois, is a premier economic hub in the northwestern suburbs of Chicago. As home to a massive retail, commercial, and industrial landscape, Schaumburg demands high-impact branding. The city features a dense commercial district centered around the Woodfield Mall, Higgins Road, and the Golf Road corridor, as well as a large office park ecosystem housing major corporate facilities. Standing out in Schaumburg requires premium signage and digital marketing strategies.",
+    introduction: "Schaumburg, Illinois, is a major northwest Chicago suburb with a vibrant retail, office, and business community. FBS Signs provides custom business signage, commercial printing, direct mail, web design, and local SEO services for businesses throughout Schaumburg. From storefront signs and printed marketing materials to targeted direct mail campaigns and search optimization, we help Schaumburg businesses build a consistent and professional presence across physical and digital channels.",
     servicesDescription: "Our team serves Schaumburg businesses with premium custom signage (LED channel letters, pylon signs, and vehicle wraps), professional printing services (sales sheets, catalogs, and packaging), targeted direct mail campaigns, high-performance web design, and local SEO services. We help retailers, service companies, and logistics firms around the Woodfield corridor and adjacent business parks engage local audiences.",
+    whyChooseTitle: "Why Choose FBS Signs in Schaumburg",
     whyChooseUs: [
       {
-        title: "Designed for Retail Centers",
-        description: "We build eye-catching storefront graphics and window signage optimized for high-density retail districts like Golf Road and Higgins Road."
+        title: "Custom Signage for Schaumburg Businesses",
+        description: "FBS Signs creates custom signage for storefronts, restaurants, offices, retail locations, and commercial properties throughout Schaumburg."
       },
       {
-        title: "Comprehensive B2B Services",
-        description: "We act as a single partner for local offices, offering commercial print collateral, website design, and B2B search engine optimization under one roof."
+        title: "One Partner for Print & Digital Marketing",
+        description: "From signage and commercial printing to direct mail, web design, and local SEO, FBS Signs brings multiple marketing services together under one roof."
       },
       {
-        title: "High-Impact Vehicle Wraps",
-        description: "Turn your service vehicles into mobile billboards that travel daily across I-90 and the surrounding northwest suburbs."
+        title: "Marketing for Schaumburg's Business Community",
+        description: "Whether your business is near Woodfield, Golf Road, Higgins Road, or another commercial area, FBS Signs can help build a consistent and professional brand presence."
       }
     ],
     localSeoContent: "We specialize in local SEO and GEO optimization for Schaumburg businesses. Our strategies are designed to help you rank in local map packs and organic searches across Cook County, targeting major pathways like Higgins Road, Roselle Road, and the Jane Addams Memorial Tollway (I-90).",
     landmarks: ["Woodfield Mall", "Legoland Discovery Center", "Schaumburg Convention Center", "Wintrust Field", "Golf Road Corridor"],
-    faqs: [
+    quickAnswersTitle: "Local Quick Answers: Services in Schaumburg, IL",
+    quickAnswers: [
       {
-        question: "What types of storefront signs are popular for businesses in Schaumburg?",
-        answer: "Illuminated LED channel letters, window graphics, and monument signs are highly popular and effective for businesses along Schaumburg's busy commercial corridors."
+        question: "What marketing and branding services are available for Schaumburg businesses?",
+        answer: "FBS Signs provides custom signage, commercial printing, direct mail, web design, and local SEO for businesses across Schaumburg."
       },
       {
-        question: "Do you design websites for service companies in Schaumburg?",
-        answer: "Yes, we build responsive, fast-loading, and conversion-optimized websites specifically designed to generate local leads for Schaumburg contractors and service firms."
+        question: "How can businesses near Woodfield Mall improve their local visibility?",
+        answer: "FBS Signs combines physical branding and local SEO to help businesses build stronger visibility across Schaumburg's retail and commercial market."
+      },
+      {
+        question: "Can I target specific Schaumburg neighborhoods with EDDM?",
+        answer: "Yes. FBS Signs can plan EDDM campaigns around selected carrier routes and residential areas to reach targeted local households."
+      },
+      {
+        question: "How can local SEO help a Schaumburg business reach nearby customers?",
+        answer: "Our local SEO services focus on location-based pages, on-page optimization, local search targeting, and other factors that support Schaumburg visibility."
+      }
+    ],
+    faqTitle: "Schaumburg Service FAQs",
+    faqs: [
+      {
+        question: "What signage services does FBS Signs offer in Schaumburg?",
+        answer: "FBS Signs provides custom storefront signs, channel letters, monument signs, pylon signs, window graphics, and vehicle graphics for local businesses."
+      },
+      {
+        question: "Does FBS Signs provide commercial printing in Schaumburg?",
+        answer: "Yes. We provide business cards, brochures, flyers, menus, banners, and other printed marketing materials for Schaumburg businesses."
+      },
+      {
+        question: "Can FBS Signs help with direct mail in Schaumburg?",
+        answer: "Yes. We provide printed mail pieces, mailing lists, addressing, and postage support for targeted Schaumburg campaigns."
+      },
+      {
+        question: "Does FBS Signs offer web design in Schaumburg?",
+        answer: "Yes. We create professional websites for Schaumburg businesses that want to strengthen their online presence and customer reach."
+      },
+      {
+        question: "Does FBS Signs provide local SEO in Schaumburg?",
+        answer: "Yes. Our local SEO services help Schaumburg businesses improve visibility in relevant local searches and reach nearby customers."
       }
     ],
     nearbyCities: ["Hoffman Estates", "Des Plaines", "Elmhurst", "Lombard", "West Chicago"],
     nearbyCitySlugs: ["hoffman-estates", "des-plaines", "elmhurst", "lombard", "west-chicago"],
-    updatedAt: "2026-07-06"
+    updatedAt: "2026-10-13"
   },
   {
     slug: "aurora",
@@ -104,37 +177,70 @@ export const serviceAreas: ServiceAreaCity[] = [
     state: "Illinois",
     stateCode: "IL",
     county: "Kane and DuPage Counties",
-    introduction: "Aurora, Illinois, known as the 'City of Lights,' is the second-largest city in the state, spanning across Kane, DuPage, Kendall, and Will counties. Aurora combines a historic downtown centered on Stolp Island with rapidly expanding commercial and residential developments to the east and west. This unique blend of historic architecture and modern commercial corridors creates a dynamic market where businesses require versatile design and marketing solutions.",
+    introduction: "Aurora, Illinois, is a major Fox Valley business market with a mix of retail, manufacturing, professional services, and growing commercial areas. FBS Signs provides custom business signage, commercial printing, direct mail, web design, and local SEO services in Aurora, IL. From storefront signs and vehicle graphics to printed marketing materials and local search optimization, we help Aurora businesses build a consistent presence across physical and digital channels.",
     servicesDescription: "We provide complete business services in Aurora, including design and fabrication of architectural signs, historic building sign solutions, vehicle wraps, commercial printing, direct mailing, web design, and SEO. Whether your business is located in the historic downtown district, near the Chicago Premium Outlets, or along the Eola Road corridor, we help you reach local customers effectively.",
+    whyChooseTitle: "Why Choose FBS Signs in Aurora",
     whyChooseUs: [
       {
-        title: "Historic & Modern Signage Styles",
-        description: "We design custom signs that respect historic downtown preservation rules while providing modern high-visibility LED signs for commercial zones."
+        title: "Custom Signage for Aurora Businesses",
+        description: "FBS Signs creates custom storefront signs, channel letters, monument signs, pylon signs, window graphics, and vehicle graphics for businesses across Aurora."
       },
       {
-        title: "Multi-County Targeted Marketing",
-        description: "Our direct mailing and local SEO campaigns target the complex multi-county boundaries of Aurora to reach the right demographics."
+        title: "Local Marketing for Aurora's Business Community",
+        description: "From Downtown Aurora and the Fox River area to the Route 59 and Eola Road corridors, FBS Signs helps businesses build a professional and consistent local presence."
       },
       {
-        title: "Local Printing Partnerships",
-        description: "We work closely with local retail, manufacturing, and dining establishments to keep print materials like menus, labels, and mailers consistently stocked."
+        title: "Local Search Visibility for Aurora Businesses",
+        description: "FBS Signs helps Aurora businesses strengthen their local SEO and search visibility through location-focused content, website optimization, and other local search strategies."
       }
     ],
     localSeoContent: "We help Aurora businesses build regional authority. Our GEO-optimized campaigns focus on local terms, school districts, and neighborhoods such as Fox Valley, downtown Stolp Island, and the Far East Side near the Naperville border.",
     landmarks: ["Paramount Theatre", "Stolp Island Historic District", "Chicago Premium Outlets", "Aurora University", "Fox River Bike Trail"],
-    faqs: [
+    quickAnswersTitle: "Quick Answers: Services in Aurora, IL",
+    quickAnswers: [
       {
-        question: "Can you help with signs that meet historic preservation requirements in Aurora?",
-        answer: "Yes, we have experience designing signs that comply with historic district guidelines in downtown Aurora, using materials and styles that align with local preservation codes."
+        question: "What signage options work best for Aurora retail and commercial properties?",
+        answer: "FBS Signs provides storefront signs, channel letters, monument signs, pylon signs, window graphics, and vehicle graphics for businesses across Aurora's commercial areas."
       },
       {
-        question: "Do you offer direct mail targeting for residential developments in East Aurora?",
-        answer: "Yes, we design and coordinate EDDM campaigns that target residential routes in East Aurora, the Fox Valley area, and the Eola Road corridor."
+        question: "Can businesses in Aurora use EDDM to target specific neighborhoods?",
+        answer: "Yes. FBS Signs can coordinate EDDM campaigns using selected postal routes and neighborhoods to help Aurora businesses reach nearby households with targeted mailers."
+      },
+      {
+        question: "How can local SEO help an Aurora business reach customers nearby?",
+        answer: "FBS Signs uses local SEO strategies such as location-focused content, on-page optimization, and local search targeting to improve visibility for Aurora-related searches."
+      },
+      {
+        question: "What marketing materials do Aurora businesses commonly need?",
+        answer: "FBS Signs provides business cards, brochures, menus, flyers, banners, sales materials, and other printed products for Aurora retailers, restaurants, offices, and service businesses."
+      }
+    ],
+    faqTitle: "Aurora Service FAQs",
+    faqs: [
+      {
+        question: "What signage services does FBS Signs provide in Aurora, IL?",
+        answer: "FBS Signs provides custom storefront signs, channel letters, monument signs, pylon signs, window graphics, and vehicle graphics for Aurora businesses."
+      },
+      {
+        question: "Which Aurora areas does FBS Signs serve?",
+        answer: "FBS Signs serves businesses across Aurora, including Downtown Aurora, the Route 59 corridor, Eola Road, Ogden Avenue, and the Fox Valley area."
+      },
+      {
+        question: "Can Aurora businesses use EDDM to reach local customers?",
+        answer: "Yes. FBS Signs can coordinate EDDM campaigns using selected carrier routes to target households in Aurora and surrounding service areas."
+      },
+      {
+        question: "How can local SEO help a business in Aurora, IL?",
+        answer: "FBS Signs uses local SEO strategies such as location-focused content and website optimization to help Aurora businesses improve visibility in relevant local searches."
+      },
+      {
+        question: "What marketing services can an Aurora business get from FBS Signs?",
+        answer: "FBS Signs provides signage, commercial printing, direct mail, web design, and local SEO to help Aurora businesses build a consistent local marketing presence."
       }
     ],
     nearbyCities: ["North Aurora", "Montgomery", "Oswego", "Naperville", "Plainfield"],
     nearbyCitySlugs: ["north-aurora", "montgomery", "oswego", "naperville", "plainfield"],
-    updatedAt: "2026-07-06"
+    updatedAt: "2026-10-13"
   },
   {
     slug: "des-plaines",
@@ -144,35 +250,68 @@ export const serviceAreas: ServiceAreaCity[] = [
     county: "Cook County",
     introduction: "Des Plaines, Illinois, is a well-established community located adjacent to O'Hare International Airport in the northwest suburbs of Chicago. Known for its excellent transit connections along I-90, I-294, and the Des Plaines River, the city serves as a hub for transportation, logistics, and manufacturing, along with a diverse collection of local retail and service businesses. Local companies benefit greatly from physical and digital branding that targets travelers and residents alike.",
     servicesDescription: "FBS Signs serves Des Plaines with high-impact signs (including outdoor banners and vehicle lettering), business printing (manuals, packaging, and office stationery), targeted direct mail, web design, and SEO. We support logistics offices, local retail storefronts, and service centers in establishing local presence.",
+    whyChooseTitle: "Why Choose FBS Signs in Des Plaines",
     whyChooseUs: [
       {
-        title: "Airport Corridor Visibility",
-        description: "We create outdoor signage and display graphics designed to capture the attention of high-volume traffic near O'Hare and the major expressways."
+        title: "Downtown & Commercial Signage",
+        description: "We provide custom storefront signs, window graphics, and banners for businesses in downtown Des Plaines and across its commercial districts."
       },
       {
-        title: "Logistics and B2B Focus",
-        description: "We print and design marketing packages, brochures, and technical documents for the area's robust industrial and logistics businesses."
+        title: "Printing for Industrial & Logistics Businesses",
+        description: "We create brochures, business materials, and technical documents to support Des Plaines businesses across manufacturing, logistics, and professional services."
       },
       {
-        title: "Search Visibility near O'Hare",
-        description: "We optimize your website to rank for localized and transit-based search intent, connecting you with clients throughout Cook County."
+        title: "Local Search Visibility in Des Plaines",
+        description: "We optimize websites and local content to help businesses connect with customers searching for services in Des Plaines and nearby Cook County communities."
       }
     ],
     localSeoContent: "We optimize Des Plaines business websites for technical and on-page SEO. Our focus is on positioning your business for local search terms near River Road, Oakton Street, and the northern suburbs.",
     landmarks: ["Des Plaines Theater", "Lake Opeka", "Des Plaines River Trail", "Metra station", "First McDonald's Museum site"],
-    faqs: [
+    quickAnswersTitle: "Local Quick Answers: Services in Des Plaines",
+    quickAnswers: [
       {
-        question: "Do you provide commercial printing for logistics and warehousing firms in Des Plaines?",
-        answer: "Yes, we provide high-volume corporate printing, including manuals, shipping labels, invoices, and sales collateral for industrial companies."
+        question: "What signs can businesses in Des Plaines order?",
+        answer: "FBS Signs offers storefront signs, channel letters, banners, window graphics, vehicle lettering, and vehicle wraps for different business and branding needs."
       },
       {
-        question: "Can we get help with vehicle graphics for a service fleet in Des Plaines?",
-        answer: "Yes, we print and apply durable vehicle wraps and lettering for local service trucks, vans, and commercial cars."
+        question: "Where can businesses get commercial printing in Des Plaines?",
+        answer: "Businesses can explore printed materials such as brochures, business cards, flyers, and other promotional products through FBS Signs’ commercial printing services."
+      },
+      {
+        question: "Can EDDM help a Des Plaines business reach local households?",
+        answer: "Yes. Every Door Direct Mail allows businesses to select eligible postal routes for distributing promotional mail without using an individual mailing list."
+      },
+      {
+        question: "How can local SEO help businesses in Des Plaines?",
+        answer: "Website optimization and useful location-specific content can help businesses improve relevance for searches related to their services and service area."
+      }
+    ],
+    faqTitle: "Des Plaines Service FAQs",
+    faqs: [
+      {
+        question: "What signs are suitable for a Des Plaines storefront?",
+        answer: "Storefront signs, channel letters, window graphics, and banners can help businesses display their branding and identify their location."
+      },
+      {
+        question: "Can FBS Signs help with vehicle graphics for a service fleet?",
+        answer: "Yes. Vehicle graphics and wraps can display your business name, logo, phone number, and services on company vehicles."
+      },
+      {
+        question: "Can I use EDDM to promote my business in Des Plaines?",
+        answer: "Yes. Every Door Direct Mail (EDDM) lets businesses reach households along eligible postal routes without needing individual names or street addresses."
+      },
+      {
+        question: "Do commercial signs in Des Plaines require permits?",
+        answer: "Requirements vary by sign type and location. Review the City’s Planning and Zoning information before installation."
+      },
+      {
+        question: "Can local SEO help my business reach nearby customers?",
+        answer: "Local SEO helps make your website more relevant to location-based searches, although rankings depend on competition, relevance, and other factors."
       }
     ],
     nearbyCities: ["Schaumburg", "Hoffman Estates", "Gurnee", "Waukegan", "Elmhurst"],
     nearbyCitySlugs: ["schaumburg", "hoffman-estates", "gurnee", "waukegan", "elmhurst"],
-    updatedAt: "2026-07-06"
+    updatedAt: "2026-10-13"
   },
   {
     slug: "hoffman-estates",
@@ -218,37 +357,70 @@ export const serviceAreas: ServiceAreaCity[] = [
     state: "Illinois",
     stateCode: "IL",
     county: "Will and DuPage Counties",
-    introduction: "Bolingbrook, Illinois, is a dynamic and rapidly growing suburb southwest of Chicago. Centered around the intersection of Interstate 55 and Route 53, Bolingbrook is a major logistics hub with substantial warehouse districts, as well as a bustling retail environment highlighted by the Promenade Bolingbrook. The mix of heavy industrial, retail, and suburban residential sectors calls for diverse advertising and branding capabilities.",
+    introduction: "Bolingbrook is a growing business and distribution hub near I-55, I-355, and Route 53, with retail destinations such as The Promenade Bolingbrook. FBS Signs provides custom business signage, commercial printing, direct mail, web design, and local SEO services in Bolingbrook, IL to help businesses present their brands consistently across physical and digital channels.",
     servicesDescription: "We support Bolingbrook businesses with a wide range of services: warehouse safety and industrial signage, retail storefront displays, vehicle graphics, high-volume corporate printing, direct mail campaigns, professional website design, and targeted SEO.",
+    whyChooseTitle: "Why Choose FBS Signs in Bolingbrook",
     whyChooseUs: [
       {
-        title: "Industrial & Logistics Signage",
-        description: "We fabricate heavy-duty exterior signs, safety banners, and truck yard markings for Bolingbrook's logistics parks."
+        title: "Signage for Retail and Commercial Properties",
+        description: "Promote your business with storefront signs, window graphics, banners, and other custom signage suited to your location and brand."
       },
       {
-        title: "Retail storefront solutions",
-        description: "We design custom signs, window vinyls, and banners optimized for lifestyle centers like the Promenade Bolingbrook."
+        title: "Printing and Direct Mail for Local Outreach",
+        description: "Use brochures, postcards, flyers, and other printed materials to share offers, introduce services, and reach customers in Bolingbrook."
       },
       {
-        title: "B2B and B2C Marketing Aligned",
-        description: "We build digital solutions and run local search campaigns to keep your business top-of-mind for residents across Will County."
+        title: "Web Design and Local SEO Services",
+        description: "FBS Signs provides website design and local SEO services to help Bolingbrook businesses improve their online presence and visibility in relevant local searches."
       }
     ],
     localSeoContent: "We focus on local SEO campaigns that leverage Bolingbrook's geographic positioning along I-55, Route 53, and Boughton Road to capture traffic from both Will and DuPage county searches.",
     landmarks: ["The Promenade Bolingbrook", "Bolingbrook Golf Club", "Boughton Road Corridor", "Hidden Lakes Historic Park", "Route 53 Business District"],
-    faqs: [
+    quickAnswersTitle: "Local Quick Answers: Services in Bolingbrook, IL",
+    quickAnswers: [
       {
-        question: "Can you design warehouse and logistics signage for Bolingbrook facilities?",
-        answer: "Yes, we fabricate industrial wall signs, warehouse safety banners, loading dock signage, and vehicle lettering for logistics operations."
+        question: "What signage options are available for Bolingbrook businesses?",
+        answer: "FBS Signs provides storefront signs, channel letters, pylon signs, banners, window graphics, and vehicle graphics for retail, commercial, and industrial businesses."
       },
       {
-        question: "How do we coordinate restaurant print materials near the Promenade?",
-        answer: "We support local restaurants with menus, window graphics, promotional banners, and direct mail campaigns to attract shoppers."
+        question: "Can businesses in Bolingbrook get printing and direct mail services?",
+        answer: "Yes. FBS Signs provides business cards, brochures, flyers, postcards, and direct mail campaign support for businesses promoting their products and services locally."
+      },
+      {
+        question: "Can EDDM help a Bolingbrook business reach nearby households?",
+        answer: "Every Door Direct Mail (EDDM) can help businesses reach households along selected postal routes. The appropriate routes depend on the campaign's target audience and service area."
+      },
+      {
+        question: "How can local SEO help a Bolingbrook business attract customers?",
+        answer: "Local SEO helps businesses improve their visibility for relevant location-based searches through website optimization, useful local content, and other local search activities."
+      }
+    ],
+    faqTitle: "Bolingbrook Service FAQs",
+    faqs: [
+      {
+        question: "What types of business signs can I order in Bolingbrook?",
+        answer: "Options include storefront signs, channel letters, pylon signs, banners, window graphics, and vehicle graphics, depending on your project requirements."
+      },
+      {
+        question: "Can I get business brochures and postcards printed?",
+        answer: "Yes. FBS Signs offers commercial printing and direct mail services to support business promotions and customer outreach."
+      },
+      {
+        question: "How do I target specific Bolingbrook neighborhoods with EDDM?",
+        answer: "Choose suitable postal carrier routes based on your audience and campaign goals, then plan the mail pieces and delivery requirements."
+      },
+      {
+        question: "Do commercial signs in Bolingbrook require permits?",
+        answer: "Requirements depend on the sign and property. Check with the Village of Bolingbrook's Planning and Zoning Division before proceeding."
+      },
+      {
+        question: "Can FBS Signs help my Bolingbrook business improve local search visibility?",
+        answer: "Yes. FBS Signs offers local SEO services, including website optimization and location-focused content."
       }
     ],
     nearbyCities: ["Romeoville", "Joliet", "Plainfield", "Naperville", "Downers Grove"],
     nearbyCitySlugs: ["romeoville", "joliet", "plainfield", "naperville", "downers-grove"],
-    updatedAt: "2026-07-06"
+    updatedAt: "2026-10-13"
   },
   {
     slug: "joliet",
@@ -256,37 +428,70 @@ export const serviceAreas: ServiceAreaCity[] = [
     state: "Illinois",
     stateCode: "IL",
     county: "Will County",
-    introduction: "Joliet, Illinois, is the county seat of Will County and a historic industrial, transportation, and entertainment center located 30 miles southwest of Chicago. With a growing population, an active downtown revitalization effort, and massive logistics hubs along I-80 and I-55, Joliet presents an expansive market for commercial growth. Businesses here require reliable local marketing partners who understand the community's unique heritage and commercial scale.",
+    introduction: "Joliet, Illinois, is a major Will County business and commercial center with a mix of retail, professional services, manufacturing, logistics, and downtown businesses. FBS Signs provides custom business signage, commercial printing, direct mail, web design, and local SEO services in Joliet, IL. From storefront signs and vehicle graphics to printed marketing materials and local search optimization, we help Joliet businesses build a consistent and professional brand presence.",
     servicesDescription: "We provide comprehensive marketing and brand production services in Joliet. This includes commercial signage (monument signs, outdoor flags, LED sign boards), high-volume print production, targeted direct mail campaigns, responsive web design, and SEO. We support local automotive centers, retail corridors, historic downtown venues, and Will County manufacturing parks.",
+    whyChooseTitle: "Why Choose FBS Signs in Joliet",
     whyChooseUs: [
       {
-        title: "Signage Built for Busy Corridors",
-        description: "We manufacture durable storefront signage, pylon signs, and banners designed to attract motorists along Route 30 and Plainfield Road."
+        title: "Custom Signage for Joliet Businesses",
+        description: "FBS Signs provides storefront signs, pylon signs, banners, vehicle graphics, and other custom signage for businesses across Joliet's retail, commercial, and industrial areas."
       },
       {
-        title: "Full-Scale Direct Mail Support",
-        description: "We help service businesses reach Joliet homeowners through cost-effective EDDM routes and postcard marketing."
+        title: "Marketing Support for Local Businesses",
+        description: "From printed marketing materials and direct mail to EDDM campaigns, FBS Signs helps Joliet businesses promote their services and reach customers across the local market."
       },
       {
-        title: "Responsive Web Design for Contractors",
-        description: "We build websites for local home service contractors, roofers, and plumbers that turn local search traffic into real calls."
+        title: "Digital Services for Joliet Businesses",
+        description: "FBS Signs provides responsive web design and local SEO services to help Joliet businesses build a stronger online presence and improve visibility for relevant local searches."
       }
     ],
     localSeoContent: "Our SEO and GEO strategies optimize your business listings for searches across Joliet, Lockport, and Crest Hill, targeting local searchers looking for trusted providers in Will County.",
     landmarks: ["Rialto Square Theatre", "Joliet Slate Arena", "Harrah's Joliet", "Plainfield Road Corridor", "Chicagoland Speedway area"],
-    faqs: [
+    quickAnswersTitle: "Local Quick Answers: Services in Joliet, IL",
+    quickAnswers: [
       {
-        question: "Do you supply signage and print materials for Joliet industrial parks?",
-        answer: "Yes, we work with distribution centers and manufacturers in Joliet to supply commercial banners, facility wayfinding, and employee manuals."
+        question: "What marketing and branding services are available in Joliet?",
+        answer: "FBS Signs provides custom signage, commercial printing, direct mail, web design, and local SEO for businesses across Joliet's retail, office, and commercial areas."
       },
       {
-        question: "Can we set up local SEO to attract customers in downtown Joliet?",
-        answer: "Yes, we specialize in optimizing local Google Business Profiles and building location landing pages to rank for searches in Joliet."
+        question: "What signage services are suitable for Joliet businesses?",
+        answer: "FBS Signs provides storefront signs, channel letters, monument signs, pylon signs, window graphics, and vehicle graphics for businesses along Plainfield Road, Larkin Avenue, Route 59, and other commercial areas."
+      },
+      {
+        question: "Can I target specific Joliet neighborhoods with EDDM?",
+        answer: "Yes. FBS Signs can coordinate EDDM campaigns using selected carrier routes to reach households in targeted Joliet neighborhoods and nearby service areas."
+      },
+      {
+        question: "How can local SEO help a business in Joliet and Will County?",
+        answer: "FBS Signs uses local SEO strategies including location-focused content and website optimization to help businesses improve visibility for relevant Joliet and Will County searches."
+      }
+    ],
+    faqTitle: "Joliet Service FAQs",
+    faqs: [
+      {
+        question: "What signage services does FBS Signs provide in Joliet, IL?",
+        answer: "FBS Signs provides storefront signs, channel letters, monument signs, pylon signs, window graphics, and vehicle graphics for Joliet businesses."
+      },
+      {
+        question: "Which Joliet areas does FBS Signs serve?",
+        answer: "FBS Signs serves businesses across Joliet, including Downtown Joliet, Plainfield Road, Route 59, and other commercial areas."
+      },
+      {
+        question: "Can Joliet businesses use EDDM to reach local customers?",
+        answer: "Yes. FBS Signs can coordinate EDDM campaigns using selected carrier routes to reach households in Joliet and nearby service areas."
+      },
+      {
+        question: "How can local SEO help a business in Joliet, IL?",
+        answer: "FBS Signs uses location-focused content and website optimization to help Joliet businesses improve visibility in relevant local searches."
+      },
+      {
+        question: "What marketing services can a Joliet business get from FBS Signs?",
+        answer: "FBS Signs provides signage, commercial printing, direct mail, web design, and local SEO to support a consistent local marketing presence."
       }
     ],
     nearbyCities: ["Crest Hill", "Romeoville", "Plainfield", "Bolingbrook", "Westmont"],
     nearbyCitySlugs: ["crest-hill", "romeoville", "plainfield", "bolingbrook", "westmont"],
-    updatedAt: "2026-07-06"
+    updatedAt: "2026-10-13"
   },
   {
     slug: "crest-hill",
@@ -332,12 +537,13 @@ export const serviceAreas: ServiceAreaCity[] = [
     state: "Illinois",
     stateCode: "IL",
     county: "Cook County",
-    introduction: "Chicago, Illinois, is the third-most populous city in the United States and the commercial heart of the Midwest. A global city with a highly competitive marketplace, Chicago demands the absolute highest standards in marketing, design, and brand presentation. From high-traffic storefronts in the Loop and River North to community-based retailers across the city's 77 neighborhoods, Chicago businesses must utilize premium, coordinated offline and online marketing strategies to capture market share.",
+    introduction: "Chicago, Illinois, is one of the United States’ largest cities and a major commercial hub in the Midwest. With businesses competing across a diverse marketplace, strong branding, effective marketing, and a consistent customer experience are essential. From busy storefronts in the Loop and River North to local retailers across Chicago’s 77 neighborhoods, FBS Prints supports business branding and marketing through custom signage, commercial printing, direct mail, web design, and SEO services. These solutions help Chicago businesses strengthen their brand presence and connect with relevant audiences both offline and online.",
     servicesDescription: "We offer elite, full-service solutions for Chicago businesses. This includes custom high-end signage (backlit channel letters, custom neon LED signs, window vinyl wraps, vehicle wraps), commercial printing (magazines, menus, luxury business cards), direct mail targeting (EDDM by neighborhood zip codes), advanced web design, and national/local SEO services. We serve restaurants, hospitality groups, professional firms, and retail brands city-wide.",
+    whyChooseTitle: "Why Choose FBS Signs in Chicago",
     whyChooseUs: [
       {
         title: "High-End Fabrications",
-        description: "We construct premium-grade signage using illuminated letters, custom metal finishes, and durable outdoor graphics built to survive Chicago winters."
+        description: "We create custom signage using illuminated letters, metal finishes, and outdoor graphics designed to suit your business branding and project requirements."
       },
       {
         title: "Neighborhood-Specific Marketing",
@@ -345,24 +551,56 @@ export const serviceAreas: ServiceAreaCity[] = [
       },
       {
         title: "Advanced SEO & Digital Authority",
-        description: "Our SEO services are built to rank businesses in highly competitive Chicago-wide and neighborhood searches, driving organic lead generation."
+        description: "Our SEO services help businesses strengthen their online presence for relevant Chicago-wide and neighborhood searches, supporting local visibility and organic lead generation."
       }
     ],
     localSeoContent: "We specialize in Chicago local SEO and entity-based optimization. Our team optimizes your site and Google Business Profile to rank in the highly competitive Cook County area, targeting search intent across the Loop, North Side, South Side, and western suburbs.",
     landmarks: ["The Loop", "Millennium Park", "Navy Pier", "Willis Tower", "Magnificent Mile"],
-    faqs: [
+    quickAnswersTitle: "Local Quick Answers: Services in Chicago, IL",
+    quickAnswers: [
       {
-        question: "Can you handle large-scale signage and print rollouts for Chicago hospitality groups?",
-        answer: "Yes, we handle complete multi-location print and signage production, ensuring brand consistency across all Chicago locations."
+        question: "What services does FBS Signs offer in Chicago?",
+        answer: "FBS Signs offers custom signage, commercial printing, direct mail, web design and local SEO services for businesses seeking branding and marketing support in Chicago, Illinois."
       },
       {
-        question: "Do you offer SEO audits for businesses competing in the Chicago market?",
-        answer: "Yes, we conduct technical, on-page, and competitive SEO audits to help Chicago businesses identify search gaps and build traffic."
+        question: "Do commercial signs in Chicago require permits?",
+        answer: "Permit requirements depend on the sign type, property and project. Check applicable City of Chicago requirements before installing a commercial sign."
+      },
+      {
+        question: "Can EDDM help Chicago businesses reach local households?",
+        answer: "Yes. Every Door Direct Mail (EDDM) allows eligible mailers to target selected postal carrier routes in Chicago without individual names and street addresses."
+      },
+      {
+        question: "How can local SEO help a Chicago business attract customers?",
+        answer: "Local SEO helps search engines understand a business's services and geographic relevance, supporting visibility for relevant searches in Chicago and nearby service areas."
+      }
+    ],
+    faqTitle: "Chicago Service FAQs",
+    faqs: [
+      {
+        question: "What types of signs are suitable for Chicago storefronts?",
+        answer: "Storefront signs, illuminated channel letters, window graphics and banners can display business names and branding. The right choice depends on the building and visibility needs."
+      },
+      {
+        question: "Can Chicago businesses order custom business cards, brochures and menus?",
+        answer: "FBS Signs offers commercial printing products for business communication, promotions and customer outreach. Ask about the print materials required for your project."
+      },
+      {
+        question: "What should I prepare before ordering a custom business sign?",
+        answer: "Prepare your logo, business name, preferred dimensions, installation location and design preferences to help define your signage requirements."
+      },
+      {
+        question: "How can direct mail support a Chicago marketing campaign?",
+        answer: "Direct mail can distribute promotional materials to a selected audience. EDDM route selection depends on your campaign goals and eligible postal routes."
+      },
+      {
+        question: "What should a Chicago business website include for local SEO?",
+        answer: "Include clear service descriptions, accurate contact information, relevant location details and useful content that helps customers understand your business."
       }
     ],
     nearbyCities: ["Elmhurst", "Downers Grove", "Westmont", "Des Plaines", "Schaumburg"],
     nearbyCitySlugs: ["elmhurst", "downers-grove", "westmont", "des-plaines", "schaumburg"],
-    updatedAt: "2026-07-06"
+    updatedAt: "2026-10-13"
   },
   {
     slug: "romeoville",
@@ -370,37 +608,70 @@ export const serviceAreas: ServiceAreaCity[] = [
     state: "Illinois",
     stateCode: "IL",
     county: "Will County",
-    introduction: "Romeoville, Illinois, is a thriving suburb in Will County, situated along the Des Plaines River and the Interstate 55 corridor. Romeoville has experienced significant commercial growth, establishing itself as a major industrial, warehousing, and education hub. With Lewis University and numerous business parks housing large corporations, Romeoville requires professional visual branding and robust online outreach to sustain its business expansion.",
+    introduction: "Romeoville, Illinois, is a growing community in Will County with established commercial areas, industrial facilities, and educational institutions such as Lewis University. Its location near Interstate 55 supports access to regional business and logistics networks. As local businesses serve customers, manage operations, and compete in their markets, professional signage, commercial printing, direct mail, and online marketing can help them communicate their services and maintain a consistent brand presence.",
     servicesDescription: "FBS Signs serves Romeoville with professional services including industrial safety signs, corporate entrance signs, commercial vehicle graphics, high-volume B2B printing, direct mail distribution, web design, and SEO. We support local businesses, education centers, and industrial facilities in building a strong regional brand.",
+    whyChooseTitle: "Why Romeoville Businesses Choose FBS Prints",
     whyChooseUs: [
       {
-        title: "Lewis University & Corporate Partner",
-        description: "We provide high-quality banners, campus displays, and corporate materials that meet professional organizational standards."
+        title: "Signage That Fits Your Business",
+        description: "Make your business easier to recognize with custom signs, window graphics, and branded displays designed around your business identity and communication needs."
       },
       {
-        title: "I-55 Corridor Vehicle Wraps",
-        description: "Our high-durability fleet graphics turn commercial trucks and vans into high-exposure marketing assets along the interstate."
+        title: "Printing for Everyday Business Needs",
+        description: "Keep your marketing materials aligned with your brand through professionally prepared business cards, flyers, brochures, and banners for promotions and customer communication."
       },
       {
-        title: "B2B Lead Generation Websites",
-        description: "We design and optimize business sites to attract industrial, logistics, and service inquiries from regional clients."
+        title: "Digital Support for Local Businesses",
+        description: "Build a stronger online presence with website and SEO services that help communicate your offerings clearly and make your business information easier for potential customers to find."
       }
     ],
     localSeoContent: "We assist Romeoville businesses with local SEO and digital targeting. Our campaigns are built to connect your brand with users along Weber Road, Route 53, and the surrounding Will County community.",
     landmarks: ["Lewis University", "Romeoville Athletic Center", "O'Hara Woods Preserve", "Weber Road Corridor", "I-55 Interchange"],
-    faqs: [
+    quickAnswersTitle: "Local Quick Answers: Services in Romeoville, IL",
+    quickAnswers: [
       {
-        question: "Do you provide custom sign fabrication for Romeoville business parks?",
-        answer: "Yes, we design, fabricate, and assist with permitting for office park signs, monument signs, and wayfinding packages."
+        question: "What services does FBS Prints provide in Romeoville?",
+        answer: "FBS Prints offers custom signage, commercial printing, direct mail, web design, and SEO services for businesses in Romeoville."
       },
       {
-        question: "Can we run local direct mail campaigns in Romeoville?",
-        answer: "Yes, we manage direct mail and EDDM campaigns targeting Romeoville residential routes and surrounding business zones."
+        question: "What signage options can businesses consider?",
+        answer: "Options include storefront signs, window graphics, banners, vehicle graphics, and other custom signage, depending on project requirements."
+      },
+      {
+        question: "What is Every Door Direct Mail (EDDM)?",
+        answer: "EDDM is a USPS service that lets businesses distribute eligible mail pieces along selected postal routes without addressing each piece individually."
+      },
+      {
+        question: "How can local SEO support a Romeoville business?",
+        answer: "Local SEO helps search engines understand a business's services, website content, and service area for relevant local searches."
+      }
+    ],
+    faqTitle: "FAQ About Business Services in Romeoville",
+    faqs: [
+      {
+        question: "What business services does FBS Prints offer in Romeoville?",
+        answer: "FBS Prints offers custom signage, commercial printing, direct mailing, web design, and SEO services for business marketing needs."
+      },
+      {
+        question: "Can FBS Prints create custom signs for Romeoville businesses?",
+        answer: "Yes. Businesses can explore signage options such as custom signs, window graphics, banners, and other branded displays."
+      },
+      {
+        question: "What types of business printing materials are available?",
+        answer: "Options include business cards, flyers, brochures, banners, and other printed materials for promotions and business communication."
+      },
+      {
+        question: "How can direct mailing help a local business?",
+        answer: "Direct mailing lets businesses distribute printed promotional materials to selected postal routes to communicate offers and services."
+      },
+      {
+        question: "Can FBS Prints help improve a business's online visibility?",
+        answer: "Yes. FBS Prints offers web design and SEO services to help businesses present their services online and improve website relevance for search."
       }
     ],
     nearbyCities: ["Bolingbrook", "Joliet", "Crest Hill", "Plainfield", "Lockport"],
     nearbyCitySlugs: ["bolingbrook", "joliet", "crest-hill", "plainfield", "bolingbrook"],
-    updatedAt: "2026-07-06"
+    updatedAt: "2026-10-13"
   },
   {
     slug: "westmont",
@@ -446,37 +717,70 @@ export const serviceAreas: ServiceAreaCity[] = [
     state: "Illinois",
     stateCode: "IL",
     county: "DuPage County",
-    introduction: "Downers Grove, Illinois, is a prestigious DuPage County suburb known for its historic downtown, corporate headquarters, and high-volume commercial corridors along Ogden Avenue and Butterfield Road. The business community includes a mix of professional services, boutique retailers, medical facilities, and regional corporate offices. The sophisticated local market requires premium branding and advanced digital search visibility.",
+    introduction: "Downers Grove, Illinois, is a DuPage County business community with an active downtown, professional offices, and retail corridors along Ogden Avenue and Butterfield Road. FBS Signs provides custom business signage, commercial printing, direct mail, web design, and local SEO services in Downers Grove, IL to help businesses maintain a consistent brand presence across physical and digital channels.",
     servicesDescription: "FBS Signs provides Downers Grove businesses with high-end exterior signage, window graphics, trade show displays, corporate print collateral (brochures, presentation folders), direct mail marketing, custom web design, and SEO. We support retail boutiques downtown, medical suites, and offices along the I-355 corridor.",
+    whyChooseTitle: "Why Choose FBS Signs in Downers Grove",
     whyChooseUs: [
       {
-        title: "Corporate and Professional Focus",
-        description: "We create clean, modern lobby signs, directory boards, and high-quality printed materials that reinforce professional credibility."
+        title: "Signage for Retail and Professional Spaces",
+        description: "Promote your business with storefront signs, window graphics, lobby signs, banners, and other custom signage suited to your location and brand."
       },
       {
-        title: "Downtown Aesthetics",
-        description: "We design storefront signs and window graphics that fit the charming historic aesthetic of downtown Downers Grove."
+        title: "Printing and Direct Mail for Customer Outreach",
+        description: "Use brochures, postcards, flyers, and other printed materials to introduce services, share offers, and support local campaigns."
       },
       {
-        title: "Local SEO Leader",
-        description: "We help local service firms rank for highly competitive DuPage County search terms to acquire local leads."
+        title: "Web Design and Local SEO Services",
+        description: "FBS Signs provides website design and local SEO services to help Downers Grove businesses strengthen their online presence and visibility in relevant local searches."
       }
     ],
     localSeoContent: "We focus on local SEO campaigns that leverage Downers Grove's geographic placement along I-355 and Ogden Avenue to capture searches from neighboring Oak Brook, Woodridge, and Westmont.",
     landmarks: ["Downtown Downers Grove", "Tivoli Theatre", "Lyman Woods", "Ogden Avenue Corridor", "Butterfield Road Business District"],
-    faqs: [
+    quickAnswersTitle: "Local Quick Answers: Services in Downers Grove, IL",
+    quickAnswers: [
       {
-        question: "Do you supply compliance signage and ADA signs for offices in Downers Grove?",
-        answer: "Yes, we produce ADA-compliant interior signage, directory signs, and office door decals for commercial buildings."
+        question: "What signage options are available for Downers Grove businesses?",
+        answer: "FBS Signs provides storefront signs, channel letters, monument signs, banners, window graphics, and vehicle graphics for retail stores, offices, and commercial properties."
       },
       {
-        question: "Can you help set up an EDDM campaign for Downers Grove neighborhoods?",
-        answer: "Yes, we plan and execute direct mail campaigns to target residential routes across Downers Grove zip codes 60515 and 60516."
+        question: "Can Downers Grove businesses order commercial printing and direct mail?",
+        answer: "Yes. FBS Signs provides business cards, brochures, flyers, postcards, and direct mail campaign support for businesses promoting their services and offers."
+      },
+      {
+        question: "Can EDDM help businesses reach households in Downers Grove?",
+        answer: "Every Door Direct Mail (EDDM) allows businesses to target households along selected postal routes. Route selection should reflect the intended audience and campaign goals."
+      },
+      {
+        question: "How can local SEO help a Downers Grove business attract customers?",
+        answer: "Local SEO helps businesses improve visibility for relevant local searches through website optimization, location-focused content, and other local search activities."
+      }
+    ],
+    faqTitle: "Downers Grove Service FAQs",
+    faqs: [
+      {
+        question: "What types of business signs can I get in Downers Grove?",
+        answer: "Options include storefront signs, channel letters, monument signs, banners, window graphics, and vehicle graphics, depending on your project requirements."
+      },
+      {
+        question: "Can FBS Signs provide lobby signs for professional offices?",
+        answer: "Yes. Custom lobby signage can display your business name and logo in reception areas and other professional spaces."
+      },
+      {
+        question: "Can I use EDDM to promote my business in Downers Grove?",
+        answer: "Yes. EDDM can help you reach households along selected postal routes with postcards and other eligible mail pieces."
+      },
+      {
+        question: "Do commercial signs in Downers Grove require permits?",
+        answer: "Requirements vary by sign type and location. Check with the Village of Downers Grove before installing a new exterior sign."
+      },
+      {
+        question: "Can FBS Signs help improve local search visibility?",
+        answer: "Yes. FBS Signs offers local SEO services, including website optimization and location-focused content."
       }
     ],
     nearbyCities: ["Westmont", "Lisle", "Lombard", "Elmhurst", "Naperville"],
     nearbyCitySlugs: ["westmont", "lisle", "lombard", "elmhurst", "naperville"],
-    updatedAt: "2026-07-06"
+    updatedAt: "2026-10-13"
   },
   {
     slug: "lisle",
@@ -522,37 +826,70 @@ export const serviceAreas: ServiceAreaCity[] = [
     state: "Illinois",
     stateCode: "IL",
     county: "DuPage County",
-    introduction: "Lombard, Illinois, the 'Lilac Village,' is a historic and commercial hub in central DuPage County. Lombard features major retail and commercial centers, including the Yorktown Center shopping mall, along with a bustling business community along Roosevelt Road and Butterfield Road. Local companies require eye-catching storefront signage and strong digital visibility to stand out in this high-traffic area.",
+    introduction: "Lombard, Illinois, known as the “Lilac Village,” is home to businesses near Yorktown Center, Roosevelt Road, and Butterfield Road. FBS Prints offers custom signage, commercial printing, direct mail, web design, and SEO services to support business branding and marketing. These solutions help Lombard businesses present their brands consistently across storefronts, printed materials, and online channels.",
     servicesDescription: "We provide comprehensive business solutions in Lombard, including custom retail signage (window graphics, LED signs, banner stands), corporate print production, targeted direct mail, website design, and local SEO services. We serve retailers near Yorktown, local service contractors, and medical practices.",
+    whyChooseTitle: "Why Choose FBS Signs in Lombard",
     whyChooseUs: [
       {
-        title: "Retail Hub Specialists",
-        description: "We create high-visibility retail signage, window graphics, and banners optimized for malls and shopping plazas."
+        title: "Retail Signage Solutions",
+        description: "We provide custom signage, window graphics, and banners to help businesses present their brands and communicate promotions clearly."
       },
       {
-        title: "Lilac Village Heritage",
-        description: "We help local retail and hospitality venues build designs that appeal to the community's rich local culture."
+        title: "Marketing for Local Businesses",
+        description: "From printed promotional materials to digital services, we help businesses coordinate brand communication around their services and target audiences."
       },
       {
-        title: "Targeted Search Presence",
-        description: "We optimize your web presence to rank for local searches near Roosevelt Road and the I-355 corridor."
+        title: "Local SEO & Online Visibility",
+        description: "Our SEO services help businesses improve website content and local relevance to support visibility in searches related to their services."
       }
     ],
     localSeoContent: "We help Lombard businesses optimize their local search footprint. Our campaigns focus on key transit routes like Roosevelt Road, North Avenue, and the central DuPage area.",
     landmarks: ["Yorktown Center", "Lilacia Park", "Lombard Common", "Roosevelt Road Commercial Corridor", "historic downtown Lombard"],
-    faqs: [
+    quickAnswersTitle: "Local Quick Answers: Services in Lombard, IL",
+    quickAnswers: [
       {
-        question: "Do you design retail banners and window graphics for Lombard shopping centers?",
-        answer: "Yes, we produce custom retail displays, vinyl window lettering, and store banners for properties near Yorktown Center."
+        question: "What services does FBS Prints offer in Lombard?",
+        answer: "FBS Prints offers custom signage, commercial printing, direct mail, web design, and SEO services to support business branding and marketing."
       },
       {
-        question: "Can we run local SEO for a medical practice in Lombard?",
-        answer: "Yes, we optimize websites and local directory listings for medical, dental, and chiropractic clinics to attract local patients."
+        question: "Do commercial signs in Lombard require permits?",
+        answer: "Permit requirements depend on the sign type and project. Check the applicable Village of Lombard regulations before installing a commercial sign."
+      },
+      {
+        question: "Can Lombard businesses use EDDM for local marketing?",
+        answer: "Yes. Every Door Direct Mail (EDDM) lets businesses distribute promotional materials along selected eligible postal carrier routes."
+      },
+      {
+        question: "How can local SEO help a Lombard business?",
+        answer: "Local SEO helps search engines understand a business’s services and service area, supporting visibility in relevant local searches."
+      }
+    ],
+    faqTitle: "Lombard Service FAQs",
+    faqs: [
+      {
+        question: "Can you design retail banners and window graphics for Lombard businesses?",
+        answer: "FBS Prints offers signage options such as banners and window graphics to support business branding and promotions."
+      },
+      {
+        question: "Can local SEO help a medical practice in Lombard?",
+        answer: "Local SEO can help clarify a practice’s services, location, and website content for relevant local searches."
+      },
+      {
+        question: "What information should I prepare for a custom sign?",
+        answer: "Prepare your business name, logo, preferred sign type, installation location, and design requirements."
+      },
+      {
+        question: "Can Lombard businesses order custom printed materials?",
+        answer: "Yes. FBS Prints offers commercial printing products such as business cards, brochures, and menus."
+      },
+      {
+        question: "Can direct mail support a local promotion?",
+        answer: "Direct mail can distribute promotional materials along selected eligible postal routes to support a business campaign."
       }
     ],
     nearbyCities: ["Elmhurst", "Downers Grove", "Westmont", "Lisle", "West Chicago"],
     nearbyCitySlugs: ["elmhurst", "downers-grove", "westmont", "lisle", "west-chicago"],
-    updatedAt: "2026-07-06"
+    updatedAt: "2026-10-13"
   },
   {
     slug: "plainfield",
@@ -598,37 +935,70 @@ export const serviceAreas: ServiceAreaCity[] = [
     state: "Illinois",
     stateCode: "IL",
     county: "Kendall County",
-    introduction: "Oswego, Illinois, is a rapidly expanding village in Kendall County, situated at the confluence of the Fox River and Waubonsie Creek. Oswego maintains its historic downtown charm while experiencing significant commercial development along Route 34. Local businesses need to project a professional image to attract customers in the fast-growing Kendall County market.",
+    introduction: "Oswego, IL, is a growing community with expanding retail, residential, and commercial areas, particularly along the Route 34 corridor. Businesses in Oswego can benefit from professional signage, commercial printing, and direct mail to promote their services and connect with local customers. FBS Prints also offers web design and SEO services to support business visibility across Oswego and the surrounding Kendall County area.",
     servicesDescription: "We support Oswego businesses with custom exterior signage (channel letters, yard signs), commercial printing (brochures, sales sheets), targeted direct mail (EDDM), custom web design, and SEO. We serve local retailers, service providers, and medical offices along Route 34.",
+    whyChooseTitle: "Why Choose FBS Prints in Oswego",
     whyChooseUs: [
       {
-        title: "Route 34 Retail Signage",
-        description: "We manufacture high-visibility storefront signs and window lettering designed to attract shoppers along Oswego's main commercial corridor."
+        title: "Custom Storefront Signage",
+        description: "We offer custom signs and window graphics to help Oswego businesses display their branding, highlight promotions, and make business information easier for customers to see."
       },
       {
-        title: "Kendall County Search Focus",
-        description: "We optimize your digital presence to rank for local service searches in Oswego, Yorkville, and Montgomery."
+        title: "Consistent Print Materials",
+        description: "From business cards and flyers to menus and brochures, we help businesses present their brand consistently across printed materials used for everyday communication and promotions."
       },
       {
-        title: "Reliable Local Print Production",
-        description: "We print business cards, flyers, and banners for local school events, retail sales, and corporate needs."
+        title: "Local SEO & Search Visibility",
+        description: "We help businesses improve website content, service information, and local relevance so search engines can better understand what they offer and where they operate."
       }
     ],
     localSeoContent: "We optimize Oswego business websites to target local search queries across Kendall County, focusing on terms related to Route 34, the Fox River region, and the growing suburban residential developments.",
     landmarks: ["Oswego Hudson Crossing Park", "Route 34 Commercial Corridor", "Fox River Waterfront", "Downtown Oswego", "Oswego East High School area"],
-    faqs: [
+    quickAnswersTitle: "Local Quick Answers: Services in Oswego, IL",
+    quickAnswers: [
       {
-        question: "Do you design storefront signage for Route 34 businesses in Oswego?",
-        answer: "Yes, we fabricate and install LED signs, window graphics, and channel letters compliant with Oswego zoning codes."
+        question: "What services does FBS Prints provide in Oswego?",
+        answer: "FBS Prints offers custom signage, commercial printing, direct mail, web design, and SEO services for businesses in Oswego, Illinois."
       },
       {
-        question: "Can you run direct mail targeting Oswego homeowners?",
-        answer: "Yes, we handle the design, printing, and postal coordination for EDDM campaigns targeting Oswego residential neighborhoods."
+        question: "What types of business signs are available?",
+        answer: "Business signage options include storefront signs, window graphics, banners, and other custom sign solutions based on project requirements."
+      },
+      {
+        question: "What is Every Door Direct Mail (EDDM)?",
+        answer: "EDDM is a USPS mailing service that allows businesses to distribute eligible mail pieces along selected postal routes without needing an individual mailing list."
+      },
+      {
+        question: "What does local SEO help a business do?",
+        answer: "Local SEO helps search engines understand a business's services, website content, and location for relevant local searches."
+      }
+    ],
+    faqTitle: "Service FAQ",
+    faqs: [
+      {
+        question: "What information is needed to request a custom sign quote?",
+        answer: "Prepare your business name, logo, preferred sign type, installation location, approximate dimensions, and any design requirements."
+      },
+      {
+        question: "Can printed materials match my existing business branding?",
+        answer: "Yes. Sharing your logo, brand colors, and existing design files can help maintain consistency across business cards, brochures, menus, and flyers."
+      },
+      {
+        question: "How do I choose between flyers, brochures, and direct mail?",
+        answer: "Flyers suit concise promotions, brochures provide more space for service details, and direct mail distributes materials to selected eligible postal routes."
+      },
+      {
+        question: "What should a business website include to support local customers?",
+        answer: "Include clear service descriptions, accurate contact details, location or service-area information, and a mobile-friendly layout."
+      },
+      {
+        question: "What should I review before publishing a business website?",
+        answer: "Check page titles, headings, contact information, mobile usability, working links, and whether each page clearly explains its service."
       }
     ],
     nearbyCities: ["Montgomery", "Aurora", "North Aurora", "Plainfield", "Naperville"],
     nearbyCitySlugs: ["montgomery", "aurora", "north-aurora", "plainfield", "naperville"],
-    updatedAt: "2026-07-06"
+    updatedAt: "2026-10-13"
   },
   {
     slug: "montgomery",
@@ -676,35 +1046,68 @@ export const serviceAreas: ServiceAreaCity[] = [
     county: "Winnebago County",
     introduction: "Rockford, Illinois, the 'Forest City,' is the largest city in Illinois outside of the Chicago metropolitan area. Situated along the Rock River in Winnebago County, Rockford has a rich industrial history and has evolved into a major center for aerospace, manufacturing, healthcare, and retail. Operating in this standalone metropolitan market requires local businesses to implement strong, comprehensive branding to capture a large regional audience.",
     servicesDescription: "We provide full-service branding in Rockford, including custom storefront signs (LED channel letters, monument signs), vehicle wraps, commercial printing (catalogs, folders, business stationery), direct mail campaigns, web design, and SEO. We support local manufacturing plants, medical centers, and retail districts.",
+    whyChooseTitle: "Why Choose FBS Signs in Rockford",
     whyChooseUs: [
       {
-        title: "Standalone Market Authority",
-        description: "We help Rockford businesses establish themselves as regional market leaders, capturing search traffic across Winnebago County."
+        title: "Custom Signage for Rockford Businesses",
+        description: "FBS Signs provides storefront signs, channel letters, pylon signs, banners, vehicle graphics, and other custom signage for Rockford's retail, commercial, and industrial businesses."
       },
       {
-        title: "Industrial & Manufacturing Print",
-        description: "We produce technical catalogs, manuals, safety signs, and wholesale brochures for industrial manufacturers."
+        title: "Printing for Manufacturing & Local Businesses",
+        description: "From brochures and business stationery to catalogs and other marketing materials, FBS Signs provides commercial printing for Rockford businesses that need consistent branded materials."
       },
       {
-        title: "High-Visibility Vehicle Fleets",
-        description: "Brand your fleet to capture impressions across Rockford, Loves Park, Machesney Park, and the I-90 corridor."
+        title: "Local Marketing for a Regional Business Market",
+        description: "FBS Signs combines signage, printing, direct mail, web design, and local SEO to help Rockford businesses build a consistent presence across physical and digital channels."
       }
     ],
     localSeoContent: "We help Rockford businesses rank for search terms targeting Winnebago County, utilizing location-specific copy, local links, and landmarks like the Rock River, State Street, and the Alpine Road corridor.",
     landmarks: ["Anderson Japanese Gardens", "Coronado Performing Arts Center", "Rockford Art Museum", "Rock River Recreation Path", "East State Street Corridor"],
-    faqs: [
+    quickAnswersTitle: "Local Quick Answers: Services in Rockford, IL",
+    quickAnswers: [
       {
-        question: "Do you design safety and logistics signage for Rockford manufacturing facilities?",
-        answer: "Yes, we fabricate custom safety signs, warehouse wayfinding, and industrial banners for manufacturing operations."
+        question: "What marketing and branding services are available in Rockford?",
+        answer: "FBS Signs provides custom signage, commercial printing, direct mail, web design, and local SEO for businesses across Rockford's commercial market."
       },
       {
-        question: "Can we optimize local SEO specifically for the Rockford metropolitan area?",
-        answer: "Yes, we set up location landing pages, schema markups, and Google Business Profile optimizations to target Rockford searches."
+        question: "What signage services are suitable for Rockford businesses?",
+        answer: "FBS Signs provides storefront signs, channel letters, monument signs, pylon signs, window graphics, and vehicle graphics for Rockford businesses."
+      },
+      {
+        question: "Can Rockford businesses use EDDM to reach local customers?",
+        answer: "Yes. FBS Signs can coordinate EDDM campaigns using selected carrier routes to reach households in Rockford and nearby service areas."
+      },
+      {
+        question: "How can local SEO help a business in Rockford and Winnebago County?",
+        answer: "FBS Signs uses location-focused content and website optimization to help Rockford businesses improve visibility in relevant local searches."
+      }
+    ],
+    faqTitle: "Rockford Service FAQs",
+    faqs: [
+      {
+        question: "Do you provide signage for Rockford manufacturing and industrial businesses?",
+        answer: "FBS Signs provides custom business signage, safety signs, banners, and vehicle graphics for Rockford's industrial and manufacturing businesses."
+      },
+      {
+        question: "Can FBS Signs help improve local SEO for a Rockford business?",
+        answer: "Yes. FBS Signs provides local SEO services focused on location-based content, website optimization, and relevant Rockford searches."
+      },
+      {
+        question: "What types of business signs can FBS Signs create in Rockford?",
+        answer: "We provide storefront signs, channel letters, monument signs, pylon signs, window graphics, banners, and vehicle graphics."
+      },
+      {
+        question: "Can Rockford businesses use EDDM for local marketing?",
+        answer: "Yes. FBS Signs can coordinate EDDM campaigns using selected postal carrier routes to reach households in Rockford and nearby areas."
+      },
+      {
+        question: "Can FBS Signs provide printing for Rockford manufacturers?",
+        answer: "Yes. We provide brochures, catalogs, business stationery, manuals, and other printed marketing materials for local businesses."
       }
     ],
     nearbyCities: ["Belvidere", "Loves Park", "Machesney Park", "Cherry Valley"],
-    nearbyCitySlugs: ["belvidere", "belvidere", "belvidere", "belvidere"], // Fallback to available slugs
-    updatedAt: "2026-07-06"
+    nearbyCitySlugs: ["belvidere", "belvidere", "belvidere", "belvidere"],
+    updatedAt: "2026-10-13"
   },
   {
     slug: "belvidere",
@@ -714,35 +1117,68 @@ export const serviceAreas: ServiceAreaCity[] = [
     county: "Boone County",
     introduction: "Belvidere, Illinois, is the county seat of Boone County and a vital part of the Rockford metropolitan area. Famously housing a massive automotive assembly plant and a historic downtown district, Belvidere blends industrial manufacturing with historic charm. Businesses in Belvidere require high-quality physical branding and local digital search visibility to engage both local residents and regional commercial clients.",
     servicesDescription: "FBS Signs serves Belvidere with industrial signs, custom storefront signs, business printing (manuals, business cards, flyers), targeted direct mail, web design, and local SEO. We support local retailers in downtown, service contractors, and industrial operations.",
+    whyChooseTitle: "Why Choose FBS Signs in Belvidere",
     whyChooseUs: [
       {
-        title: "Industrial Grade Signage",
-        description: "We build heavy-duty outdoor banners, safety signs, and vehicle lettering suitable for industrial settings."
+        title: "Signage for Local Businesses",
+        description: "We offer custom storefront signs, banners, window graphics, and vehicle lettering to help Belvidere businesses present their brand clearly."
       },
       {
-        title: "Boone County Local Search",
-        description: "We optimize websites to help local businesses rank for service queries in Belvidere, Poplar Grove, and Caledonia."
+        title: "Printing for Business Communication",
+        description: "From business cards and brochures to manuals and flyers, we provide printed materials for local companies, service providers, and commercial teams."
       },
       {
-        title: "Cost-Effective Direct Mail",
-        description: "We coordinate direct mail and EDDM campaigns targeting Boone County postal routes to reach homeowners."
+        title: "Local SEO and Direct Mail",
+        description: "We offer local SEO and direct mail services to help businesses improve their online presence and plan outreach to relevant audiences."
       }
     ],
     localSeoContent: "Our local SEO campaigns for Belvidere target local search intent across Boone County, focusing on terms related to the Chrysler assembly plant, historic downtown, and the Kishwaukee River region.",
     landmarks: ["Boone County Fairgrounds", "Kishwaukee River State Fish and Wildlife Area", "Chrysler Assembly Plant", "Historic Downtown Belvidere", "State Street Corridor"],
-    faqs: [
+    quickAnswersTitle: "Local Quick Answers: Services in Belvidere, IL",
+    quickAnswers: [
       {
-        question: "Do you offer signage permitting assistance in Belvidere?",
-        answer: "Yes, we help local businesses prepare designs and submit applications in compliance with Belvidere's municipal code."
+        question: "What services does FBS Signs offer in Belvidere?",
+        answer: "FBS Signs offers custom signage, commercial printing, direct mail, web design, and local SEO services for businesses looking to improve their branding and customer outreach."
       },
       {
-        question: "Can we order custom manuals and business stationery in Belvidere?",
-        answer: "Yes, we offer corporate printing for local manufacturing and service offices, including booklets, invoices, and letterheads."
+        question: "Do commercial signs in Belvidere require permits?",
+        answer: "Permit requirements depend on the sign and project. Check with the City of Belvidere Building Department before starting installation."
+      },
+      {
+        question: "Can EDDM help businesses reach households in Belvidere?",
+        answer: "Yes. Every Door Direct Mail (EDDM) lets businesses target households along eligible postal routes without needing individual names or street addresses."
+      },
+      {
+        question: "How can local SEO help a Belvidere business?",
+        answer: "Local SEO helps make a business website and its information more relevant to location-based searches. Rankings depend on competition, relevance, website quality, and other factors."
+      }
+    ],
+    faqTitle: "Belvidere Service FAQs",
+    faqs: [
+      {
+        question: "Do commercial signs in Belvidere require permits?",
+        answer: "Some projects may require permits or review. Check with the City of Belvidere Building Department before installation."
+      },
+      {
+        question: "Can I order custom manuals and business stationery in Belvidere?",
+        answer: "FBS Signs offers commercial printing products. Ask about your requirements for manuals, business cards, letterheads, and other business materials."
+      },
+      {
+        question: "Can EDDM help my business reach local households?",
+        answer: "Yes. EDDM lets businesses reach households along eligible postal routes without supplying individual names and street addresses."
+      },
+      {
+        question: "What signage can help identify a Belvidere storefront?",
+        answer: "Storefront signs, channel letters, banners, and window graphics are options to consider based on your building, brand, and visibility needs."
+      },
+      {
+        question: "Can local SEO help my Belvidere business appear in local searches?",
+        answer: "Local SEO can improve the relevance of your website for location-based searches, but rankings depend on several factors and cannot be guaranteed."
       }
     ],
     nearbyCities: ["Rockford", "Cherry Valley", "Poplar Grove", "Loves Park"],
     nearbyCitySlugs: ["rockford", "rockford", "rockford", "rockford"],
-    updatedAt: "2026-07-06"
+    updatedAt: "2026-10-13"
   },
   {
     slug: "gurnee",
@@ -942,35 +1378,68 @@ export const serviceAreas: ServiceAreaCity[] = [
     county: "DuPage County",
     introduction: "Elmhurst, Illinois, is a highly desirable, historic suburb located in eastern DuPage County. Known for its tree-lined streets, Elmhurst University, and a bustling downtown district, Elmhurst is a prime commercial center. Local retail, dining, and professional service sectors require top-tier physical and digital branding to engage this affluent local community.",
     servicesDescription: "We provide comprehensive business solutions in Elmhurst, including custom retail signage (window graphics, LED signs, banner stands), corporate print production, targeted direct mail, website design, and local SEO services. We serve Elmhurst University partners, downtown retailers, and medical/legal practices.",
+    whyChooseTitle: "Why Choose FBS Signs in Elmhurst",
     whyChooseUs: [
       {
-        title: "Downtown Aesthetics",
-        description: "We design storefront signs and window graphics that fit the charming historic aesthetic of downtown Elmhurst."
+        title: "Custom Storefront Signage",
+        description: "We offer custom signs and window graphics to help Elmhurst businesses display their branding, highlight promotions, and communicate with customers."
       },
       {
-        title: "Coordinated Print & Digital Workflow",
-        description: "From physical business cards and menus to responsive web design and search engine optimization, we maintain visual consistency."
+        title: "Consistent Print & Brand Materials",
+        description: "From business cards and menus to brochures and other printed materials, we help businesses maintain consistent branding across their marketing materials."
       },
       {
-        title: "Focused Local SEO",
-        description: "We optimize websites to rank for high-intent search queries in Elmhurst, Lombard, and Villa Park."
+        title: "Local SEO & Search Visibility",
+        description: "Our SEO services help businesses improve website content and local relevance so customers can find services related to their needs in Elmhurst."
       }
     ],
     localSeoContent: "We help Elmhurst businesses optimize their local search footprint. Our campaigns focus on key transit routes like Route 83, I-290, and the downtown Elmhurst area.",
     landmarks: ["Elmhurst University", "Elmhurst Art Museum", "Wilder Park", "Route 83 Business Corridor", "Downtown Elmhurst Shopping District"],
-    faqs: [
+    quickAnswersTitle: "Local Quick Answers: Services in Elmhurst, IL",
+    quickAnswers: [
       {
-        question: "Do you design retail banners and window graphics for Elmhurst shopping centers?",
-        answer: "Yes, we produce custom retail displays, vinyl window lettering, and store banners for properties near downtown Elmhurst."
+        question: "What services does FBS Prints offer in Elmhurst?",
+        answer: "FBS Prints offers custom signage, commercial printing, direct mail, web design, and SEO services to support business branding and marketing."
       },
       {
-        question: "Can we run local SEO for a professional practice in Elmhurst?",
-        answer: "Yes, we optimize websites and local directory listings for medical, legal, and financial offices to attract local clients."
+        question: "Do commercial signs in Elmhurst require permits?",
+        answer: "Permit requirements depend on the sign type and project. Check the applicable City of Elmhurst regulations before installing a commercial sign."
+      },
+      {
+        question: "Can Elmhurst businesses use EDDM for local marketing?",
+        answer: "Yes. Every Door Direct Mail (EDDM) allows businesses to distribute promotional materials along selected eligible postal carrier routes."
+      },
+      {
+        question: "How can local SEO help an Elmhurst business?",
+        answer: "Local SEO helps search engines understand a business’s services and service area, supporting visibility in relevant local searches."
+      }
+    ],
+    faqTitle: "Elmhurst Service FAQs",
+    faqs: [
+      {
+        question: "Do you design retail banners and window graphics for Elmhurst businesses?",
+        answer: "FBS Prints offers signage options such as banners and window graphics to support business branding and promotions."
+      },
+      {
+        question: "Can local SEO help a professional practice in Elmhurst?",
+        answer: "Local SEO can help clarify a practice’s services, location, and website content for relevant local searches."
+      },
+      {
+        question: "What information should I prepare before ordering a business sign?",
+        answer: "Prepare your business name, logo, preferred sign type, installation location, and design requirements."
+      },
+      {
+        question: "Can Elmhurst businesses order custom printed materials?",
+        answer: "Yes. FBS Prints offers commercial printing products such as business cards, brochures, and menus."
+      },
+      {
+        question: "Can direct mail support a local promotion?",
+        answer: "Direct mail can distribute promotional materials along selected eligible postal routes to support a business campaign."
       }
     ],
     nearbyCities: ["Lombard", "Villa Park", "Berkeley", "Cook County", "DuPage County"],
     nearbyCitySlugs: ["lombard", "lombard", "lombard", "chicago", "downers-grove"],
-    updatedAt: "2026-07-06"
+    updatedAt: "2026-10-13"
   }
 ];
 

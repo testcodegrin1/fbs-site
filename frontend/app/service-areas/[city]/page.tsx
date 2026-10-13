@@ -183,7 +183,11 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
     }
   };
 
-  const faqSchema = buildFaqSchema(`${canonical}#faq`, area.faqs);
+  const allFaqsForSchema = [
+    ...(area.quickAnswers ? area.quickAnswers.map((q) => ({ question: q.question, answer: q.answer })) : []),
+    ...area.faqs,
+  ];
+  const faqSchema = buildFaqSchema(`${canonical}#faq`, allFaqsForSchema);
 
   const markets = getLocationMarkets();
   const matchingMarket = markets.find(
@@ -357,34 +361,50 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
                 ✨
               </span>
               <h2 className="text-2xl font-extrabold text-primary-dark leading-tight">
-                Local Quick Answers: Services in {area.name}, IL
+                {area.quickAnswersTitle || `Local Quick Answers: Services in ${area.name}, IL`}
               </h2>
             </div>
             <div className="grid md:grid-cols-2 gap-6">
-              <div className="bg-white/85 p-6 rounded-2xl border border-primary-light/60 shadow-sm hover:shadow-md transition-shadow duration-300">
-                <h3 className="text-base font-bold text-primary-dark mb-2">What marketing &amp; branding services are available in {area.name}?</h3>
-                <p className="text-primary-dark/70 text-sm leading-relaxed">
-                  FBS Signs provides end-to-end design, fabrication, and marketing services in {area.name}, IL. This includes custom storefront signs, business print collateral, targeted direct mailing (EDDM), modern web design, and local SEO services tailored to the regional business market.
-                </p>
-              </div>
-              <div className="bg-white/85 p-6 rounded-2xl border border-primary-light/60 shadow-sm hover:shadow-md transition-shadow duration-300">
-                <h3 className="text-base font-bold text-primary-dark mb-2">How does FBS Signs handle zoning regulations for custom signage in {area.name}?</h3>
-                <p className="text-primary-dark/70 text-sm leading-relaxed">
-                  We manage the entire commercial sign permit and approval process directly with {area.name}&apos;s building division and zoning board. Our custom exterior signs, channel letters, and monument graphics are engineered to meet all local zoning requirements.
-                </p>
-              </div>
-              <div className="bg-white/85 p-6 rounded-2xl border border-primary-light/60 shadow-sm hover:shadow-md transition-shadow duration-300">
-                <h3 className="text-base font-bold text-primary-dark mb-2">Can I launch target mailers in specific carrier routes in the {area.name} area?</h3>
-                <p className="text-primary-dark/70 text-sm leading-relaxed">
-                  Yes. We specialize in planning and executing targeted Every Door Direct Mail (EDDM) campaigns, matching your print collateral to specific postal carrier routes and residential areas in {area.name} to maximize local lead acquisition.
-                </p>
-              </div>
-              <div className="bg-white/85 p-6 rounded-2xl border border-primary-light/60 shadow-sm hover:shadow-md transition-shadow duration-300">
-                <h3 className="text-base font-bold text-primary-dark mb-2">Why is local SEO vital for business growth in {area.county}?</h3>
-                <p className="text-primary-dark/70 text-sm leading-relaxed">
-                  Optimizing your local online footprint ensures that your business ranks at the top of local map packs and regional searches. By integrating structured schema markup, local landing pages, and geographical citations, we build trust with search engines and LLM answer engines.
-                </p>
-              </div>
+              {area.quickAnswers && area.quickAnswers.length > 0 ? (
+                area.quickAnswers.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="bg-white/85 p-6 rounded-2xl border border-primary-light/60 shadow-sm hover:shadow-md transition-shadow duration-300"
+                  >
+                    <h3 className="text-base font-bold text-primary-dark mb-2">{item.question}</h3>
+                    <p className="text-primary-dark/70 text-sm leading-relaxed">
+                      {item.answer}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <>
+                  <div className="bg-white/85 p-6 rounded-2xl border border-primary-light/60 shadow-sm hover:shadow-md transition-shadow duration-300">
+                    <h3 className="text-base font-bold text-primary-dark mb-2">What marketing &amp; branding services are available in {area.name}?</h3>
+                    <p className="text-primary-dark/70 text-sm leading-relaxed">
+                      FBS Signs provides end-to-end design, fabrication, and marketing services in {area.name}, IL. This includes custom storefront signs, business print collateral, targeted direct mailing (EDDM), modern web design, and local SEO services tailored to the regional business market.
+                    </p>
+                  </div>
+                  <div className="bg-white/85 p-6 rounded-2xl border border-primary-light/60 shadow-sm hover:shadow-md transition-shadow duration-300">
+                    <h3 className="text-base font-bold text-primary-dark mb-2">How does FBS Signs handle zoning regulations for custom signage in {area.name}?</h3>
+                    <p className="text-primary-dark/70 text-sm leading-relaxed">
+                      We manage the entire commercial sign permit and approval process directly with {area.name}&apos;s building division and zoning board. Our custom exterior signs, channel letters, and monument graphics are engineered to meet all local zoning requirements.
+                    </p>
+                  </div>
+                  <div className="bg-white/85 p-6 rounded-2xl border border-primary-light/60 shadow-sm hover:shadow-md transition-shadow duration-300">
+                    <h3 className="text-base font-bold text-primary-dark mb-2">Can I launch target mailers in specific carrier routes in the {area.name} area?</h3>
+                    <p className="text-primary-dark/70 text-sm leading-relaxed">
+                      Yes. We specialize in planning and executing targeted Every Door Direct Mail (EDDM) campaigns, matching your print collateral to specific postal carrier routes and residential areas in {area.name} to maximize local lead acquisition.
+                    </p>
+                  </div>
+                  <div className="bg-white/85 p-6 rounded-2xl border border-primary-light/60 shadow-sm hover:shadow-md transition-shadow duration-300">
+                    <h3 className="text-base font-bold text-primary-dark mb-2">Why is local SEO vital for business growth in {area.county}?</h3>
+                    <p className="text-primary-dark/70 text-sm leading-relaxed">
+                      Optimizing your local online footprint ensures that your business ranks at the top of local map packs and regional searches. By integrating structured schema markup, local landing pages, and geographical citations, we build trust with search engines and LLM answer engines.
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </section>
@@ -438,7 +458,7 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
               Why Partner With Us
             </span>
             <h2 className="text-3xl md:text-4xl font-extrabold text-primary-dark leading-tight">
-              Why Choose FBS Signs in {area.name}
+              {area.whyChooseTitle || `Why Choose FBS Signs in ${area.name}`}
             </h2>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
@@ -512,7 +532,7 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
               Frequently Asked Questions
             </span>
             <h2 className="text-3xl font-extrabold text-primary-dark leading-tight">
-              {area.name} Service FAQs
+              {area.faqTitle || `${area.name} Service FAQs`}
             </h2>
           </div>
 
