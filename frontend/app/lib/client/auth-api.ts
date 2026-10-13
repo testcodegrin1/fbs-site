@@ -24,6 +24,10 @@ type RoleResponse = {
   permissions: Permission[];
 };
 
+type RegisterResponse = Partial<LoginResponse> & {
+  message?: string;
+};
+
 class ApiClientError extends Error {
   constructor(
     message: string,
@@ -105,10 +109,15 @@ export const authApi = {
     }>("/api/auth/franchises");
   },
 
-  async register(name: string, email: string, password: string) {
-    const res = await request<LoginResponse>("/api/auth/register", {
+  async register(
+    name: string,
+    email: string,
+    password: string,
+    franchiseId: number,
+  ) {
+    const res = await request<RegisterResponse>("/api/auth/register", {
       method: "POST",
-      body: JSON.stringify({ name, email, password }),
+      body: JSON.stringify({ name, email, password, franchiseId }),
     });
 
     if (res.token) {

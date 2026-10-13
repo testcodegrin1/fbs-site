@@ -43,19 +43,30 @@ export async function loginWithRole(
   let selectedFranchiseName: string | undefined;
 
   if (activeRole === "user") {
-    if (!franchiseId) {
-      throw new AuthError("Please select a franchise to log in.", 400);
+    let access = franchiseId
+      ? await getFranchiseUserAccess(user.id, franchiseId)
+      : await getFranchiseUserAccess(user.id);
+
+    if (!franchiseId && access) {
+      selectedFranchiseId = access.franchiseId;
+      selectedFranchiseName = access.franchiseName;
     }
 
-    const franchise = await getFranchiseById(franchiseId);
+    if (!selectedFranchiseId) {
+      throw new AuthError(
+        "No franchise access request found. Please create an account and select a franchise first.",
+        400,
+      );
+    }
+
+    const franchise = await getFranchiseById(selectedFranchiseId);
     if (!franchise || !franchise.isActive) {
       throw new AuthError("Selected franchise does not exist or is inactive.", 400);
     }
-    selectedFranchiseName = franchise.name;
+    selectedFranchiseName = selectedFranchiseName ?? franchise.name;
 
-    let access = await getFranchiseUserAccess(user.id, franchiseId);
     if (!access) {
-      await requestFranchiseAccess(user.id, franchiseId);
+      await requestFranchiseAccess(user.id, selectedFranchiseId);
       throw new AuthError(
         "Your login request for this franchise has been submitted to Super Admin for approval.",
         403,

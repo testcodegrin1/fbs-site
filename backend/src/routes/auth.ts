@@ -9,7 +9,11 @@ import {
   loginWithRole,
   logoutUser,
 } from "../lib/auth.js";
-import { listFranchises } from "../lib/franchises.js";
+import {
+  getFranchiseById,
+  listFranchises,
+  requestFranchiseAccess,
+} from "../lib/franchises.js";
 import { createUser } from "../lib/users.js";
 
 export const authRouter = Router();
@@ -31,15 +35,28 @@ authRouter.post("/register", async (req, res) => {
     const name = typeof req.body?.name === "string" ? req.body.name.trim() : "";
     const password =
       typeof req.body?.password === "string" ? req.body.password : "";
+    const franchiseId =
+      req.body?.franchiseId != null &&
+      !Number.isNaN(Number(req.body.franchiseId))
+        ? Number(req.body.franchiseId)
+        : undefined;
 
-    if (!email || !name || !password) {
+    if (!email || !name || !password || !franchiseId) {
       res
         .status(400)
-        .json({ message: "Name, email, and password are required." });
+        .json({ message: "Name, email, password, and franchise are required." });
       return;
     }
 
-    await createUser({
+    const franchise = await getFranchiseById(franchiseId);
+    if (!franchise || !franchise.isActive) {
+      res
+        .status(400)
+        .json({ message: "Selected franchise does not exist or is inactive." });
+      return;
+    }
+
+    const user = await createUser({
       name,
       email,
       password,
@@ -47,10 +64,12 @@ authRouter.post("/register", async (req, res) => {
       isActive: true,
     });
 
-    const { user, token } = await loginWithRole(email, password, "user");
-    res.cookie(AUTH_COOKIE_NAME, token, getAuthCookieOptions());
-    res.cookie(JWT_COOKIE_NAME, token, getAuthCookieOptions());
-    res.status(201).json({ user, token });
+    await requestFranchiseAccess(user.id, franchiseId);
+    res.status(201).json({
+      user: { ...user, franchiseId, franchiseName: franchise.name },
+      message:
+        "Your login request for this franchise has been submitted to Super Admin for approval.",
+    });
   } catch (error) {
     const { message, status } = getErrorResponse(error);
     res.status(status).json({ message });

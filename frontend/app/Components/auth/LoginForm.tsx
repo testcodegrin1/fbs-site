@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, Lock, Mail } from "lucide-react";
+import { Lock, Mail } from "lucide-react";
 import { authApi } from "@/app/lib/client/auth-api";
 import type { AuthRole } from "@/app/lib/auth/types";
 import {
@@ -21,9 +21,6 @@ export function LoginForm({ role, title }: LoginFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [franchises, setFranchises] = useState<Array<{ id: number; name: string }>>([]);
-  const [selectedFranchiseId, setSelectedFranchiseId] = useState("");
-  const [isLoadingFranchises, setIsLoadingFranchises] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -37,46 +34,14 @@ export function LoginForm({ role, title }: LoginFormProps) {
     }
   }, [router]);
 
-  useEffect(() => {
-    if (role === "user") {
-      setIsLoadingFranchises(true);
-      authApi
-        .listFranchises()
-        .then((res) => {
-          if (Array.isArray(res.franchises)) {
-            setFranchises(res.franchises);
-            if (res.franchises.length === 1) {
-              setSelectedFranchiseId(String(res.franchises[0].id));
-            }
-          }
-        })
-        .catch(() => {
-          // Ignore
-        })
-        .finally(() => {
-          setIsLoadingFranchises(false);
-        });
-    }
-  }, [role]);
-
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
 
-    if (role === "user" && !selectedFranchiseId) {
-      setError("Please select a franchise to sign in.");
-      return;
-    }
-
     setIsSubmitting(true);
 
     try {
-      const response = await authApi.login(
-        role,
-        email,
-        password,
-        selectedFranchiseId ? Number(selectedFranchiseId) : undefined,
-      );
+      const response = await authApi.login(role, email, password);
       const userRole =
         getRoleFromToken(response.token) ||
         (response.user?.roles?.[0] as AuthRole) ||
@@ -106,36 +71,6 @@ export function LoginForm({ role, title }: LoginFormProps) {
         </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
-          {/* {role === "user" && (
-            <div className="space-y-1.5">
-              <Label htmlFor="login-franchise" className="text-xs font-bold text-slate-700">
-                Select Franchise <span className="text-red-500">*</span>
-              </Label>
-              <div className="relative">
-                <Building2
-                  size={16}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-                />
-                <select
-                  id="login-franchise"
-                  value={selectedFranchiseId}
-                  onChange={(event) => setSelectedFranchiseId(event.target.value)}
-                  className="w-full h-11 pl-9 pr-3 text-sm bg-white border border-slate-200 rounded-xl focus:border-slate-400 focus:ring-slate-400/20 text-slate-900 outline-none transition-colors"
-                  required
-                >
-                  <option value="">
-                    {isLoadingFranchises ? "Loading franchises..." : "-- Select your Franchise --"}
-                  </option>
-                  {franchises.map((f) => (
-                    <option key={f.id} value={f.id}>
-                      {f.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          )} */}
-
           <div className="space-y-1.5">
             <Label htmlFor="login-email" className="text-xs font-bold text-slate-700">Email</Label>
             <div className="relative">
