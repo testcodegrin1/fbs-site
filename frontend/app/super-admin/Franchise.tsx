@@ -34,7 +34,6 @@ type FormMode = "create" | "edit" | null;
 
 interface FormDataState {
   name: string;
-  slug: string;
   description: string;
   logoFile: File | null;
   existingLogoUrl: string | null;
@@ -42,20 +41,10 @@ interface FormDataState {
 
 const emptyFormData: FormDataState = {
   name: "",
-  slug: "",
   description: "",
   logoFile: null,
   existingLogoUrl: null,
 };
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, "")
-    .replace(/[\s_-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
 
 export function FranchiseManagement() {
   const [franchises, setFranchises] = useState<FranchiseModel[]>([]);
@@ -139,7 +128,6 @@ export function FranchiseManagement() {
     return franchises.filter(
       (f) =>
         f.name.toLowerCase().includes(q) ||
-        f.slug.toLowerCase().includes(q) ||
         (f.description && f.description.toLowerCase().includes(q)),
     );
   }, [franchises, searchQuery]);
@@ -164,7 +152,6 @@ export function FranchiseManagement() {
     }
     setFormData({
       name: franchise.name,
-      slug: franchise.slug,
       description: franchise.description || "",
       logoFile: null,
       existingLogoUrl: franchise.brandingLogoUrl || null,
@@ -251,16 +238,9 @@ export function FranchiseManagement() {
     // Client-side validations
     const errors: Record<string, string> = {};
     const trimmedName = formData.name.trim();
-    const trimmedSlug = formData.slug.trim().toLowerCase();
 
     if (!trimmedName) {
       errors.name = "Franchise name is required.";
-    }
-
-    if (!trimmedSlug) {
-      errors.slug = "Franchise slug is required.";
-    } else if (!/^[a-z0-9-]+$/.test(trimmedSlug)) {
-      errors.slug = "Slug must contain only lowercase letters, numbers, and hyphens.";
     }
 
     // On create, logo is required
@@ -278,7 +258,6 @@ export function FranchiseManagement() {
     try {
       const payload = new FormData();
       payload.append("name", trimmedName);
-      payload.append("slug", trimmedSlug);
       payload.append("description", formData.description.trim());
 
       // If a file was selected, append it as 'brandingLogoUrl'
@@ -422,7 +401,7 @@ export function FranchiseManagement() {
           />
           <Input
             type="text"
-            placeholder="Search by franchise name or slug..."
+            placeholder="Search by franchise name..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 h-10 bg-white border-slate-200 shadow-sm"
@@ -527,7 +506,6 @@ export function FranchiseManagement() {
                 <tr>
                   <th className="px-5 py-3.5 w-20">Logo</th>
                   <th className="px-5 py-3.5 font-semibold">Franchise Name</th>
-                  <th className="px-5 py-3.5 font-semibold">Slug</th>
                   <th className="px-5 py-3.5 font-semibold">Description</th>
                   <th className="px-5 py-3.5 font-semibold w-28">Status</th>
                   <th className="px-5 py-3.5 text-right font-semibold w-56">Actions</th>
@@ -589,13 +567,6 @@ export function FranchiseManagement() {
                             Added {new Date(f.createdAt).toLocaleDateString()}
                           </p>
                         )}
-                      </td>
-
-                      {/* Slug Column */}
-                      <td className="px-5 py-4 text-slate-700">
-                        <span className="font-mono text-xs bg-slate-100 text-slate-800 px-2.5 py-1 rounded-md border border-slate-200">
-                          {f.slug}
-                        </span>
                       </td>
 
                       {/* Description Column */}
@@ -689,7 +660,7 @@ export function FranchiseManagement() {
                   </h3>
                   <p className="text-xs text-slate-400">
                     {formMode === "create"
-                      ? "Create a new franchise with custom branding and slug"
+                      ? "Create a new franchise with custom branding"
                       : "Update franchise details or upload a replacement logo"}
                   </p>
                 </div>
@@ -737,11 +708,6 @@ export function FranchiseManagement() {
                     setFormData((prev) => ({
                       ...prev,
                       name: newName,
-                      slug:
-                        formMode === "create" &&
-                        (!prev.slug || prev.slug === slugify(prev.name))
-                          ? slugify(newName)
-                          : prev.slug,
                     }));
                     if (formErrors.name) {
                       setFormErrors((prev) => {
@@ -758,60 +724,6 @@ export function FranchiseManagement() {
                 {formErrors.name && (
                   <p className="text-[11px] text-rose-600 font-medium">
                     {formErrors.name}
-                  </p>
-                )}
-              </div>
-
-              {/* Franchise Slug */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label htmlFor="franchise-slug" className="text-xs font-bold text-slate-700">
-                    Slug <span className="text-rose-500">*</span>
-                  </Label>
-                  <Button
-                    type="button"
-                    variant="link"
-                    size="sm"
-                    className="h-auto p-0 text-[10px] text-indigo-600 hover:underline"
-                    onClick={() => {
-                      if (formData.name) {
-                        setFormData((prev) => ({
-                          ...prev,
-                          slug: slugify(prev.name),
-                        }));
-                      }
-                    }}
-                  >
-                    Auto-generate from Name
-                  </Button>
-                </div>
-                <Input
-                  id="franchise-slug"
-                  type="text"
-                  required
-                  placeholder="enter-your-own-slug..."
-                  value={formData.slug}
-                  onChange={(e) => {
-                    const clean = slugify(e.target.value);
-                    setFormData((prev) => ({ ...prev, slug: clean }));
-                    if (formErrors.slug) {
-                      setFormErrors((prev) => {
-                        const next = { ...prev };
-                        delete next.slug;
-                        return next;
-                      });
-                    }
-                  }}
-                  className={`text-xs h-10 font-mono ${
-                    formErrors.slug ? "border-rose-400 focus:ring-rose-200" : ""
-                  }`}
-                />
-                <p className="text-[10px] text-slate-400">
-                  Unique identifier used in routes and URLs (lowercase, numbers, and hyphens).
-                </p>
-                {formErrors.slug && (
-                  <p className="text-[11px] text-rose-600 font-medium">
-                    {formErrors.slug}
                   </p>
                 )}
               </div>
@@ -1011,9 +923,6 @@ export function FranchiseManagement() {
               <h2 className="text-lg font-black text-slate-900 mt-3 text-center">
                 {viewingFranchise.name}
               </h2>
-              <span className="font-mono text-xs text-slate-500 bg-white px-2.5 py-0.5 rounded-full border border-slate-200 mt-1">
-                {viewingFranchise.slug}
-              </span>
             </div>
 
             {/* Metadata Fields */}
@@ -1098,8 +1007,7 @@ export function FranchiseManagement() {
               Are you sure you want to delete the franchise{" "}
               <strong className="text-slate-900 font-bold">
                 "{deleteTarget.name}"
-              </strong>{" "}
-              (slug: <span className="font-mono text-slate-800">{deleteTarget.slug}</span>)?
+              </strong>?
               All records, branding references, and associated data will be removed.
             </div>
 

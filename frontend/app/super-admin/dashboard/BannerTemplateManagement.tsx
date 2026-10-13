@@ -60,7 +60,6 @@ interface FormImageItem {
 interface TemplateFormData {
   name: string;
   franchise_id: number | "";
-  qty: number;
   description: string;
   orientation: "landscape" | "portrait";
   width_px: number;
@@ -73,7 +72,6 @@ interface TemplateFormData {
 const defaultFormData: TemplateFormData = {
   name: "",
   franchise_id: "",
-  qty: 100,
   description: "",
   orientation: "landscape",
   width_px: 1920,
@@ -391,7 +389,6 @@ export function BannerTemplateManagement() {
     setFormData({
       name: template.name,
       franchise_id: template.franchiseId,
-      qty: template.qty || 1,
       description: template.description || "",
       orientation: template.orientation || "landscape",
       width_px: template.widthPx || 1920,
@@ -606,10 +603,6 @@ export function BannerTemplateManagement() {
       errors.franchise_id = "Please select a franchise.";
     }
 
-    if (!formData.qty || Number(formData.qty) <= 0) {
-      errors.qty = "Quantity must be greater than 0.";
-    }
-
     if (!formData.width_px || Number(formData.width_px) <= 0) {
       errors.width_px = "Width must be a positive number.";
     }
@@ -635,7 +628,6 @@ export function BannerTemplateManagement() {
       name: formData.name.trim(),
       franchise_id: Number(formData.franchise_id),
       franchiseId: Number(formData.franchise_id),
-      qty: Number(formData.qty),
       description: formData.description.trim(),
       orientation: formData.orientation,
       width_px: Number(formData.width_px),
@@ -692,7 +684,6 @@ export function BannerTemplateManagement() {
       name: formData.name.trim(),
       franchise_id: Number(formData.franchise_id),
       franchiseId: Number(formData.franchise_id),
-      qty: Number(formData.qty),
       description: formData.description.trim(),
       orientation: formData.orientation,
       width_px: Number(formData.width_px),
@@ -1123,7 +1114,6 @@ export function BannerTemplateManagement() {
                   <th className="px-5 py-3.5">Template Name</th>
                   <th className="px-5 py-3.5">Franchise</th>
                   <th className="px-5 py-3.5">Dimensions</th>
-                  <th className="px-5 py-3.5">Quantity</th>
                   <th className="px-5 py-3.5">Images</th>
                   <th className="px-5 py-3.5">Status</th>
                   <th className="px-5 py-3.5 text-right">Actions</th>
@@ -1192,13 +1182,6 @@ export function BannerTemplateManagement() {
                             {template.orientation}
                           </span>
                         </div>
-                      </td>
-
-                      {/* Quantity */}
-                      <td className="px-5 py-3.5 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-700">
-                          {template.qty} {template.qty === 1 ? "unit" : "units"}
-                        </span>
                       </td>
 
                       {/* Additional Images Count */}
@@ -1369,7 +1352,7 @@ export function BannerTemplateManagement() {
                     <option value="">Select a franchise...</option>
                     {franchises.map((f) => (
                       <option key={f.id} value={f.id}>
-                        {f.name} ({f.slug})
+                        {f.name}
                       </option>
                     ))}
                   </select>
@@ -1407,7 +1390,7 @@ export function BannerTemplateManagement() {
                   Dimensions & Specification
                 </p>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="space-y-1">
                     <Label className="text-[11px] font-bold text-slate-700">
                       Width (px)
@@ -1479,24 +1462,6 @@ export function BannerTemplateManagement() {
                       <option value="landscape">Landscape</option>
                       <option value="portrait">Portrait</option>
                     </select>
-                  </div>
-
-                  <div className="space-y-1">
-                    <Label className="text-[11px] font-bold text-slate-700">
-                      Quantity (Qty)
-                    </Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      value={formData.qty}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          qty: Number(e.target.value),
-                        })
-                      }
-                      className="h-9 text-xs"
-                    />
                   </div>
                 </div>
 
@@ -1696,7 +1661,7 @@ export function BannerTemplateManagement() {
                   Dimensions & Specification
                 </p>
 
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="space-y-1">
                     <Label className="text-[11px] font-bold text-slate-700">
                       Width (px)
@@ -1748,22 +1713,6 @@ export function BannerTemplateManagement() {
                       <option value="landscape">Landscape</option>
                       <option value="portrait">Portrait</option>
                     </select>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-[11px] font-bold text-slate-700">
-                      Quantity
-                    </Label>
-                    <Input
-                      type="number"
-                      value={formData.qty}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          qty: Number(e.target.value),
-                        })
-                      }
-                      className="h-9 text-xs"
-                    />
                   </div>
                 </div>
 
@@ -1876,7 +1825,7 @@ export function BannerTemplateManagement() {
             {/* Modal Content Scroll Area */}
             <div className="flex-1 overflow-y-auto py-5 space-y-5">
               {/* Key Specifications Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
                     Dimensions
@@ -1892,15 +1841,6 @@ export function BannerTemplateManagement() {
                   </span>
                   <span className="text-xs font-bold text-slate-800 capitalize mt-1 block">
                     {viewingTemplate.orientation}
-                  </span>
-                </div>
-
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                    Quantity
-                  </span>
-                  <span className="text-xs font-bold text-slate-800 mt-1 block">
-                    {viewingTemplate.qty} units
                   </span>
                 </div>
 

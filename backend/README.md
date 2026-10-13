@@ -33,18 +33,33 @@ Override `DEFAULT_SUPERADMIN_EMAIL`, `DEFAULT_SUPERADMIN_NAME`, and
 `DEFAULT_SUPERADMIN_PASSWORD` before starting the backend if you want different
 initial credentials.
 
-## Endpoints
+## Endpoints (Franchise, Vendor & Banner System)
 
-| Method     | Path                           | Description                |
-| ---------- | ------------------------------ | -------------------------- |
-| GET        | `/health`                      | Health check               |
-| POST       | `/api/auth/login`              | Login + set session cookie |
-| POST       | `/api/auth/logout`             | Clear session cookie       |
-| GET        | `/api/auth/me`                 | Current user               |
-| GET/POST   | `/api/users`                   | List / create users        |
-| put/DELETE | `/api/users/:id`               | Update / delete user       |
-| GET        | `/api/roles`                   | List roles + permissions   |
-| put        | `/api/roles/:role/permissions` | Update role permissions    |
+### 1. Franchise Management
+| Method | Path | Description | Access |
+| ------ | ---- | ----------- | ------ |
+| GET    | `/api/getFranchises` | List all franchises (`?includeInactive=true`) | Public / Admin |
+| GET    | `/api/getFranchises/:id` | Get franchise details by ID | Public / Admin |
+| POST   | `/api/createFranchise` | Create new franchise (multipart/form-data or JSON) | Super Admin (`franchises:manage`) |
+| PUT    | `/api/updateFranchise/:id` | Update franchise details or active status | Super Admin (`franchises:manage`) |
+| DELETE | `/api/deleteFranchise/:id` | Delete a franchise | Super Admin (`franchises:manage`) |
+
+### 2. Vendor Franchise Access & Approvals
+| Method | Path | Description | Access |
+| ------ | ---- | ----------- | ------ |
+| GET    | `/api/auth/franchises` | Active franchises list for login/register dropdown | Public |
+| POST   | `/api/auth/login` | Login with franchise check (`role: "user"`, `franchiseId`). Auto-creates pending request if unapproved | Public |
+| GET    | `/api/getUserRequests` | List vendor franchise access requests (`?status=pending\|approved\|rejected`, `?franchiseId`) | Super Admin (`franchises:manage`) |
+| PUT    | `/api/updateUserRequestStatus/:id` | Approve or reject vendor access request (`status: "approved"\|"rejected"`, `rejectionReason`) | Super Admin (`franchises:manage`) |
+
+### 3. Banner Templates & Variations
+| Method | Path | Description | Access |
+| ------ | ---- | ----------- | ------ |
+| GET    | `/api/getBannerTemplates` | List banner templates (`?franchiseId`, `?orientation`, `?includeInactive`) | Authenticated |
+| GET    | `/api/getBannerTemplate/:id` | Get template by ID with images array & custom fields | Authenticated |
+| POST   | `/api/createBannerTemplate` | Create banner template with images atomically (`image_url`, `image_name`, `sort_order`) | Super Admin (`franchises:manage`) |
+| PUT    | `/api/updateBannerTemplate/:id` | Update template with images array atomically | Super Admin (`franchises:manage`) |
+| DELETE | `/api/deleteBannerTemplate/:id` | Delete banner template | Super Admin (`franchises:manage`) |
 
 ## Environment
 

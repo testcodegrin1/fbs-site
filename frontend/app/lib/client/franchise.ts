@@ -5,7 +5,6 @@ import { getStoredToken } from "@/app/lib/auth/token";
 export type FranchiseModel = {
   id: number;
   name: string;
-  slug: string;
   brandingLogoUrl?: string | null;
   description?: string | null;
   isActive?: boolean;
@@ -42,7 +41,6 @@ function normalizeFranchise(raw: any): FranchiseModel {
     return {
       id: 0,
       name: "",
-      slug: "",
     };
   }
 
@@ -56,7 +54,6 @@ function normalizeFranchise(raw: any): FranchiseModel {
   return {
     id: Number(raw.id),
     name: String(raw.name ?? ""),
-    slug: String(raw.slug ?? ""),
     brandingLogoUrl:
       raw.brandingLogoUrl ??
       raw.branding_logo_url ??

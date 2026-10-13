@@ -7,6 +7,7 @@ export interface BannerTemplateImage {
   id?: number;
   templateId?: number;
   imageUrl: string;
+  imageName?: string | null;
   sortOrder: number;
   title?: string | null;
   imageType?: string;
@@ -44,7 +45,6 @@ export interface BannerTemplateModel {
   heightPx: number;
   dimensionsLabel?: string;
   orientation: "landscape" | "portrait";
-  qty: number;
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -56,7 +56,6 @@ export interface CreateBannerTemplatePayload {
   name: string;
   franchise_id: number;
   franchiseId?: number;
-  qty: number;
   description: string;
   orientation: "landscape" | "portrait";
   width_px: number;
@@ -69,6 +68,7 @@ export interface CreateBannerTemplatePayload {
   isActive?: boolean;
   images: Array<{
     imageUrl: string;
+    imageName?: string | null;
     sortOrder: number;
   }>;
 }
@@ -76,7 +76,6 @@ export interface CreateBannerTemplatePayload {
 export interface FranchiseOption {
   id: number;
   name: string;
-  slug: string;
   brandingLogoUrl?: string | null;
 }
 
@@ -165,7 +164,6 @@ function normalizeTemplate(raw: any): BannerTemplateModel {
       widthPx: 1080,
       heightPx: 1080,
       orientation: "landscape",
-      qty: 1,
       isActive: true,
       images: [],
     };
@@ -190,13 +188,19 @@ function normalizeTemplate(raw: any): BannerTemplateModel {
           img.src ||
           "",
       ),
+      imageName:
+        typeof img.imageName === "string"
+          ? img.imageName
+          : typeof img.image_name === "string"
+            ? img.image_name
+            : img.title ?? null,
       sortOrder:
         img.sortOrder !== undefined
           ? Number(img.sortOrder)
           : img.sort_order !== undefined
             ? Number(img.sort_order)
             : idx,
-      title: img.title ?? null,
+      title: img.title ?? img.imageName ?? img.image_name ?? null,
       imageType: img.imageType || img.image_type || "banner",
       isActive:
         img.isActive !== undefined
@@ -242,7 +246,6 @@ function normalizeTemplate(raw: any): BannerTemplateModel {
       raw.dimensionsLabel ?? raw.dimensions_label ?? undefined,
     orientation:
       raw.orientation === "portrait" ? "portrait" : "landscape",
-    qty: Number(raw.qty ?? raw.quantity ?? 1),
     isActive,
     createdAt: raw.createdAt ?? raw.created_at,
     updatedAt: raw.updatedAt ?? raw.updated_at,
@@ -389,7 +392,6 @@ export const bannerTemplateApi = {
       name: payload.name,
       franchise_id: payload.franchise_id,
       franchiseId: payload.franchise_id,
-      qty: payload.qty,
       description: payload.description,
       orientation: payload.orientation,
       width_px: payload.width_px,
