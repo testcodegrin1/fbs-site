@@ -11,6 +11,8 @@ type UserRow = RowDataPacket & {
   email: string;
   name: string;
   password_hash?: string;
+  franchise_id?: number | null;
+  franchise_name?: string | null;
   is_active: 0 | 1 | boolean;
   roles: string | null;
   permissions: string | null;
@@ -40,6 +42,8 @@ function mapUser(row: UserRow): AuthUser {
     isActive: Number(row.is_active) === 1,
     roles: splitCsv(row.roles).filter(isAuthRole),
     permissions: splitCsv(row.permissions) as Permission[],
+    franchiseId: row.franchise_id != null ? Number(row.franchise_id) : null,
+    franchiseName: row.franchise_name ?? null,
     createdAt: toIsoString(row.created_at),
     updatedAt: toIsoString(row.updated_at),
   };
@@ -114,12 +118,15 @@ export async function getUserByEmailWithPassword(
         users.email,
         users.name,
         users.password_hash,
+        users.franchise_id,
+        f.name AS franchise_name,
         users.is_active,
         users.created_at,
         users.updated_at,
         GROUP_CONCAT(DISTINCT roles.slug ORDER BY roles.slug SEPARATOR ',') AS roles,
         GROUP_CONCAT(DISTINCT permissions.slug ORDER BY permissions.slug SEPARATOR ',') AS permissions
       FROM users
+      LEFT JOIN franchises f ON f.id = users.franchise_id
       LEFT JOIN user_roles ON user_roles.user_id = users.id
       LEFT JOIN roles ON roles.id = user_roles.role_id
       LEFT JOIN role_permissions ON role_permissions.role_id = roles.id
@@ -146,12 +153,15 @@ export async function getUserById(id: number): Promise<AuthUser | null> {
         users.id,
         users.email,
         users.name,
+        users.franchise_id,
+        f.name AS franchise_name,
         users.is_active,
         users.created_at,
         users.updated_at,
         GROUP_CONCAT(DISTINCT roles.slug ORDER BY roles.slug SEPARATOR ',') AS roles,
         GROUP_CONCAT(DISTINCT permissions.slug ORDER BY permissions.slug SEPARATOR ',') AS permissions
       FROM users
+      LEFT JOIN franchises f ON f.id = users.franchise_id
       LEFT JOIN user_roles ON user_roles.user_id = users.id
       LEFT JOIN roles ON roles.id = user_roles.role_id
       LEFT JOIN role_permissions ON role_permissions.role_id = roles.id
@@ -172,12 +182,15 @@ export async function listUsers(): Promise<AuthUser[]> {
         users.id,
         users.email,
         users.name,
+        users.franchise_id,
+        f.name AS franchise_name,
         users.is_active,
         users.created_at,
         users.updated_at,
         GROUP_CONCAT(DISTINCT roles.slug ORDER BY roles.slug SEPARATOR ',') AS roles,
         GROUP_CONCAT(DISTINCT permissions.slug ORDER BY permissions.slug SEPARATOR ',') AS permissions
       FROM users
+      LEFT JOIN franchises f ON f.id = users.franchise_id
       LEFT JOIN user_roles ON user_roles.user_id = users.id
       LEFT JOIN roles ON roles.id = user_roles.role_id
       LEFT JOIN role_permissions ON role_permissions.role_id = roles.id
@@ -329,10 +342,16 @@ export async function createUser(
     const userId = await withTransaction(async (connection) => {
       const [result] = await connection.execute<ResultSetHeader>(
         `
-          INSERT INTO users (email, name, password_hash, is_active)
-          VALUES (?, ?, ?, ?)
+          INSERT INTO users (email, name, password_hash, franchise_id, is_active)
+          VALUES (?, ?, ?, ?, ?)
         `,
-        [email, payload.name.trim(), passwordHash, payload.isActive === false ? 0 : 1],
+        [
+          email,
+          payload.name.trim(),
+          passwordHash,
+          payload.franchiseId ?? null,
+          payload.isActive === false ? 0 : 1,
+        ],
       );
 
       const userId = Number(result.insertId);
@@ -404,6 +423,7 @@ export async function updateUser(
             email = COALESCE(?, email),
             name = COALESCE(?, name),
             password_hash = COALESCE(?, password_hash),
+            franchise_id = COALESCE(?, franchise_id),
             is_active = COALESCE(?, is_active),
             updated_at = CURRENT_TIMESTAMP
           WHERE id = ?
@@ -412,6 +432,7 @@ export async function updateUser(
           payload.email ? normalizeEmail(payload.email) : null,
           payload.name ? payload.name.trim() : null,
           passwordHash ?? null,
+          payload.franchiseId !== undefined ? payload.franchiseId : null,
           payload.isActive === undefined ? null : payload.isActive ? 1 : 0,
           id,
         ],

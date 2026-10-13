@@ -111,3 +111,8 @@ CREATE TABLE IF NOT EXISTS vendor_order_status_history (
     CONSTRAINT fk_history_order FOREIGN KEY (order_id) REFERENCES vendor_banner_orders(id) ON DELETE RESTRICT,
     CONSTRAINT fk_history_user FOREIGN KEY (changed_by_user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+
+ALTER TABLE `users` 
+ADD COLUMN `franchise_id` BIGINT UNSIGNED NULL AFTER `password_hash`,
+ADD CONSTRAINT `fk_users_franchise` FOREIGN KEY (`franchise_id`) REFERENCES `franchises` (`id`) ON DELETE SET NULL;

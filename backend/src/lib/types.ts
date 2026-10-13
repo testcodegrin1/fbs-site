@@ -39,6 +39,7 @@ export type UserPayload = {
   role: AuthRole;
   password?: string;
   isActive?: boolean;
+  franchiseId?: number | null;
 };
 
 export type FranchiseModel = {
