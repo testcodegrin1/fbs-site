@@ -37,6 +37,7 @@ interface FormDataState {
   description: string;
   logoFile: File | null;
   existingLogoUrl: string | null;
+  isActive: boolean;
 }
 
 const emptyFormData: FormDataState = {
@@ -44,6 +45,7 @@ const emptyFormData: FormDataState = {
   description: "",
   logoFile: null,
   existingLogoUrl: null,
+  isActive: true,
 };
 
 export function FranchiseManagement() {
@@ -155,6 +157,7 @@ export function FranchiseManagement() {
       description: franchise.description || "",
       logoFile: null,
       existingLogoUrl: franchise.brandingLogoUrl || null,
+      isActive: franchise.isActive !== undefined ? Boolean(franchise.isActive) : true,
     });
     setFormErrors({});
     setLogoPreviewUrl(
@@ -259,6 +262,7 @@ export function FranchiseManagement() {
       const payload = new FormData();
       payload.append("name", trimmedName);
       payload.append("description", formData.description.trim());
+      payload.append("isActive", String(formData.isActive));
 
       // If a file was selected, append it as 'brandingLogoUrl'
       if (formData.logoFile) {
@@ -505,10 +509,10 @@ export function FranchiseManagement() {
               <thead className="bg-black/[0.03] text-slate-800 font-semibold text-xs">
                 <tr>
                   <th className="px-5 py-3.5 w-20">Logo</th>
-                  <th className="px-5 py-3.5 font-semibold">Franchise Name</th>
-                  <th className="px-5 py-3.5 font-semibold">Description</th>
-                  <th className="px-5 py-3.5 font-semibold w-28">Status</th>
-                  <th className="px-5 py-3.5 text-right font-semibold w-56">Actions</th>
+                  <th className="px-5 py-3.5 font-semibold w-52">Franchise Name</th>
+                  <th className="px-5 py-3.5 font-semibold w-64 md:w-80">Description</th>
+                  <th className="px-5 py-3.5 font-semibold w-32">Status</th>
+                  <th className="px-5 py-3.5 text-right font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-black/10 bg-white">
@@ -583,7 +587,7 @@ export function FranchiseManagement() {
                       </td>
 
                       {/* Status Column */}
-                      <td className="px-5 py-4">
+                      <td className="px-5 py-4 whitespace-nowrap">
                         <Badge
                           variant={f.isActive ? "success" : "secondary"}
                           className="capitalize text-xs font-semibold px-2.5 py-0.5"
@@ -845,6 +849,36 @@ export function FranchiseManagement() {
                   }
                   className="text-xs resize-none"
                 />
+              </div>
+
+              {/* Franchise Status Toggle (Enable / Disable) */}
+              <div className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
+                <div>
+                  <Label htmlFor="franchise-status-toggle" className="text-xs font-bold text-slate-800 cursor-pointer">
+                    Franchise Status
+                  </Label>
+                  <p className="text-[11px] text-slate-500">
+                    {formData.isActive
+                      ? "Enabled (Active in registration & login)"
+                      : "Disabled (Inactive / Hidden)"}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  id="franchise-status-toggle"
+                  onClick={() =>
+                    setFormData((prev) => ({ ...prev, isActive: !prev.isActive }))
+                  }
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${
+                    formData.isActive ? "bg-emerald-600" : "bg-slate-300"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                      formData.isActive ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
               </div>
 
               {/* Form Buttons */}

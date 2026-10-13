@@ -50,7 +50,7 @@ function getUploadedLogoUrl(req: any): string | undefined {
 // GET /api/franchises/getFranchises - List all franchises
 franchisesRouter.get("/getFranchises", async (req, res) => {
   try {
-    const includeInactive = req.query.includeInactive === "true";
+    const includeInactive = req.query.includeInactive !== "false";
     const franchises = await listFranchises(includeInactive);
     res.json({ franchises });
   } catch (error) {
@@ -83,12 +83,17 @@ franchisesRouter.post(
   async (req, res) => {
     try {
       await requirePermission(req, "franchises:manage");
-      const { name, description } = req.body;
+      const { name, description, isActive } = req.body;
       const brandingLogoUrl = getUploadedLogoUrl(req);
+      const is_active =
+        isActive != null
+          ? String(isActive) === "true" || isActive === true || isActive === 1 || isActive === "1"
+          : true;
       await createFranchise({
         name,
         brandingLogoUrl,
         description,
+        isActive: is_active,
       });
       res.status(201).json({ message: "Franchise created successfully" });
     } catch (error) {

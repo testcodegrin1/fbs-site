@@ -120,10 +120,13 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const franchiseApi = {
-  async getFranchises(): Promise<FranchiseModel[]> {
-    const data = await request<any>("/api/getFranchises", {
-      method: "GET",
-    });
+  async getFranchises(includeInactive = true): Promise<FranchiseModel[]> {
+    const data = await request<any>(
+      `/api/getFranchises?includeInactive=${includeInactive ? "true" : "false"}`,
+      {
+        method: "GET",
+      },
+    );
 
     const rawList = Array.isArray(data)
       ? data

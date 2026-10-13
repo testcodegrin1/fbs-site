@@ -43,16 +43,18 @@ export async function createFranchise(data: {
   name: string;
   brandingLogoUrl?: string | null;
   description?: string | null;
+  isActive?: boolean;
 }): Promise<FranchiseModel> {
   if (!data.name?.trim())
     throw new AuthError("Franchise name is required.", 400);
 
   const [res] = await execute<ResultSetHeader>(
-    `INSERT INTO franchises (name, branding_logo_url, description) VALUES (?, ?, ?)`,
+    `INSERT INTO franchises (name, branding_logo_url, description, is_active) VALUES (?, ?, ?, ?)`,
     [
       data.name.trim(),
       data.brandingLogoUrl || null,
       data.description || null,
+      data.isActive !== undefined ? (data.isActive ? 1 : 0) : 1,
     ],
   );
 
