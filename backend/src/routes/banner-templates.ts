@@ -102,6 +102,7 @@ bannerTemplatesRouter.get("/getBannerTemplate/:id", async (req, res) => {
 // POST /api/createBannerTemplate - Create new template
 bannerTemplatesRouter.post(
   "/createBannerTemplate",
+  upload.any(),
   requireAuth(),
   async (req, res) => {
     try {
@@ -124,6 +125,29 @@ bannerTemplatesRouter.post(
         return;
       }
 
+      const files = Array.isArray(req.files) ? req.files : [];
+      if (files.length > 0) {
+        let existingImages = req.body.images;
+        if (typeof existingImages === "string") {
+          try {
+            existingImages = JSON.parse(existingImages);
+          } catch {
+            existingImages = [];
+          }
+        }
+        if (!Array.isArray(existingImages)) {
+          existingImages = [];
+        }
+        for (const file of files) {
+          existingImages.push({
+            imageUrl: `/uploads/banners/${file.filename}`,
+            imageName: file.originalname,
+            sortOrder: existingImages.length,
+          });
+        }
+        req.body.images = existingImages;
+      }
+
       await saveBannerTemplate(req.body);
       res.status(201).json({
         message: "Banner template created successfully",
@@ -138,6 +162,7 @@ bannerTemplatesRouter.post(
 // PUT /api/updateBannerTemplate/:id - Update existing template
 bannerTemplatesRouter.put(
   "/updateBannerTemplate/:id",
+  upload.any(),
   requireAuth(),
   async (req, res) => {
     try {
@@ -169,6 +194,29 @@ bannerTemplatesRouter.put(
           });
           return;
         }
+      }
+
+      const files = Array.isArray(req.files) ? req.files : [];
+      if (files.length > 0) {
+        let existingImages = req.body.images;
+        if (typeof existingImages === "string") {
+          try {
+            existingImages = JSON.parse(existingImages);
+          } catch {
+            existingImages = [];
+          }
+        }
+        if (!Array.isArray(existingImages)) {
+          existingImages = [];
+        }
+        for (const file of files) {
+          existingImages.push({
+            imageUrl: `/uploads/banners/${file.filename}`,
+            imageName: file.originalname,
+            sortOrder: existingImages.length,
+          });
+        }
+        req.body.images = existingImages;
       }
 
       await saveBannerTemplate({ ...req.body, id, franchiseId });

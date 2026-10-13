@@ -22,6 +22,10 @@ const nextConfig: NextConfig = {
         source: "/api/:path*",
         destination: `${authApiUrl}/api/:path*`,
       },
+      {
+        source: "/uploads/:path*",
+        destination: `${authApiUrl}/uploads/:path*`,
+      },
     ];
   },
   async headers() {

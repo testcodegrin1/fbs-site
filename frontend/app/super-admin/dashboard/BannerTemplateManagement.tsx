@@ -109,12 +109,14 @@ function ImagePreviewWithFallback({
   className = "w-full h-full object-contain",
   containerClassName = "w-full h-48 rounded-xl bg-slate-50 border border-slate-200/80 overflow-hidden flex items-center justify-center relative",
   rawPath,
+  compact = false,
 }: {
   src: string;
   alt: string;
   className?: string;
   containerClassName?: string;
   rawPath?: string;
+  compact?: boolean;
 }) {
   const candidates = useMemo(() => {
     if (!src && !rawPath) return [];
@@ -179,10 +181,44 @@ function ImagePreviewWithFallback({
   if (!src) {
     return (
       <div className={containerClassName}>
-        <div className="flex flex-col items-center justify-center text-slate-400 gap-1.5 p-4 text-center">
-          <ImageIcon size={28} className="text-slate-300" />
-          <span className="text-xs font-semibold">No image selected</span>
+        <div className="flex flex-col items-center justify-center text-slate-400 gap-1.5 p-2 text-center w-full h-full">
+          <ImageIcon size={compact ? 16 : 28} className="text-slate-300" />
+          {!compact && <span className="text-xs font-semibold">No image selected</span>}
         </div>
+      </div>
+    );
+  }
+
+  if (compact) {
+    return (
+      <div className={containerClassName}>
+        {loadStatus === "loading" && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-50">
+            <Loader2 size={13} className="animate-spin text-slate-400" />
+          </div>
+        )}
+        {loadStatus === "error" && (
+          <div
+            className="absolute inset-0 z-10 flex items-center justify-center bg-slate-50 text-slate-300"
+            title="Image could not be loaded"
+          >
+            <ImageIcon size={16} />
+          </div>
+        )}
+        <img
+          key={`${currentAttemptUrl}-${retryKey}`}
+          src={currentAttemptUrl}
+          alt={alt}
+          className={className}
+          style={{
+            display: loadStatus === "loaded" ? "block" : "none",
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+          onLoad={handleLoadSuccess}
+          onError={handleLoadError}
+        />
       </div>
     );
   }
@@ -623,36 +659,49 @@ export function BannerTemplateManagement() {
     setIsSubmitting(true);
     setFormServerError(null);
 
-    // Use permanent image path (never blob:)
-    const payload: CreateBannerTemplatePayload = {
-      name: formData.name.trim(),
-      franchise_id: Number(formData.franchise_id),
-      franchiseId: Number(formData.franchise_id),
-      description: formData.description.trim(),
-      orientation: formData.orientation,
-      width_px: Number(formData.width_px),
-      widthPx: Number(formData.width_px),
-      height_px: Number(formData.height_px),
-      heightPx: Number(formData.height_px),
-      dimensions_label:
-        formData.dimensions_label.trim() ||
-        `${formData.width_px}x${formData.height_px}`,
-      dimensionsLabel:
-        formData.dimensions_label.trim() ||
-        `${formData.width_px}x${formData.height_px}`,
-      is_active: formData.is_active,
-      isActive: formData.is_active,
-      images: formData.images
-        .filter((img) => img.imageUrl.trim() !== "")
-        .map((img, idx) => ({
-          imageUrl: img.file
-            ? `/uploads/banners/${img.file.name}`
-            : img.imageUrl.trim(),
-          sortOrder: idx,
-        })),
-    };
-
     try {
+      // 1. Upload any new image files to backend /api/uploadBannerImage
+      const uploadedImages = await Promise.all(
+        formData.images.map(async (img, idx) => {
+          let finalUrl = img.imageUrl.trim();
+          let finalName = img.file?.name;
+          if (img.file) {
+            const uploadRes = await bannerTemplateApi.uploadBannerImage(img.file);
+            finalUrl = uploadRes.imageUrl;
+            finalName = uploadRes.originalName || uploadRes.filename || img.file.name;
+          }
+          return {
+            imageUrl: finalUrl,
+            imageName: finalName || (finalUrl ? finalUrl.split("/").pop() : undefined),
+            sortOrder: idx,
+          };
+        }),
+      );
+
+      const validImages = uploadedImages.filter((img) => img.imageUrl !== "");
+
+      // 2. Submit template payload with actual uploaded image URLs
+      const payload: CreateBannerTemplatePayload = {
+        name: formData.name.trim(),
+        franchise_id: Number(formData.franchise_id),
+        franchiseId: Number(formData.franchise_id),
+        description: formData.description.trim(),
+        orientation: formData.orientation,
+        width_px: Number(formData.width_px),
+        widthPx: Number(formData.width_px),
+        height_px: Number(formData.height_px),
+        heightPx: Number(formData.height_px),
+        dimensions_label:
+          formData.dimensions_label.trim() ||
+          `${formData.width_px}x${formData.height_px}`,
+        dimensionsLabel:
+          formData.dimensions_label.trim() ||
+          `${formData.width_px}x${formData.height_px}`,
+        is_active: formData.is_active,
+        isActive: formData.is_active,
+        images: validImages,
+      };
+
       await bannerTemplateApi.createBannerTemplate(payload);
       setShowAddModal(false);
       setNotice({
@@ -679,32 +728,45 @@ export function BannerTemplateManagement() {
     setIsSubmitting(true);
     setFormServerError(null);
 
-    // Use permanent image path (never blob:)
-    const payload: Partial<CreateBannerTemplatePayload> = {
-      name: formData.name.trim(),
-      franchise_id: Number(formData.franchise_id),
-      franchiseId: Number(formData.franchise_id),
-      description: formData.description.trim(),
-      orientation: formData.orientation,
-      width_px: Number(formData.width_px),
-      widthPx: Number(formData.width_px),
-      height_px: Number(formData.height_px),
-      heightPx: Number(formData.height_px),
-      dimensions_label: formData.dimensions_label.trim(),
-      dimensionsLabel: formData.dimensions_label.trim(),
-      is_active: formData.is_active,
-      isActive: formData.is_active,
-      images: formData.images
-        .filter((img) => img.imageUrl.trim() !== "")
-        .map((img, idx) => ({
-          imageUrl: img.file
-            ? `/uploads/banners/${img.file.name}`
-            : img.imageUrl.trim(),
-          sortOrder: idx,
-        })),
-    };
-
     try {
+      // 1. Upload any new image files to backend /api/uploadBannerImage
+      const uploadedImages = await Promise.all(
+        formData.images.map(async (img, idx) => {
+          let finalUrl = img.imageUrl.trim();
+          let finalName = img.file?.name;
+          if (img.file) {
+            const uploadRes = await bannerTemplateApi.uploadBannerImage(img.file);
+            finalUrl = uploadRes.imageUrl;
+            finalName = uploadRes.originalName || uploadRes.filename || img.file.name;
+          }
+          return {
+            imageUrl: finalUrl,
+            imageName: finalName || (finalUrl ? finalUrl.split("/").pop() : undefined),
+            sortOrder: idx,
+          };
+        }),
+      );
+
+      const validImages = uploadedImages.filter((img) => img.imageUrl !== "");
+
+      // 2. Submit update payload with actual uploaded image URLs
+      const payload: Partial<CreateBannerTemplatePayload> = {
+        name: formData.name.trim(),
+        franchise_id: Number(formData.franchise_id),
+        franchiseId: Number(formData.franchise_id),
+        description: formData.description.trim(),
+        orientation: formData.orientation,
+        width_px: Number(formData.width_px),
+        widthPx: Number(formData.width_px),
+        height_px: Number(formData.height_px),
+        heightPx: Number(formData.height_px),
+        dimensions_label: formData.dimensions_label.trim(),
+        dimensionsLabel: formData.dimensions_label.trim(),
+        is_active: formData.is_active,
+        isActive: formData.is_active,
+        images: validImages,
+      };
+
       await bannerTemplateApi.updateBannerTemplate(editingTemplate.id, payload);
       setShowEditModal(false);
       setNotice({
@@ -1133,7 +1195,21 @@ export function BannerTemplateManagement() {
                           className="w-16 h-12 rounded-lg bg-slate-50 border border-slate-200 overflow-hidden relative cursor-pointer group/img flex-shrink-0"
                           title="Click to view details"
                         >
-                          <div className="absolute inset-0 bg-slate-900/30 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center text-white">
+                          <ImagePreviewWithFallback
+                            src={
+                              template.images &&
+                              template.images.length > 0 &&
+                              template.images[0].imageUrl
+                                ? resolveImageUrl(template.images[0].imageUrl)
+                                : ""
+                            }
+                            rawPath={template.images?.[0]?.imageUrl}
+                            alt={template.name}
+                            compact={true}
+                            containerClassName="w-full h-full relative"
+                            className="w-full h-full object-cover"
+                          />
+                          <div className="absolute inset-0 bg-slate-900/30 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center text-white z-20 pointer-events-none">
                             <Eye size={14} />
                           </div>
                         </div>

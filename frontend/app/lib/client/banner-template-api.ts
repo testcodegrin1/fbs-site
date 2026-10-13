@@ -322,6 +322,30 @@ export const bannerTemplateApi = {
   getCandidateImageUrls,
 
   /**
+   * Upload Banner Image File
+   * POST /api/uploadBannerImage
+   */
+  async uploadBannerImage(file: File): Promise<{
+    imageUrl: string;
+    filename: string;
+    originalName: string;
+    size: number;
+  }> {
+    const formData = new FormData();
+    formData.append("image", file);
+
+    return request<{
+      imageUrl: string;
+      filename: string;
+      originalName: string;
+      size: number;
+    }>("/api/uploadBannerImage", {
+      method: "POST",
+      body: formData,
+    });
+  },
+
+  /**
    * 1. GET /api/getBannerTemplates
    * Fetches all banner templates
    */
