@@ -27,13 +27,14 @@ export async function loginWithRole(
   }
 
   if (!user.isActive) {
-    throw new AuthError("This account is inactive.", 403);
+    throw new AuthError("Your account is in the pending state.", 403);
   }
 
-  const activeRole =
-    requestedRole && user.roles.includes(requestedRole)
-      ? requestedRole
-      : user.roles[0];
+  if (requestedRole && !user.roles.includes(requestedRole)) {
+    throw new AuthError("This account is not authorized for this login.", 403);
+  }
+
+  const activeRole = requestedRole ?? user.roles[0];
 
   if (!activeRole) {
     throw new AuthError("This account does not have a role assigned.", 403);
@@ -69,12 +70,6 @@ export async function loginWithRole(
       await requestFranchiseAccess(user.id, selectedFranchiseId);
       throw new AuthError(
         "Your login request for this franchise has been submitted to Super Admin for approval.",
-        403,
-      );
-    }
-    if (access.status === "pending") {
-      throw new AuthError(
-        "Your login request for this franchise is pending Super Admin approval.",
         403,
       );
     }

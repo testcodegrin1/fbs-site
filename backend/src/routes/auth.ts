@@ -61,7 +61,7 @@ authRouter.post("/register", async (req, res) => {
       email,
       password,
       role: "user",
-      isActive: true,
+      isActive: false,
     });
 
     await requestFranchiseAccess(user.id, franchiseId);
