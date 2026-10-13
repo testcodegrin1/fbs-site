@@ -106,7 +106,7 @@ export function LoginForm({ role, title }: LoginFormProps) {
         </div>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
-          {role === "user" && (
+          {/* {role === "user" && (
             <div className="space-y-1.5">
               <Label htmlFor="login-franchise" className="text-xs font-bold text-slate-700">
                 Select Franchise <span className="text-red-500">*</span>
@@ -134,7 +134,7 @@ export function LoginForm({ role, title }: LoginFormProps) {
                 </select>
               </div>
             </div>
-          )}
+          )} */}
 
           <div className="space-y-1.5">
             <Label htmlFor="login-email" className="text-xs font-bold text-slate-700">Email</Label>
