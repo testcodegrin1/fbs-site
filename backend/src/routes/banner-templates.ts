@@ -3,7 +3,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs/promises";
 import { getErrorResponse } from "../lib/errors.js";
-import { requireAuth, requirePermission } from "../lib/auth.js";
+import { requireAuth, requirePermission, getCurrentUser } from "../lib/auth.js";
 import { UPLOADS_DIR } from "../lib/canvas/watermark.js";
 import {
   listBannerTemplates,
@@ -14,6 +14,9 @@ import {
   saveBannerTemplateImages,
   addOrUpdateBannerImage,
   deleteBannerImage,
+  getBannerTemplateFields,
+  saveBannerCustomization,
+  getBannerCustomization,
 } from "../lib/banner-templates.js";
 
 export const bannerTemplatesRouter = Router();
@@ -148,6 +151,14 @@ bannerTemplatesRouter.post(
         req.body.images = existingImages;
       }
 
+      if (typeof req.body.fields === "string") {
+        try {
+          req.body.fields = JSON.parse(req.body.fields);
+        } catch {
+          req.body.fields = [];
+        }
+      }
+
       await saveBannerTemplate(req.body);
       res.status(201).json({
         message: "Banner template created successfully",
@@ -217,6 +228,14 @@ bannerTemplatesRouter.put(
           });
         }
         req.body.images = existingImages;
+      }
+
+      if (typeof req.body.fields === "string") {
+        try {
+          req.body.fields = JSON.parse(req.body.fields);
+        } catch {
+          req.body.fields = [];
+        }
       }
 
       await saveBannerTemplate({ ...req.body, id, franchiseId });
@@ -319,6 +338,115 @@ bannerTemplatesRouter.delete(
       const imageId = Number(req.params.imageId);
       await deleteBannerImage(imageId);
       res.json({ message: "Banner image deleted successfully" });
+    } catch (error) {
+      const { message, status } = getErrorResponse(error);
+      res.status(status).json({ message });
+    }
+  },
+);
+
+// GET /api/getBannerTemplateFields/:id - Get fields for a template
+bannerTemplatesRouter.get("/getBannerTemplateFields/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!id || isNaN(id)) {
+      res.status(400).json({ message: "Valid template ID is required." });
+      return;
+    }
+    const fields = await getBannerTemplateFields(id);
+    res.json({ fields });
+  } catch (error) {
+    const { message, status } = getErrorResponse(error);
+    res.status(status).json({ message });
+  }
+});
+
+// POST /api/saveBannerCustomization - Save user-entered dynamic field values
+bannerTemplatesRouter.post(
+  "/saveBannerCustomization",
+  upload.any(),
+  requireAuth(),
+  async (req, res) => {
+    try {
+      const user = await getCurrentUser(req);
+      if (!user) {
+        res.status(401).json({ message: "Authentication required." });
+        return;
+      }
+
+      const templateId = Number(req.body.templateId ?? req.body.template_id);
+      if (!templateId || isNaN(templateId)) {
+        res.status(400).json({ message: "Valid templateId is required." });
+        return;
+      }
+
+      let values: Record<string, any> = {};
+      if (req.body.customizationValues) {
+        values =
+          typeof req.body.customizationValues === "string"
+            ? JSON.parse(req.body.customizationValues)
+            : req.body.customizationValues;
+      } else if (req.body.values) {
+        values =
+          typeof req.body.values === "string"
+            ? JSON.parse(req.body.values)
+            : req.body.values;
+      } else {
+        const {
+          templateId: _t,
+          template_id: _t2,
+          franchiseId: _f,
+          franchise_id: _f2,
+          ...rest
+        } = req.body;
+        values = rest;
+      }
+
+      // Handle file uploads
+      const files = Array.isArray(req.files) ? req.files : [];
+      for (const file of files) {
+        values[file.fieldname] = `/uploads/banners/${file.filename}`;
+      }
+
+      const franchiseId = Number(
+        req.body.franchiseId ?? req.body.franchise_id ?? user.franchiseId,
+      );
+      const result = await saveBannerCustomization(
+        templateId,
+        user.id,
+        values,
+        franchiseId || undefined,
+      );
+
+      res.json({
+        message: "Banner customization saved successfully",
+        customization: result,
+      });
+    } catch (error) {
+      const { message, status } = getErrorResponse(error);
+      res.status(status).json({ message });
+    }
+  },
+);
+
+// GET /api/getBannerCustomization/:id - Get user saved customization
+bannerTemplatesRouter.get(
+  "/getBannerCustomization/:id",
+  requireAuth(),
+  async (req, res) => {
+    try {
+      const user = await getCurrentUser(req);
+      if (!user) {
+        res.status(401).json({ message: "Authentication required." });
+        return;
+      }
+      const templateId = Number(req.params.id);
+      if (!templateId || isNaN(templateId)) {
+        res.status(400).json({ message: "Valid template ID is required." });
+        return;
+      }
+      const customization = await getBannerCustomization(templateId, user.id);
+      res.json({ customization });
     } catch (error) {
       const { message, status } = getErrorResponse(error);
       res.status(status).json({ message });

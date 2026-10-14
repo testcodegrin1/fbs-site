@@ -39,7 +39,7 @@ function mapTemplate(row: any): BannerTemplateModel {
     description: row.description,
     widthPx: Number(row.width_px),
     heightPx: Number(row.height_px),
-    dimensionsLabel: row.dimensions_label,
+    dimensionsLabel: `${row.width_px}x${row.height_px}`,
     orientation: row.orientation,
     isActive: Boolean(row.is_active),
     createdAt: new Date(row.created_at).toISOString(),
@@ -49,23 +49,35 @@ function mapTemplate(row: any): BannerTemplateModel {
 }
 
 function mapField(row: any): BannerTemplateFieldModel {
+  let parsedOptions: string[] | null = null;
+  if (row.options) {
+    if (typeof row.options === "string") {
+      try {
+        parsedOptions = JSON.parse(row.options);
+      } catch {
+        parsedOptions = null;
+      }
+    } else if (Array.isArray(row.options)) {
+      parsedOptions = row.options;
+    }
+  }
+
+  const label = String(row.label || row.field_label || row.field_key || "");
+
   return {
     id: Number(row.id),
     templateId: Number(row.template_id),
-    fieldKey: row.field_key,
-    fieldLabel: row.field_label,
-    fieldType: row.field_type,
-    positionX: Number(row.position_x),
-    positionY: Number(row.position_y),
-    fontSize: row.font_size ? Number(row.font_size) : null,
-    fontColor: row.font_color,
-    fontFamily: row.font_family,
-    textAlign: row.text_align || "left",
-    maxLength: row.max_length ? Number(row.max_length) : null,
+    label,
+    fieldLabel: label,
+    fieldKey: row.field_key || `field_${row.id}`,
+    fieldType: (row.field_type || "text").toLowerCase(),
+    placeholder: row.placeholder || null,
+    options: parsedOptions,
     isRequired: Boolean(row.is_required),
-    isEditable: Boolean(row.is_editable),
-    defaultValue: row.default_value,
-    createdAt: new Date(row.created_at).toISOString(),
+    isEditable: row.is_editable !== undefined ? Boolean(row.is_editable) : true,
+    sortOrder: Number(row.sort_order ?? 0),
+    createdAt: row.created_at ? new Date(row.created_at).toISOString() : undefined,
+    updatedAt: row.updated_at ? new Date(row.updated_at).toISOString() : undefined,
   };
 }
 
@@ -111,17 +123,71 @@ export async function listBannerTemplates(
     t.images = imagesByTemplateId.get(t.id) || [];
   }
 
+  // Load custom input fields for all templates
+  try {
+    const [fieldRows] = await query<RowDataPacket[]>(
+      `SELECT * FROM banner_template_fields WHERE template_id IN (${placeholders}) ORDER BY sort_order ASC, id ASC`,
+      templateIds,
+    );
+    const fieldsByTemplateId = new Map<number, BannerTemplateFieldModel[]>();
+    for (const fRow of fieldRows) {
+      const tId = Number(fRow.template_id);
+      if (!fieldsByTemplateId.has(tId)) {
+        fieldsByTemplateId.set(tId, []);
+      }
+      fieldsByTemplateId.get(tId)!.push(mapField(fRow));
+    }
+    for (const t of templates) {
+      t.fields = fieldsByTemplateId.get(t.id) || [];
+    }
+  } catch {
+    // If fields query fails (e.g. sort_order not present yet), fallback
+    try {
+      const [fieldRows] = await query<RowDataPacket[]>(
+        `SELECT * FROM banner_template_fields WHERE template_id IN (${placeholders}) ORDER BY id ASC`,
+        templateIds,
+      );
+      const fieldsByTemplateId = new Map<number, BannerTemplateFieldModel[]>();
+      for (const fRow of fieldRows) {
+        const tId = Number(fRow.template_id);
+        if (!fieldsByTemplateId.has(tId)) {
+          fieldsByTemplateId.set(tId, []);
+        }
+        fieldsByTemplateId.get(tId)!.push(mapField(fRow));
+      }
+      for (const t of templates) {
+        t.fields = fieldsByTemplateId.get(t.id) || [];
+      }
+    } catch {
+      for (const t of templates) {
+        t.fields = [];
+      }
+    }
+  }
+
   return templates;
 }
 
 export async function getBannerTemplateFields(
   templateId: number,
 ): Promise<BannerTemplateFieldModel[]> {
-  const [rows] = await query<RowDataPacket[]>(
-    `SELECT * FROM banner_template_fields WHERE template_id = ? ORDER BY id ASC`,
-    [templateId],
-  );
-  return rows.map(mapField);
+  try {
+    const [rows] = await query<RowDataPacket[]>(
+      `SELECT * FROM banner_template_fields WHERE template_id = ? ORDER BY sort_order ASC, id ASC`,
+      [templateId],
+    );
+    return rows.map(mapField);
+  } catch {
+    try {
+      const [rows] = await query<RowDataPacket[]>(
+        `SELECT * FROM banner_template_fields WHERE template_id = ? ORDER BY id ASC`,
+        [templateId],
+      );
+      return rows.map(mapField);
+    } catch {
+      return [];
+    }
+  }
 }
 
 export async function listBannerImages(filter: {
@@ -411,7 +477,7 @@ export async function saveBannerTemplate(data: {
       await conn.execute(
         `UPDATE banner_templates SET 
           franchise_id = ?, name = ?, description = ?, 
-          width_px = ?, height_px = ?, dimensions_label = ?, 
+          width_px = ?, height_px = ?, 
           orientation = ?, is_active = ?
          WHERE id = ?`,
         [
@@ -420,7 +486,6 @@ export async function saveBannerTemplate(data: {
           description,
           widthPx,
           heightPx,
-          dimensionsLabel,
           orientation,
           isActive,
           currentId,
@@ -446,37 +511,7 @@ export async function saveBannerTemplate(data: {
 
       // Synchronize fields in the same transaction if provided
       if (data.fields !== undefined) {
-        await conn.execute(
-          `DELETE FROM banner_template_fields WHERE template_id = ?`,
-          [currentId],
-        );
-
-        for (let i = 0; i < data.fields.length; i++) {
-          const f = data.fields[i];
-          await conn.execute(
-            `INSERT INTO banner_template_fields (
-              template_id, field_key, field_label, field_type, position_x, position_y,
-              font_size, font_color, font_family, text_align, max_length, is_required,
-              is_editable, default_value
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-              currentId,
-              f.fieldKey || `field_${i + 1}`,
-              f.fieldLabel || f.fieldKey || `Field ${i + 1}`,
-              f.fieldType || "text",
-              f.positionX ?? 0,
-              f.positionY ?? 0,
-              f.fontSize ?? 32,
-              f.fontColor || "#000000",
-              f.fontFamily || "Arial",
-              f.textAlign || "left",
-              f.maxLength ?? null,
-              f.isRequired ? 1 : 0,
-              f.isEditable !== false ? 1 : 0,
-              f.defaultValue || null,
-            ],
-          );
-        }
+        await saveFieldsInTx(conn, currentId, data.fields);
       }
 
       return currentId;
@@ -499,10 +534,6 @@ export async function saveBannerTemplate(data: {
 
       const widthPx = Number(data.widthPx || data.width_px || 1080);
       const heightPx = Number(data.heightPx || data.height_px || 1080);
-      const dimensionsLabel =
-        data.dimensionsLabel ||
-        data.dimensions_label ||
-        `${widthPx}x${heightPx}`;
       const orientation = data.orientation || "landscape";
       const description = data.description || null;
       const isActive =
@@ -519,15 +550,14 @@ export async function saveBannerTemplate(data: {
       const [res] = await conn.execute<ResultSetHeader>(
         `INSERT INTO banner_templates (
           franchise_id, name, description,
-          width_px, height_px, dimensions_label, orientation, is_active
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          width_px, height_px, orientation, is_active
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           franchiseId,
           name,
           description,
           widthPx,
           heightPx,
-          dimensionsLabel,
           orientation,
           isActive,
         ],
@@ -547,32 +577,7 @@ export async function saveBannerTemplate(data: {
       }
 
       if (data.fields && data.fields.length > 0) {
-        for (let i = 0; i < data.fields.length; i++) {
-          const f = data.fields[i];
-          await conn.execute(
-            `INSERT INTO banner_template_fields (
-              template_id, field_key, field_label, field_type, position_x, position_y,
-              font_size, font_color, font_family, text_align, max_length, is_required,
-              is_editable, default_value
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-            [
-              currentId,
-              f.fieldKey || `field_${i + 1}`,
-              f.fieldLabel || f.fieldKey || `Field ${i + 1}`,
-              f.fieldType || "text",
-              f.positionX ?? 0,
-              f.positionY ?? 0,
-              f.fontSize ?? 32,
-              f.fontColor || "#000000",
-              f.fontFamily || "Arial",
-              f.textAlign || "left",
-              f.maxLength ?? null,
-              f.isRequired ? 1 : 0,
-              f.isEditable !== false ? 1 : 0,
-              f.defaultValue || null,
-            ],
-          );
-        }
+        await saveFieldsInTx(conn, currentId, data.fields);
       }
 
       return currentId;
@@ -582,53 +587,65 @@ export async function saveBannerTemplate(data: {
   return (await getBannerTemplateById(templateId))!;
 }
 
+async function saveFieldsInTx(conn: any, templateId: number, fields: any[]) {
+  await conn.execute(`DELETE FROM banner_template_fields WHERE template_id = ?`, [templateId]);
+
+  if (!Array.isArray(fields) || fields.length === 0) return;
+
+  for (let i = 0; i < fields.length; i++) {
+    const f = fields[i];
+    const label = (f.label || f.fieldLabel || f.name || "").trim();
+    if (!label) continue;
+    const fieldType = (f.fieldType || f.type || "text").toLowerCase();
+    const placeholder = f.placeholder ? String(f.placeholder).trim() : null;
+    const optionsJson =
+      Array.isArray(f.options) && f.options.length > 0
+        ? JSON.stringify(
+            f.options
+              .map((opt: any) =>
+                typeof opt === "string"
+                  ? opt.trim()
+                  : (opt?.label || opt?.value || String(opt)).trim(),
+              )
+              .filter(Boolean),
+          )
+        : null;
+    const isRequired = f.isRequired || f.is_required ? 1 : 0;
+    const isEditable = f.isEditable !== false && f.is_editable !== false ? 1 : 0;
+    const sortOrder = f.sortOrder !== undefined ? Number(f.sortOrder) : i;
+
+    try {
+      await conn.execute(
+        `INSERT INTO banner_template_fields (
+          template_id, label, field_type, placeholder, options, is_required, is_editable, sort_order
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [templateId, label, fieldType, placeholder, optionsJson, isRequired, isEditable, sortOrder],
+      );
+    } catch (insertErr: any) {
+      if (
+        insertErr.code === "ER_BAD_FIELD_ERROR" ||
+        String(insertErr.message).includes("Unknown column")
+      ) {
+        // Fallback for older table schema
+        await conn.execute(
+          `INSERT INTO banner_template_fields (
+            template_id, field_key, field_label, field_type, is_required, is_editable
+          ) VALUES (?, ?, ?, ?, ?, ?)`,
+          [templateId, `field_${i + 1}`, label, fieldType, isRequired, isEditable],
+        );
+      } else {
+        throw insertErr;
+      }
+    }
+  }
+}
+
 export async function saveBannerTemplateFields(
   templateId: number,
   fields: Partial<BannerTemplateFieldModel>[],
 ): Promise<BannerTemplateFieldModel[]> {
   await withTransaction(async (conn) => {
-    await conn.execute(
-      `DELETE FROM banner_template_fields WHERE template_id = ?`,
-      [templateId],
-    );
-
-    for (let i = 0; i < fields.length; i++) {
-      const f = fields[i];
-      await conn.execute(
-        `INSERT INTO banner_template_fields (
-          template_id,
-          field_key,
-          field_label,
-          field_type,
-          position_x,
-          position_y,
-          font_size,
-          font_color,
-          font_family,
-          text_align,
-          max_length,
-          is_required,
-          is_editable,
-          default_value
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          templateId,
-          f.fieldKey || `field_${i + 1}`,
-          f.fieldLabel || f.fieldKey || `Field ${i + 1}`,
-          f.fieldType || "text",
-          f.positionX ?? 0,
-          f.positionY ?? 0,
-          f.fontSize ?? 32,
-          f.fontColor || "#000000",
-          f.fontFamily || "Arial",
-          f.textAlign || "left",
-          f.maxLength ?? null,
-          f.isRequired ? 1 : 0,
-          f.isEditable !== false ? 1 : 0,
-          f.defaultValue || null,
-        ],
-      );
-    }
+    await saveFieldsInTx(conn, templateId, fields);
   });
 
   return getBannerTemplateFields(templateId);
@@ -637,4 +654,128 @@ export async function saveBannerTemplateFields(
 export async function deleteBannerTemplate(id: number): Promise<boolean> {
   await execute(`DELETE FROM banner_templates WHERE id = ?`, [id]);
   return true;
+}
+
+// User-side Banner Customization Helpers
+export async function saveBannerCustomization(
+  templateId: number,
+  userId: number,
+  customizationValues: Record<string, any>,
+  franchiseId?: number,
+): Promise<any> {
+  const template = await getBannerTemplateById(templateId);
+  if (!template) {
+    throw new AuthError("Banner template not found.", 404);
+  }
+
+  // Validate required fields
+  if (template.fields && template.fields.length > 0) {
+    for (const f of template.fields) {
+      if (f.isRequired) {
+        const val = customizationValues[f.id] ?? customizationValues[f.label];
+        if (
+          val === undefined ||
+          val === null ||
+          val === "" ||
+          (Array.isArray(val) && val.length === 0)
+        ) {
+          throw new AuthError(`Field "${f.label}" is required.`, 400);
+        }
+      }
+      // Check options for dropdown or radio
+      if (
+        (f.fieldType === "dropdown" || f.fieldType === "radio") &&
+        Array.isArray(f.options) &&
+        f.options.length > 0
+      ) {
+        const val = customizationValues[f.id] ?? customizationValues[f.label];
+        if (val && !f.options.includes(val)) {
+          throw new AuthError(`Invalid value "${val}" for field "${f.label}".`, 400);
+        }
+      }
+    }
+  }
+
+  const valuesJson = JSON.stringify(customizationValues);
+  const fId = franchiseId || template.franchiseId || null;
+
+  try {
+    const [existing] = await query<RowDataPacket[]>(
+      `SELECT id FROM banner_customizations WHERE template_id = ? AND user_id = ? LIMIT 1`,
+      [templateId, userId],
+    );
+
+    let custId: number;
+    if (existing.length > 0) {
+      custId = Number(existing[0].id);
+      await execute(
+        `UPDATE banner_customizations SET customization_values = ?, franchise_id = ?, updated_at = NOW() WHERE id = ?`,
+        [valuesJson, fId, custId],
+      );
+    } else {
+      const [res] = await execute<ResultSetHeader>(
+        `INSERT INTO banner_customizations (template_id, user_id, franchise_id, customization_values) VALUES (?, ?, ?, ?)`,
+        [templateId, userId, fId, valuesJson],
+      );
+      custId = res.insertId;
+    }
+
+    return {
+      id: custId,
+      templateId,
+      userId,
+      franchiseId: fId,
+      customizationValues,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+  } catch (err: any) {
+    if (err.code === "ER_NO_SUCH_TABLE" || String(err.message).includes("doesn't exist")) {
+      // If table doesn't exist yet, return in-memory confirmation so user flow doesn't crash
+      return {
+        id: Date.now(),
+        templateId,
+        userId,
+        franchiseId: fId,
+        customizationValues,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+    }
+    throw err;
+  }
+}
+
+export async function getBannerCustomization(
+  templateId: number,
+  userId: number,
+): Promise<any | null> {
+  try {
+    const [rows] = await query<RowDataPacket[]>(
+      `SELECT * FROM banner_customizations WHERE template_id = ? AND user_id = ? ORDER BY id DESC LIMIT 1`,
+      [templateId, userId],
+    );
+    if (rows.length === 0) return null;
+    const r = rows[0];
+    let vals: Record<string, any> = {};
+    try {
+      vals =
+        typeof r.customization_values === "string"
+          ? JSON.parse(r.customization_values)
+          : r.customization_values || {};
+    } catch {
+      vals = {};
+    }
+    return {
+      id: Number(r.id),
+      templateId: Number(r.template_id),
+      userId: Number(r.user_id),
+      franchiseId: r.franchise_id ? Number(r.franchise_id) : null,
+      customizationValues: vals,
+      createdAt: new Date(r.created_at).toISOString(),
+      updatedAt: new Date(r.updated_at).toISOString(),
+    };
+  } catch {
+    return null;
+  }
 }

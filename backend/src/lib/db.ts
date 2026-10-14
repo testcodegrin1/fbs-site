@@ -214,7 +214,6 @@ async function createFranchiseSchema(): Promise<void> {
       description TEXT NULL,
       width_px INT UNSIGNED NOT NULL,
       height_px INT UNSIGNED NOT NULL,
-      dimensions_label VARCHAR(100) NULL,
       orientation ENUM('landscape','portrait','square') NOT NULL DEFAULT 'landscape',
       is_active TINYINT(1) NOT NULL DEFAULT 1,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -244,23 +243,38 @@ async function createFranchiseSchema(): Promise<void> {
     CREATE TABLE IF NOT EXISTS banner_template_fields (
       id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
       template_id BIGINT UNSIGNED NOT NULL,
-      field_key VARCHAR(100) NOT NULL,
-      field_label VARCHAR(150) NOT NULL,
+      label VARCHAR(255) NOT NULL,
       field_type VARCHAR(50) NOT NULL DEFAULT 'text',
-      position_x DECIMAL(10,4) NOT NULL DEFAULT 0,
-      position_y DECIMAL(10,4) NOT NULL DEFAULT 0,
-      font_size DECIMAL(8,2) NULL,
-      font_color VARCHAR(20) NULL,
-      font_family VARCHAR(100) NULL,
-      text_align VARCHAR(20) NOT NULL DEFAULT 'left',
-      max_length INT UNSIGNED NULL,
+      placeholder VARCHAR(255) NULL,
+      options JSON NULL,
       is_required TINYINT(1) NOT NULL DEFAULT 0,
       is_editable TINYINT(1) NOT NULL DEFAULT 1,
-      default_value TEXT NULL,
+      sort_order INT NOT NULL DEFAULT 0,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      UNIQUE KEY uq_template_field (template_id, field_key),
-      CONSTRAINT fk_template_field FOREIGN KEY (template_id)
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      KEY idx_template_fields_template_id (template_id),
+      KEY idx_template_fields_sort (template_id, sort_order),
+      CONSTRAINT fk_banner_template_fields_template FOREIGN KEY (template_id)
         REFERENCES banner_templates(id) ON DELETE CASCADE
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `);
+
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS banner_customizations (
+      id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      template_id BIGINT UNSIGNED NOT NULL,
+      user_id BIGINT UNSIGNED NOT NULL,
+      franchise_id BIGINT UNSIGNED NULL,
+      customization_values JSON NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      KEY idx_banner_customizations_user (user_id),
+      KEY idx_banner_customizations_template (template_id),
+      KEY idx_banner_customizations_franchise (franchise_id),
+      CONSTRAINT fk_banner_cust_template FOREIGN KEY (template_id)
+        REFERENCES banner_templates (id) ON DELETE CASCADE,
+      CONSTRAINT fk_banner_cust_user FOREIGN KEY (user_id)
+        REFERENCES users (id) ON DELETE CASCADE
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
   `);
 

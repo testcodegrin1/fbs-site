@@ -7,6 +7,8 @@ import {
   Button,
   Card,
   Input,
+  Textarea,
+  Label,
   StatusBadge,
 } from "@/app/Components/ui";
 import {
@@ -38,7 +40,6 @@ import {
   Loader2,
   Check,
   Copy,
-  Sparkles,
 } from "lucide-react";
 import {
   franchiseApi,
@@ -132,6 +133,110 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
   const [viewingTemplate, setViewingTemplate] = useState<BannerTemplateModel | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [copiedLink, setCopiedLink] = useState(false);
+
+  // Dynamic Custom Input Fields state & attachments
+  const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>({});
+  const [customFieldFiles, setCustomFieldFiles] = useState<Record<string, File>>({});
+  const [loadingCustomization, setLoadingCustomization] = useState(false);
+  const [savingCustomization, setSavingCustomization] = useState(false);
+  const [customizationNotice, setCustomizationNotice] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
+  // Load existing customization when a banner template is opened
+  useEffect(() => {
+    if (!viewingTemplate) {
+      setCustomFieldValues({});
+      setCustomFieldFiles({});
+      setCustomizationNotice(null);
+      return;
+    }
+
+    let isMounted = true;
+    async function loadSavedCustomization() {
+      if (!viewingTemplate?.id) return;
+      setLoadingCustomization(true);
+      setCustomizationNotice(null);
+      try {
+        const cust = await bannerTemplateApi.getBannerCustomization(viewingTemplate.id);
+        if (isMounted && cust?.customizationValues) {
+          setCustomFieldValues(cust.customizationValues);
+        }
+      } catch (err) {
+        console.warn("No existing banner customization found:", err);
+      } finally {
+        if (isMounted) setLoadingCustomization(false);
+      }
+    }
+
+    loadSavedCustomization();
+    return () => {
+      isMounted = false;
+    };
+  }, [viewingTemplate?.id]);
+
+  // Save banner customization values
+  async function handleSaveCustomization(e?: React.FormEvent) {
+    if (e) e.preventDefault();
+    if (!viewingTemplate?.id) return;
+
+    // Validate required fields
+    if (viewingTemplate.fields && viewingTemplate.fields.length > 0) {
+      for (const field of viewingTemplate.fields) {
+        if (field.isRequired) {
+          const key = String(field.id);
+          const val = customFieldValues[key];
+          const fileVal = customFieldFiles[key];
+          if (field.fieldType === "file") {
+            if (!fileVal && !val) {
+              setCustomizationNotice({
+                type: "error",
+                message: `"${field.label}" is required. Please upload a file.`,
+              });
+              return;
+            }
+          } else if (
+            val === undefined ||
+            val === null ||
+            val === "" ||
+            (Array.isArray(val) && val.length === 0)
+          ) {
+            setCustomizationNotice({
+              type: "error",
+              message: `"${field.label}" is a required field.`,
+            });
+            return;
+          }
+        }
+      }
+    }
+
+    setSavingCustomization(true);
+    setCustomizationNotice(null);
+
+    try {
+      await bannerTemplateApi.saveBannerCustomization({
+        templateId: viewingTemplate.id,
+        franchiseId: userFranchiseId ? Number(userFranchiseId) : undefined,
+        values: customFieldValues,
+        files: customFieldFiles,
+      });
+
+      setCustomizationNotice({
+        type: "success",
+        message: "Customization details saved successfully!",
+      });
+    } catch (err: any) {
+      console.error("Failed to save customization:", err);
+      setCustomizationNotice({
+        type: "error",
+        message: err?.message || "Failed to save banner customization.",
+      });
+    } finally {
+      setSavingCustomization(false);
+    }
+  }
 
   const backendHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
@@ -646,7 +751,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
 
                       <div className="absolute top-2.5 right-2.5 z-10">
                         <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-600 text-white shadow-xs font-mono">
-                          {template.dimensionsLabel}
+                          {template.widthPx} × {template.heightPx} px
                         </span>
                       </div>
                     </div>
@@ -749,7 +854,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                         <div className="flex items-center gap-2 flex-wrap">
                           <h4 className="font-bold text-slate-900 text-sm truncate">{template.name}</h4>
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono">
-                            {template.dimensionsLabel}
+                            {template.widthPx} × {template.heightPx} px
                           </span>
                           <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600 capitalize">
                             {template.orientation}
@@ -1018,7 +1123,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                     <span className="font-medium text-slate-700">{activeFranchiseName}</span>
                     <span>·</span>
                     <span className="font-mono text-indigo-600 font-semibold">
-                      {viewingTemplate.dimensionsLabel}
+                      {viewingTemplate.widthPx} × {viewingTemplate.heightPx} px
                     </span>
                     <span>·</span>
                     <span className="capitalize">{viewingTemplate.orientation}</span>
@@ -1121,12 +1226,6 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                       </strong>
                     </p>
                     <p className="flex items-center justify-between">
-                      <span>Aspect Ratio:</span>
-                      <strong className="text-slate-900 font-mono">
-                        {viewingTemplate.dimensionsLabel}
-                      </strong>
-                    </p>
-                    <p className="flex items-center justify-between">
                       <span>Orientation:</span>
                       <strong className="text-slate-900 capitalize">
                         {viewingTemplate.orientation}
@@ -1135,6 +1234,327 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                   </div>
                 </div>
               </div>
+
+              {/* Dynamic Custom Fields Section */}
+              {viewingTemplate.fields && viewingTemplate.fields.length > 0 && (
+                <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-slate-100 pb-3">
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                        <span>Banner Customization & Details</span>
+                        <span className="text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">
+                          {viewingTemplate.fields.length}{" "}
+                          {viewingTemplate.fields.length === 1 ? "Field" : "Fields"}
+                        </span>
+                      </h4>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        Fill in your custom details and information for this banner request.
+                      </p>
+                    </div>
+
+                    {loadingCustomization && (
+                      <div className="flex items-center gap-1.5 text-xs text-slate-400">
+                        <Loader2 size={13} className="animate-spin text-indigo-600" />
+                        <span>Loading saved values...</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {customizationNotice && (
+                    <div
+                      className={`p-3 rounded-xl text-xs font-medium border flex items-center gap-2 ${
+                        customizationNotice.type === "success"
+                          ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                          : "bg-red-50 text-red-800 border-red-200"
+                      }`}
+                    >
+                      {customizationNotice.type === "success" ? (
+                        <CheckCircle2
+                          size={15}
+                          className="text-emerald-600 flex-shrink-0"
+                        />
+                      ) : (
+                        <XCircle
+                          size={15}
+                          className="text-red-600 flex-shrink-0"
+                        />
+                      )}
+                      <span>{customizationNotice.message}</span>
+                    </div>
+                  )}
+
+                  <form onSubmit={handleSaveCustomization} className="space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {viewingTemplate.fields.map((field, fIdx) => {
+                        const fieldKey = String(field.id || fIdx);
+                        const val = customFieldValues[fieldKey] ?? "";
+                        const isReadOnly = field.isEditable === false;
+
+                        return (
+                          <div
+                            key={fieldKey}
+                            className={`space-y-1.5 ${
+                              field.fieldType === "textarea" ? "sm:col-span-2" : ""
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <label className="text-xs font-bold text-slate-800 flex items-center gap-1">
+                                <span>{field.label}</span>
+                                {field.isRequired && (
+                                  <span className="text-red-500 font-bold">*</span>
+                                )}
+                              </label>
+                              {isReadOnly && (
+                                <span className="text-[10px] text-slate-400 italic">
+                                  Read-only
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Render based on fieldType */}
+                            {field.fieldType === "text" && (
+                              <Input
+                                type="text"
+                                placeholder={
+                                  field.placeholder || `Enter ${field.label}...`
+                                }
+                                value={val}
+                                disabled={isReadOnly}
+                                onChange={(e) =>
+                                  setCustomFieldValues((prev) => ({
+                                    ...prev,
+                                    [fieldKey]: e.target.value,
+                                  }))
+                                }
+                                className="h-9 text-xs"
+                                required={field.isRequired}
+                              />
+                            )}
+
+                            {field.fieldType === "email" && (
+                              <Input
+                                type="email"
+                                placeholder={
+                                  field.placeholder || "name@example.com"
+                                }
+                                value={val}
+                                disabled={isReadOnly}
+                                onChange={(e) =>
+                                  setCustomFieldValues((prev) => ({
+                                    ...prev,
+                                    [fieldKey]: e.target.value,
+                                  }))
+                                }
+                                className="h-9 text-xs"
+                                required={field.isRequired}
+                              />
+                            )}
+
+                            {field.fieldType === "phone" && (
+                              <Input
+                                type="tel"
+                                placeholder={
+                                  field.placeholder || "+1 (555) 000-0000"
+                                }
+                                value={val}
+                                disabled={isReadOnly}
+                                onChange={(e) =>
+                                  setCustomFieldValues((prev) => ({
+                                    ...prev,
+                                    [fieldKey]: e.target.value,
+                                  }))
+                                }
+                                className="h-9 text-xs"
+                                required={field.isRequired}
+                              />
+                            )}
+
+                            {field.fieldType === "number" && (
+                              <Input
+                                type="number"
+                                placeholder={field.placeholder || "0"}
+                                value={val}
+                                disabled={isReadOnly}
+                                onChange={(e) =>
+                                  setCustomFieldValues((prev) => ({
+                                    ...prev,
+                                    [fieldKey]: e.target.value,
+                                  }))
+                                }
+                                className="h-9 text-xs"
+                                required={field.isRequired}
+                              />
+                            )}
+
+                            {field.fieldType === "textarea" && (
+                              <Textarea
+                                placeholder={
+                                  field.placeholder || `Enter ${field.label}...`
+                                }
+                                value={val}
+                                disabled={isReadOnly}
+                                onChange={(e) =>
+                                  setCustomFieldValues((prev) => ({
+                                    ...prev,
+                                    [fieldKey]: e.target.value,
+                                  }))
+                                }
+                                rows={3}
+                                className="text-xs resize-y"
+                                required={field.isRequired}
+                              />
+                            )}
+
+                            {field.fieldType === "date" && (
+                              <Input
+                                type="date"
+                                value={val}
+                                disabled={isReadOnly}
+                                onChange={(e) =>
+                                  setCustomFieldValues((prev) => ({
+                                    ...prev,
+                                    [fieldKey]: e.target.value,
+                                  }))
+                                }
+                                className="h-9 text-xs"
+                                required={field.isRequired}
+                              />
+                            )}
+
+                            {field.fieldType === "select" && (
+                              <select
+                                value={val}
+                                disabled={isReadOnly}
+                                onChange={(e) =>
+                                  setCustomFieldValues((prev) => ({
+                                    ...prev,
+                                    [fieldKey]: e.target.value,
+                                  }))
+                                }
+                                className="w-full h-9 px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-800 disabled:bg-slate-100"
+                                required={field.isRequired}
+                              >
+                                <option value="">
+                                  {field.placeholder || "-- Select an option --"}
+                                </option>
+                                {(field.options || []).map((opt, oIdx) => (
+                                  <option key={oIdx} value={opt}>
+                                    {opt}
+                                  </option>
+                                ))}
+                              </select>
+                            )}
+
+                            {field.fieldType === "radio" && (
+                              <div className="space-y-2 pt-1">
+                                {(field.options || []).map((opt, oIdx) => (
+                                  <label
+                                    key={oIdx}
+                                    className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer"
+                                  >
+                                    <input
+                                      type="radio"
+                                      name={`radio-field-${fieldKey}`}
+                                      value={opt}
+                                      checked={val === opt}
+                                      disabled={isReadOnly}
+                                      onChange={() =>
+                                        setCustomFieldValues((prev) => ({
+                                          ...prev,
+                                          [fieldKey]: opt,
+                                        }))
+                                      }
+                                      className="w-3.5 h-3.5 text-indigo-600 border-slate-300"
+                                      required={field.isRequired && !val}
+                                    />
+                                    <span>{opt}</span>
+                                  </label>
+                                ))}
+                              </div>
+                            )}
+
+                            {field.fieldType === "checkbox" && (
+                              <div className="pt-1">
+                                <label className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
+                                  <input
+                                    type="checkbox"
+                                    checked={Boolean(val)}
+                                    disabled={isReadOnly}
+                                    onChange={(e) =>
+                                      setCustomFieldValues((prev) => ({
+                                        ...prev,
+                                        [fieldKey]: e.target.checked,
+                                      }))
+                                    }
+                                    className="w-4 h-4 rounded text-indigo-600 border-slate-300"
+                                  />
+                                  <span>
+                                    {field.placeholder ||
+                                      `Check to confirm ${field.label}`}
+                                  </span>
+                                </label>
+                              </div>
+                            )}
+
+                            {field.fieldType === "file" && (
+                              <div className="space-y-2">
+                                <Input
+                                  type="file"
+                                  disabled={isReadOnly}
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      setCustomFieldFiles((prev) => ({
+                                        ...prev,
+                                        [fieldKey]: file,
+                                      }));
+                                      setCustomFieldValues((prev) => ({
+                                        ...prev,
+                                        [fieldKey]: file.name,
+                                      }));
+                                    }
+                                  }}
+                                  className="h-9 text-xs file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200"
+                                />
+                                {typeof val === "string" && val && (
+                                  <p className="text-[11px] text-slate-500 truncate flex items-center gap-1">
+                                    <FileImage
+                                      size={12}
+                                      className="text-slate-400 flex-shrink-0"
+                                    />
+                                    <span>
+                                      Current file: <strong>{val}</strong>
+                                    </span>
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    <div className="flex items-center justify-end pt-2 border-t border-slate-100">
+                      <Button
+                        type="submit"
+                        disabled={savingCustomization}
+                        className="text-xs h-8 px-4 font-semibold gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs"
+                      >
+                        {savingCustomization ? (
+                          <>
+                            <Loader2 size={13} className="animate-spin" />
+                            <span>Saving...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Save Customization</span>
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              )}
             </div>
 
             {/* Modal Footer (Sticky at bottom) */}

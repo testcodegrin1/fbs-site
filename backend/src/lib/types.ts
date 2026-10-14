@@ -109,18 +109,25 @@ export type BannerTemplateModel = {
 export type BannerTemplateFieldModel = {
   id: number;
   templateId: number;
-  fieldKey: string;
-  fieldLabel: string;
+  label: string;
+  fieldLabel?: string;
+  fieldKey?: string;
   fieldType: string;
-  positionX: number;
-  positionY: number;
-  fontSize: number | null;
-  fontColor: string | null;
-  fontFamily: string | null;
-  textAlign: string;
-  maxLength: number | null;
+  placeholder?: string | null;
+  options?: string[] | null;
   isRequired: boolean;
   isEditable: boolean;
-  defaultValue: string | null;
+  sortOrder: number;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type BannerCustomizationModel = {
+  id: number;
+  templateId: number;
+  userId: number;
+  franchiseId?: number | null;
+  customizationValues: Record<string, any>;
   createdAt: string;
+  updatedAt: string;
 };

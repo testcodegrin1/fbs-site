@@ -15,6 +15,8 @@ import {
   type BannerTemplateModel,
   type FranchiseOption,
   type CreateBannerTemplatePayload,
+  type BannerTemplateField,
+  type BannerFieldType,
 } from "@/app/lib/client/banner-template-api";
 import {
   Button,
@@ -64,9 +66,9 @@ interface TemplateFormData {
   orientation: "landscape" | "portrait";
   width_px: number;
   height_px: number;
-  dimensions_label: string;
   is_active: boolean;
   images: FormImageItem[];
+  fields: BannerTemplateField[];
 }
 
 const defaultFormData: TemplateFormData = {
@@ -76,28 +78,23 @@ const defaultFormData: TemplateFormData = {
   orientation: "landscape",
   width_px: 1920,
   height_px: 1080,
-  dimensions_label: "1920x1080 (16:9)",
   is_active: true,
   images: [],
+  fields: [],
 };
 
-function calculateDimensionLabel(
-  w: number,
-  h: number,
-  orientation: string,
-): string {
-  if (!w || !h) return "";
-  function gcd(a: number, b: number): number {
-    return b === 0 ? a : gcd(b, a % b);
-  }
-  const divisor = gcd(w, h);
-  const ratioW = w / divisor;
-  const ratioH = h / divisor;
-  if (ratioW <= 32 && ratioH <= 32) {
-    return `${w}x${h} (${ratioW}:${ratioH})`;
-  }
-  return `${w}x${h} (${orientation})`;
-}
+const FIELD_TYPE_OPTIONS: { value: BannerFieldType; label: string }[] = [
+  { value: "text", label: "Text" },
+  { value: "email", label: "Email" },
+  { value: "phone", label: "Phone" },
+  { value: "number", label: "Number" },
+  { value: "textarea", label: "Textarea" },
+  { value: "date", label: "Date" },
+  { value: "select", label: "Dropdown/Select" },
+  { value: "radio", label: "Radio Button" },
+  { value: "checkbox", label: "Checkbox" },
+  { value: "file", label: "File Upload" },
+];
 
 /**
  * Stateful Image Preview Component with Loading Indicators and Fallback Candidates.
@@ -412,6 +409,7 @@ export function BannerTemplateManagement() {
       ...defaultFormData,
       franchise_id: firstFranchiseId,
       images: [],
+      fields: [],
     });
     setFormErrors({});
     setFormServerError(null);
@@ -429,8 +427,6 @@ export function BannerTemplateManagement() {
       orientation: template.orientation || "landscape",
       width_px: template.widthPx || 1920,
       height_px: template.heightPx || 1080,
-      dimensions_label:
-        template.dimensionsLabel || `${template.widthPx}x${template.heightPx}`,
       is_active: template.isActive,
       images:
         template.images && template.images.length > 0
@@ -442,6 +438,7 @@ export function BannerTemplateManagement() {
               sortOrder: img.sortOrder ?? i,
             }))
           : [],
+      fields: template.fields && template.fields.length > 0 ? [...template.fields] : [],
     });
 
     setFormErrors({});
@@ -465,6 +462,10 @@ export function BannerTemplateManagement() {
                   sortOrder: img.sortOrder ?? i,
                 }))
               : prev.images,
+          fields:
+            fresh.fields && fresh.fields.length > 0
+              ? [...fresh.fields]
+              : prev.fields,
         }));
       }
     } catch {
@@ -647,6 +648,16 @@ export function BannerTemplateManagement() {
       errors.height_px = "Height must be a positive number.";
     }
 
+    if (formData.fields && formData.fields.length > 0) {
+      for (let i = 0; i < formData.fields.length; i++) {
+        const f = formData.fields[i];
+        if (!f.label.trim()) {
+          errors[`field_${i}`] = `Field #${i + 1} label is required.`;
+          setFormServerError(`Field #${i + 1} label cannot be empty.`);
+        }
+      }
+    }
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   }
@@ -691,15 +702,10 @@ export function BannerTemplateManagement() {
         widthPx: Number(formData.width_px),
         height_px: Number(formData.height_px),
         heightPx: Number(formData.height_px),
-        dimensions_label:
-          formData.dimensions_label.trim() ||
-          `${formData.width_px}x${formData.height_px}`,
-        dimensionsLabel:
-          formData.dimensions_label.trim() ||
-          `${formData.width_px}x${formData.height_px}`,
         is_active: formData.is_active,
         isActive: formData.is_active,
         images: validImages,
+        fields: (formData.fields || []).filter((f) => f.label.trim() !== ""),
       };
 
       await bannerTemplateApi.createBannerTemplate(payload);
@@ -760,11 +766,10 @@ export function BannerTemplateManagement() {
         widthPx: Number(formData.width_px),
         height_px: Number(formData.height_px),
         heightPx: Number(formData.height_px),
-        dimensions_label: formData.dimensions_label.trim(),
-        dimensionsLabel: formData.dimensions_label.trim(),
         is_active: formData.is_active,
         isActive: formData.is_active,
         images: validImages,
+        fields: (formData.fields || []).filter((f) => f.label.trim() !== ""),
       };
 
       await bannerTemplateApi.updateBannerTemplate(editingTemplate.id, payload);
@@ -951,6 +956,437 @@ export function BannerTemplateManagement() {
               })}
             </div>
           )}
+        </div>
+      </div>
+    );
+  }
+
+  // =========================================================================
+  // DYNAMIC CUSTOM INPUT FIELDS: Handlers & UI Builder
+  // =========================================================================
+  function handleAddField() {
+    setFormData((prev) => ({
+      ...prev,
+      fields: [
+        ...prev.fields,
+        {
+          label: "",
+          fieldType: "text",
+          placeholder: "",
+          options: [],
+          isRequired: false,
+          isEditable: true,
+          sortOrder: prev.fields.length,
+        },
+      ],
+    }));
+  }
+
+  function handleRemoveField(index: number) {
+    setFormData((prev) => ({
+      ...prev,
+      fields: prev.fields
+        .filter((_, idx) => idx !== index)
+        .map((f, idx) => ({ ...f, sortOrder: idx })),
+    }));
+  }
+
+  function handleMoveField(index: number, direction: "up" | "down") {
+    setFormData((prev) => {
+      const nextFields = [...prev.fields];
+      const targetIdx = direction === "up" ? index - 1 : index + 1;
+      if (targetIdx < 0 || targetIdx >= nextFields.length) return prev;
+      const temp = nextFields[index];
+      nextFields[index] = nextFields[targetIdx];
+      nextFields[targetIdx] = temp;
+      return {
+        ...prev,
+        fields: nextFields.map((f, idx) => ({ ...f, sortOrder: idx })),
+      };
+    });
+  }
+
+  function handleFieldChange(
+    index: number,
+    patch: Partial<BannerTemplateField>,
+  ) {
+    setFormData((prev) => {
+      const nextFields = [...prev.fields];
+      const current = nextFields[index];
+      if (!current) return prev;
+      const updated = { ...current, ...patch };
+
+      // Initialize default options when switching to select or radio
+      if (
+        (patch.fieldType === "select" || patch.fieldType === "radio") &&
+        (!updated.options || updated.options.length === 0)
+      ) {
+        updated.options = ["Option 1", "Option 2"];
+      }
+
+      nextFields[index] = updated;
+      return { ...prev, fields: nextFields };
+    });
+  }
+
+  function handleAddOption(fieldIndex: number) {
+    setFormData((prev) => {
+      const nextFields = [...prev.fields];
+      const field = nextFields[fieldIndex];
+      if (!field) return prev;
+      const curOptions = Array.isArray(field.options) ? [...field.options] : [];
+      curOptions.push(`Option ${curOptions.length + 1}`);
+      nextFields[fieldIndex] = { ...field, options: curOptions };
+      return { ...prev, fields: nextFields };
+    });
+  }
+
+  function handleOptionChange(
+    fieldIndex: number,
+    optionIndex: number,
+    value: string,
+  ) {
+    setFormData((prev) => {
+      const nextFields = [...prev.fields];
+      const field = nextFields[fieldIndex];
+      if (!field) return prev;
+      const curOptions = Array.isArray(field.options) ? [...field.options] : [];
+      curOptions[optionIndex] = value;
+      nextFields[fieldIndex] = { ...field, options: curOptions };
+      return { ...prev, fields: nextFields };
+    });
+  }
+
+  function handleRemoveOption(fieldIndex: number, optionIndex: number) {
+    setFormData((prev) => {
+      const nextFields = [...prev.fields];
+      const field = nextFields[fieldIndex];
+      if (!field) return prev;
+      const curOptions = Array.isArray(field.options) ? [...field.options] : [];
+      curOptions.splice(optionIndex, 1);
+      nextFields[fieldIndex] = { ...field, options: curOptions };
+      return { ...prev, fields: nextFields };
+    });
+  }
+
+  function handleMoveOption(
+    fieldIndex: number,
+    optionIndex: number,
+    direction: "up" | "down",
+  ) {
+    setFormData((prev) => {
+      const nextFields = [...prev.fields];
+      const field = nextFields[fieldIndex];
+      if (!field) return prev;
+      const curOptions = Array.isArray(field.options) ? [...field.options] : [];
+      const targetIdx = direction === "up" ? optionIndex - 1 : optionIndex + 1;
+      if (targetIdx < 0 || targetIdx >= curOptions.length) return prev;
+      const temp = curOptions[optionIndex];
+      curOptions[optionIndex] = curOptions[targetIdx];
+      curOptions[targetIdx] = temp;
+      nextFields[fieldIndex] = { ...field, options: curOptions };
+      return { ...prev, fields: nextFields };
+    });
+  }
+
+  function renderCustomInputFieldsSection() {
+    return (
+      <div className="p-5 bg-white border border-slate-200/90 rounded-2xl space-y-4 shadow-xs">
+        {/* Section Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <h4 className="text-xs font-bold text-slate-900 tracking-wider uppercase">
+                CUSTOM INPUT FIELDS
+              </h4>
+              <Badge
+                variant="outline"
+                className="text-[10px] px-2 py-0.5 bg-slate-50 font-semibold"
+              >
+                {formData.fields.length}{" "}
+                {formData.fields.length === 1 ? "Field" : "Fields"}
+              </Badge>
+            </div>
+            <p className="text-[11px] text-slate-500 mt-0.5">
+              Configure the fields users can fill for this banner template.
+            </p>
+          </div>
+        </div>
+
+        {/* Empty State */}
+        {formData.fields.length === 0 ? (
+          <div className="py-8 px-4 border-2 border-dashed border-slate-200 rounded-xl text-center space-y-1.5 bg-slate-50/50">
+            <p className="text-xs font-semibold text-slate-600">
+              No custom input fields configured yet.
+            </p>
+            <p className="text-[11px] text-slate-400">
+              Click "+ Add Input Field" below to configure dynamic inputs for this template.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {formData.fields.map((field, fIdx) => {
+              const hasOptions =
+                field.fieldType === "select" || field.fieldType === "radio";
+              const showPlaceholder = !["checkbox", "file"].includes(
+                field.fieldType,
+              );
+
+              return (
+                <div
+                  key={field.id ? `f-${field.id}` : `f-idx-${fIdx}`}
+                  className="p-4 bg-slate-50/70 hover:bg-slate-50 border border-slate-200 rounded-xl space-y-3 transition-colors"
+                >
+                  {/* Top Bar: Field Number and Actions */}
+                  <div className="flex items-center justify-between gap-2 border-b border-slate-200/70 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 text-slate-700 text-[11px] font-bold">
+                        #{fIdx + 1}
+                      </span>
+                      <span className="text-xs font-semibold text-slate-800">
+                        {field.label.trim() ? field.label : `Field #${fIdx + 1}`}
+                      </span>
+                      {/* Temporarily hidden: Input Type badge */}
+                      {/* <Badge
+                        variant="outline"
+                        className="text-[10px] uppercase font-mono px-1.5 py-0 bg-white"
+                      >
+                        {field.fieldType}
+                      </Badge> */}
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleMoveField(fIdx, "up")}
+                        disabled={fIdx === 0}
+                        className="p-1.5 text-slate-400 hover:text-slate-700 disabled:opacity-20 rounded"
+                        title="Move Up"
+                      >
+                        <ArrowUp size={13} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMoveField(fIdx, "down")}
+                        disabled={fIdx === formData.fields.length - 1}
+                        className="p-1.5 text-slate-400 hover:text-slate-700 disabled:opacity-20 rounded"
+                        title="Move Down"
+                      >
+                        <ArrowDown size={13} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveField(fIdx)}
+                        className="p-1.5 text-red-400 hover:text-red-600 rounded ml-1"
+                        title="Delete Field"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* A. Field Label */}
+                  <div className="space-y-1">
+                    <Label className="text-[11px] font-bold text-slate-700">
+                      Field Label <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      type="text"
+                      placeholder="e.g. Full Name, Email Address, Company Name, Offer Title..."
+                      value={field.label}
+                      onChange={(e) =>
+                        handleFieldChange(fIdx, { label: e.target.value })
+                      }
+                      className="h-8 text-xs bg-white"
+                      required
+                    />
+                  </div>
+
+                  {/*
+                    ===================================================================
+                    TEMPORARILY HIDDEN (Can be re-enabled anytime without schema change):
+                    1. Input Type dropdown
+                    2. Placeholder input
+                    ===================================================================
+                  */}
+                  {/*
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-[11px] font-bold text-slate-700">
+                        Input Type
+                      </Label>
+                      <select
+                        value={field.fieldType}
+                        onChange={(e) =>
+                          handleFieldChange(fIdx, {
+                            fieldType: e.target.value as BannerFieldType,
+                          })
+                        }
+                        className="w-full h-8 px-2 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-slate-900"
+                      >
+                        {FIELD_TYPE_OPTIONS.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {showPlaceholder && (
+                      <div className="space-y-1 sm:col-span-2">
+                        <Label className="text-[11px] font-bold text-slate-700">
+                          Placeholder (Optional)
+                        </Label>
+                        <Input
+                          type="text"
+                          placeholder="e.g. Enter here..."
+                          value={field.placeholder || ""}
+                          onChange={(e) =>
+                            handleFieldChange(fIdx, {
+                              placeholder: e.target.value,
+                            })
+                          }
+                          className="h-8 text-xs bg-white"
+                        />
+                      </div>
+                    )}
+                  </div>
+                  */}
+
+                  {/* Checkboxes: Required & Editable */}
+                  <div className="flex flex-wrap items-center gap-6 pt-1">
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(field.isRequired)}
+                        onChange={(e) =>
+                          handleFieldChange(fIdx, {
+                            isRequired: e.target.checked,
+                          })
+                        }
+                        className="w-3.5 h-3.5 rounded text-slate-900 border-slate-300 focus:ring-slate-900"
+                      />
+                      <span className="text-xs font-medium text-slate-700">
+                        Required Field
+                      </span>
+                    </label>
+
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={field.isEditable !== false}
+                        onChange={(e) =>
+                          handleFieldChange(fIdx, {
+                            isEditable: e.target.checked,
+                          })
+                        }
+                        className="w-3.5 h-3.5 rounded text-slate-900 border-slate-300 focus:ring-slate-900"
+                      />
+                      <span className="text-xs font-medium text-slate-700">
+                        Editable by User
+                      </span>
+                    </label>
+                  </div>
+
+                  {/* Options Editor (Temporarily hidden with Input Type dropdown) */}
+                  {/*
+                  {hasOptions && (
+                    <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-2 mt-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-slate-700">
+                          Options List ({field.options?.length || 0})
+                        </span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleAddOption(fIdx)}
+                          className="h-6 text-[10px] px-2 font-semibold gap-1 bg-slate-50 border-slate-200"
+                        >
+                          <Plus size={11} /> Add Option
+                        </Button>
+                      </div>
+
+                      {!field.options || field.options.length === 0 ? (
+                        <p className="text-[11px] text-slate-400 italic">
+                          No options added. Click "+ Add Option" to add selectable options.
+                        </p>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {field.options.map((opt, oIdx) => (
+                            <div key={oIdx} className="flex items-center gap-2">
+                              <span className="text-[10px] font-mono text-slate-400 w-4 text-center">
+                                {oIdx + 1}.
+                              </span>
+                              <Input
+                                type="text"
+                                value={opt}
+                                onChange={(e) =>
+                                  handleOptionChange(fIdx, oIdx, e.target.value)
+                                }
+                                placeholder={`Option ${oIdx + 1}`}
+                                className="h-7 text-xs bg-slate-50/50 flex-1"
+                              />
+                              <div className="flex items-center gap-0.5">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleMoveOption(fIdx, oIdx, "up")
+                                  }
+                                  disabled={oIdx === 0}
+                                  className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-20 rounded"
+                                  title="Move Up"
+                                >
+                                  <ArrowUp size={11} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleMoveOption(fIdx, oIdx, "down")
+                                  }
+                                  disabled={
+                                    oIdx === (field.options?.length || 1) - 1
+                                  }
+                                  className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-20 rounded"
+                                  title="Move Down"
+                                >
+                                  <ArrowDown size={11} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    handleRemoveOption(fIdx, oIdx)
+                                  }
+                                  className="p-1 text-red-400 hover:text-red-600 rounded"
+                                  title="Remove Option"
+                                >
+                                  <Trash2 size={11} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  */}
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Add Input Field Button */}
+        <div className="pt-1">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleAddField}
+            className="w-full h-9 text-xs font-semibold gap-1.5 border-dashed border-slate-300 hover:border-slate-400 text-slate-700 bg-slate-50/50 hover:bg-slate-100"
+          >
+            <Plus size={14} />
+            + Add Input Field
+          </Button>
         </div>
       </div>
     );
@@ -1472,18 +1908,12 @@ export function BannerTemplateManagement() {
                       type="number"
                       min={1}
                       value={formData.width_px}
-                      onChange={(e) => {
-                        const w = Number(e.target.value);
+                      onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
-                          width_px: w,
-                          dimensions_label: calculateDimensionLabel(
-                            w,
-                            prev.height_px,
-                            prev.orientation,
-                          ),
-                        }));
-                      }}
+                          width_px: Number(e.target.value),
+                        }))
+                      }
                       className="h-9 text-xs"
                     />
                   </div>
@@ -1496,18 +1926,12 @@ export function BannerTemplateManagement() {
                       type="number"
                       min={1}
                       value={formData.height_px}
-                      onChange={(e) => {
-                        const h = Number(e.target.value);
+                      onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
-                          height_px: h,
-                          dimensions_label: calculateDimensionLabel(
-                            prev.width_px,
-                            h,
-                            prev.orientation,
-                          ),
-                        }));
-                      }}
+                          height_px: Number(e.target.value),
+                        }))
+                      }
                       className="h-9 text-xs"
                     />
                   </div>
@@ -1518,18 +1942,12 @@ export function BannerTemplateManagement() {
                     </Label>
                     <select
                       value={formData.orientation}
-                      onChange={(e) => {
-                        const o = e.target.value as "landscape" | "portrait";
+                      onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
-                          orientation: o,
-                          dimensions_label: calculateDimensionLabel(
-                            prev.width_px,
-                            prev.height_px,
-                            o,
-                          ),
-                        }));
-                      }}
+                          orientation: e.target.value as "landscape" | "portrait",
+                        }))
+                      }
                       className="w-full h-9 px-2 bg-white border border-slate-200 rounded-lg text-xs font-medium"
                     >
                       <option value="landscape">Landscape</option>
@@ -1537,28 +1955,13 @@ export function BannerTemplateManagement() {
                     </select>
                   </div>
                 </div>
-
-                <div className="space-y-1 pt-1">
-                  <Label className="text-[11px] font-bold text-slate-700">
-                    Dimensions Label
-                  </Label>
-                  <Input
-                    type="text"
-                    value={formData.dimensions_label}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        dimensions_label: e.target.value,
-                      })
-                    }
-                    placeholder="e.g. 1920x1080 (16:9)"
-                    className="h-9 text-xs"
-                  />
-                </div>
               </div>
 
               {/* Row 4: Image Management & Upload Section */}
               {renderImageUploadSection("create")}
+
+              {/* Row 4.5: Custom Input Fields Builder */}
+              {renderCustomInputFieldsSection()}
 
               {/* Row 5: Active Status */}
               <div className="flex items-center gap-3 pt-1">
@@ -1788,27 +2191,13 @@ export function BannerTemplateManagement() {
                     </select>
                   </div>
                 </div>
-
-                <div className="space-y-1 pt-1">
-                  <Label className="text-[11px] font-bold text-slate-700">
-                    Dimensions Label
-                  </Label>
-                  <Input
-                    type="text"
-                    value={formData.dimensions_label}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        dimensions_label: e.target.value,
-                      })
-                    }
-                    className="h-9 text-xs"
-                  />
-                </div>
               </div>
 
               {/* Image Upload & Edit Section */}
               {renderImageUploadSection("edit")}
+
+              {/* Custom Input Fields Builder */}
+              {renderCustomInputFieldsSection()}
 
               {/* Active Toggle */}
               <div className="flex items-center gap-3">
@@ -1966,6 +2355,66 @@ export function BannerTemplateManagement() {
                         <div className="p-2 bg-white text-[10px] font-semibold text-slate-600 truncate border-t">
                           Order #{img.sortOrder ?? idx}: {img.imageUrl}
                         </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Custom Input Fields Summary */}
+              {viewingTemplate.fields && viewingTemplate.fields.length > 0 && (
+                <div className="space-y-2">
+                  <span className="text-xs font-bold text-slate-700 flex items-center justify-between">
+                    <span>Configured Custom Fields ({viewingTemplate.fields.length})</span>
+                  </span>
+                  <div className="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100 bg-white">
+                    {viewingTemplate.fields.map((f, idx) => (
+                      <div
+                        key={idx}
+                        className="p-3 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2"
+                      >
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="w-5 text-center text-slate-400 font-bold text-[11px]">
+                            #{idx + 1}
+                          </span>
+                          <span className="font-semibold text-slate-800">
+                            {f.label}
+                          </span>
+                          {/* Temporarily hidden: fieldType badge */}
+                          {/* <Badge
+                            variant="outline"
+                            className="text-[10px] uppercase font-mono px-1.5 py-0"
+                          >
+                            {f.fieldType}
+                          </Badge> */}
+                          {f.isRequired ? (
+                            <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-[10px]">
+                              Required
+                            </Badge>
+                          ) : (
+                            <span className="text-[10px] text-slate-400">
+                              Optional
+                            </span>
+                          )}
+                          {f.isEditable === false && (
+                            <Badge className="bg-slate-100 text-slate-600 border-slate-200 text-[10px]">
+                              Read-Only
+                            </Badge>
+                          )}
+                        </div>
+                        {/* Temporarily hidden: Placeholder display */}
+                        {/* {f.placeholder && (
+                          <span className="text-[11px] text-slate-400 italic">
+                            Placeholder: "{f.placeholder}"
+                          </span>
+                        )} */}
+                        {(f.fieldType === "select" || f.fieldType === "radio") &&
+                          f.options &&
+                          f.options.length > 0 && (
+                            <span className="text-[11px] text-slate-500">
+                              Options: {f.options.join(", ")}
+                            </span>
+                          )}
                       </div>
                     ))}
                   </div>

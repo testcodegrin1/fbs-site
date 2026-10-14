@@ -36,7 +36,6 @@ CREATE TABLE IF NOT EXISTS banner_templates (
     description TEXT NULL,
     width_px INT UNSIGNED NOT NULL,
     height_px INT UNSIGNED NOT NULL,
-    dimensions_label VARCHAR(100) NULL,
     orientation ENUM('landscape','portrait','square') NOT NULL DEFAULT 'landscape',
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -116,3 +115,21 @@ CREATE TABLE IF NOT EXISTS vendor_order_status_history (
 ALTER TABLE `users` 
 ADD COLUMN `franchise_id` BIGINT UNSIGNED NULL AFTER `password_hash`,
 ADD CONSTRAINT `fk_users_franchise` FOREIGN KEY (`franchise_id`) REFERENCES `franchises` (`id`) ON DELETE SET NULL;
+
+
+CREATE TABLE IF NOT EXISTS `banner_customizations` (
+    `id` BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `template_id` BIGINT UNSIGNED NOT NULL,
+    `user_id` BIGINT UNSIGNED NOT NULL,
+    `franchise_id` BIGINT UNSIGNED NULL,
+    `customization_values` JSON NOT NULL,
+    `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY `idx_banner_customizations_user` (`user_id`),
+    KEY `idx_banner_customizations_template` (`template_id`),
+    KEY `idx_banner_customizations_franchise` (`franchise_id`),
+    CONSTRAINT `fk_banner_cust_template` FOREIGN KEY (`template_id`) 
+        REFERENCES `banner_templates` (`id`) ON DELETE CASCADE,
+    CONSTRAINT `fk_banner_cust_user` FOREIGN KEY (`user_id`) 
+        REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

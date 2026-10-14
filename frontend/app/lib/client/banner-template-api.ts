@@ -16,23 +16,32 @@ export interface BannerTemplateImage {
   updatedAt?: string;
 }
 
+export type BannerFieldType =
+  | "text"
+  | "email"
+  | "phone"
+  | "number"
+  | "textarea"
+  | "date"
+  | "dropdown"
+  | "select"
+  | "radio"
+  | "checkbox"
+  | "file";
+
 export interface BannerTemplateField {
   id?: number;
   templateId?: number;
-  fieldKey: string;
-  fieldLabel: string;
-  fieldType: string;
-  positionX: number;
-  positionY: number;
-  fontSize: number;
-  fontColor: string;
-  fontFamily: string;
-  textAlign: string;
-  maxLength: number;
+  label: string;
+  fieldLabel?: string;
+  fieldType: BannerFieldType | string;
+  placeholder?: string;
+  options?: string[];
   isRequired: boolean;
   isEditable: boolean;
-  defaultValue?: string;
+  sortOrder?: number;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface BannerTemplateModel {
@@ -62,7 +71,7 @@ export interface CreateBannerTemplatePayload {
   widthPx?: number;
   height_px: number;
   heightPx?: number;
-  dimensions_label: string;
+  dimensions_label?: string;
   dimensionsLabel?: string;
   is_active: boolean;
   isActive?: boolean;
@@ -71,6 +80,7 @@ export interface CreateBannerTemplatePayload {
     imageName?: string | null;
     sortOrder: number;
   }>;
+  fields?: BannerTemplateField[];
 }
 
 export interface FranchiseOption {
@@ -243,14 +253,52 @@ function normalizeTemplate(raw: any): BannerTemplateModel {
     widthPx: Number(raw.widthPx ?? raw.width_px ?? 1080),
     heightPx: Number(raw.heightPx ?? raw.height_px ?? 1080),
     dimensionsLabel:
-      raw.dimensionsLabel ?? raw.dimensions_label ?? undefined,
+      raw.dimensionsLabel ||
+      raw.dimensions_label ||
+      `${Number(raw.widthPx ?? raw.width_px ?? 1080)}x${Number(raw.heightPx ?? raw.height_px ?? 1080)}`,
     orientation:
       raw.orientation === "portrait" ? "portrait" : "landscape",
     isActive,
     createdAt: raw.createdAt ?? raw.created_at,
     updatedAt: raw.updatedAt ?? raw.updated_at,
     images: normalizedImages,
-    fields: Array.isArray(raw.fields) ? raw.fields : undefined,
+    fields: Array.isArray(raw.fields)
+      ? raw.fields.map((f: any, idx: number) => {
+          let options: string[] = [];
+          if (Array.isArray(f.options)) {
+            options = f.options;
+          } else if (typeof f.options === "string") {
+            try {
+              options = JSON.parse(f.options);
+            } catch {
+              options = [];
+            }
+          }
+          const label = String(f.label || f.fieldLabel || f.name || `Field ${idx + 1}`);
+          return {
+            id: f.id ? Number(f.id) : undefined,
+            templateId: f.templateId || f.template_id,
+            label,
+            fieldLabel: label,
+            fieldType: String(f.fieldType || f.field_type || "text").toLowerCase(),
+            placeholder: f.placeholder ? String(f.placeholder) : undefined,
+            options,
+            isRequired: Boolean(f.isRequired ?? f.is_required),
+            isEditable:
+              f.isEditable !== undefined
+                ? Boolean(f.isEditable)
+                : f.is_editable !== undefined
+                  ? Boolean(f.is_editable)
+                  : true,
+            sortOrder:
+              f.sortOrder !== undefined
+                ? Number(f.sortOrder)
+                : f.sort_order !== undefined
+                  ? Number(f.sort_order)
+                  : idx,
+          };
+        })
+      : [],
   };
 }
 
@@ -425,14 +473,13 @@ export const bannerTemplateApi = {
       widthPx: payload.width_px,
       height_px: payload.height_px,
       heightPx: payload.height_px,
-      dimensions_label: payload.dimensions_label,
-      dimensionsLabel: payload.dimensions_label,
       is_active: payload.is_active,
       isActive: payload.is_active,
       images: payload.images.map((img, idx) => ({
         imageUrl: img.imageUrl,
         sortOrder: img.sortOrder !== undefined ? img.sortOrder : idx,
       })),
+      fields: payload.fields || [],
     };
 
     const data = await request<any>("/api/createBannerTemplate", {
@@ -510,5 +557,80 @@ export const bannerTemplateApi = {
       }
       throw err;
     }
+  },
+
+  /**
+   * 7. GET /api/getBannerTemplateFields/:id
+   */
+  async getBannerTemplateFields(id: number): Promise<BannerTemplateField[]> {
+    const data = await request<any>(`/api/getBannerTemplateFields/${id}`, {
+      method: "GET",
+    });
+    return Array.isArray(data?.fields) ? data.fields : [];
+  },
+
+  /**
+   * 8. POST /api/saveBannerCustomization
+   */
+  async saveBannerCustomization(
+    templateIdOrOptions:
+      | number
+      | {
+          templateId: number;
+          values: Record<string, any>;
+          files?: Record<string, File>;
+          franchiseId?: number;
+        },
+    values?: Record<string, any>,
+    files?: Record<string, File>,
+    franchiseId?: number,
+  ): Promise<any> {
+    let tId: number;
+    let vals: Record<string, any>;
+    let fls: Record<string, File> | undefined;
+    let fId: number | undefined;
+
+    if (typeof templateIdOrOptions === "object" && templateIdOrOptions !== null) {
+      tId = templateIdOrOptions.templateId;
+      vals = templateIdOrOptions.values;
+      fls = templateIdOrOptions.files;
+      fId = templateIdOrOptions.franchiseId;
+    } else {
+      tId = templateIdOrOptions;
+      vals = values || {};
+      fls = files;
+      fId = franchiseId;
+    }
+
+    const formData = new FormData();
+    formData.append("templateId", String(tId));
+    if (fId) {
+      formData.append("franchiseId", String(fId));
+    }
+    formData.append("customizationValues", JSON.stringify(vals));
+
+    if (fls) {
+      for (const [key, file] of Object.entries(fls)) {
+        if (file instanceof File) {
+          formData.append(key, file);
+        }
+      }
+    }
+
+    const data = await request<any>("/api/saveBannerCustomization", {
+      method: "POST",
+      body: formData,
+    });
+    return data;
+  },
+
+  /**
+   * 9. GET /api/getBannerCustomization/:id
+   */
+  async getBannerCustomization(templateId: number): Promise<any> {
+    const data = await request<any>(`/api/getBannerCustomization/${templateId}`, {
+      method: "GET",
+    });
+    return data?.customization ?? null;
   },
 };
