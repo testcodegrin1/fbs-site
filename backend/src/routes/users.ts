@@ -8,10 +8,6 @@ import {
   listUsers,
   updateUser,
 } from "../lib/users.js";
-import {
-  listFranchiseUserRequests,
-  updateFranchiseAccessStatus,
-} from "../lib/franchises.js";
 import type { AuthRole, AuthUser } from "../lib/types.js";
 
 export const usersRouter = Router();
@@ -99,40 +95,6 @@ usersRouter.delete("/:id", async (req, res) => {
     await assertCanManageTarget(actor, userId);
     await deleteUser(userId, actor.id);
     res.json({ ok: true });
-  } catch (error) {
-    const { message, status } = getErrorResponse(error);
-    res.status(status).json({ message });
-  }
-});
-
-// GET /api/getUserRequests - List user franchise access requests (Admin only)
-usersRouter.get("/getUserRequests", async (req, res) => {
-  try {
-    await requirePermission(req, "franchises:manage");
-    const status = req.query.status as any;
-    const franchiseId = req.query.franchiseId ? Number(req.query.franchiseId) : undefined;
-    const requests = await listFranchiseUserRequests(status, franchiseId);
-    res.json({ requests });
-  } catch (error) {
-    const { message, status } = getErrorResponse(error);
-    res.status(status).json({ message });
-  }
-});
-
-// PUT /api/updateUserRequestStatus/:id - Approve or reject user's franchise access
-usersRouter.put("/updateUserRequestStatus/:id", async (req, res) => {
-  try {
-    const actor = await requirePermission(req, "franchises:manage");
-    const id = Number(req.params.id);
-    const { status, rejectionReason } = req.body;
-
-    if (!status || !["approved", "rejected", "pending"].includes(status)) {
-      res.status(400).json({ message: "Valid status ('approved', 'rejected', 'pending') is required." });
-      return;
-    }
-
-    await updateFranchiseAccessStatus(id, status, actor.id, rejectionReason);
-    res.json({ message: `User request ${status} successfully` });
   } catch (error) {
     const { message, status } = getErrorResponse(error);
     res.status(status).json({ message });

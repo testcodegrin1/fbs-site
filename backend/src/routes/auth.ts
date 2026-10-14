@@ -12,7 +12,6 @@ import {
 import {
   getFranchiseById,
   listFranchises,
-  requestFranchiseAccess,
 } from "../lib/franchises.js";
 import { createUser } from "../lib/users.js";
 
@@ -65,11 +64,9 @@ authRouter.post("/register", async (req, res) => {
       franchiseId,
     });
 
-    await requestFranchiseAccess(user.id, franchiseId);
     res.status(201).json({
       user: { ...user, franchiseId, franchiseName: franchise.name },
-      message:
-        "Your login request for this franchise has been submitted to Super Admin for approval.",
+      message: "Your account has been submitted to Super Admin for approval.",
     });
   } catch (error) {
     const { message, status } = getErrorResponse(error);

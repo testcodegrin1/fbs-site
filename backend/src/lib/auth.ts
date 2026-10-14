@@ -5,11 +5,7 @@ import { createAuthToken, verifyAuthToken } from "./jwt.js";
 import { initializeAuthDatabase } from "./db.js";
 import { verifyPassword } from "./password.js";
 import { getUserByEmailWithPassword, getUserById } from "./users.js";
-import {
-  getFranchiseById,
-  getFranchiseUserAccess,
-  requestFranchiseAccess,
-} from "./franchises.js";
+import { getFranchiseById } from "./franchises.js";
 import type { AuthRole, AuthUser, Permission } from "./types.js";
 
 const TOKEN_TTL_SECONDS = 60 * 60 * 8;
@@ -44,19 +40,20 @@ export async function loginWithRole(
   let selectedFranchiseName: string | undefined;
 
   if (activeRole === "user") {
-    let access = franchiseId
-      ? await getFranchiseUserAccess(user.id, franchiseId)
-      : await getFranchiseUserAccess(user.id);
-
-    if (!franchiseId && access) {
-      selectedFranchiseId = access.franchiseId;
-      selectedFranchiseName = access.franchiseName;
-    }
+    const assignedFranchiseId = user.franchiseId ?? undefined;
+    selectedFranchiseId = franchiseId ?? assignedFranchiseId;
 
     if (!selectedFranchiseId) {
       throw new AuthError(
-        "No franchise access request found. Please create an account and select a franchise first.",
+        "No franchise is assigned to this account.",
         400,
+      );
+    }
+
+    if (assignedFranchiseId !== selectedFranchiseId) {
+      throw new AuthError(
+        "This account is not authorized for the selected franchise.",
+        403,
       );
     }
 
@@ -64,23 +61,7 @@ export async function loginWithRole(
     if (!franchise || !franchise.isActive) {
       throw new AuthError("Selected franchise does not exist or is inactive.", 400);
     }
-    selectedFranchiseName = selectedFranchiseName ?? franchise.name;
-
-    if (!access) {
-      await requestFranchiseAccess(user.id, selectedFranchiseId);
-      throw new AuthError(
-        "Your login request for this franchise has been submitted to Super Admin for approval.",
-        403,
-      );
-    }
-    if (access.status === "rejected") {
-      throw new AuthError(
-        access.rejectionReason
-          ? `Your access for this franchise was rejected: ${access.rejectionReason}`
-          : "Your access for this franchise has been rejected.",
-        403,
-      );
-    }
+    selectedFranchiseName = franchise.name;
   }
 
   const tokenId = randomUUID();

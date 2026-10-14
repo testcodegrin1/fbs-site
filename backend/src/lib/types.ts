@@ -52,23 +52,6 @@ export type FranchiseModel = {
   updatedAt: string;
 };
 
-export type FranchiseAccessStatus = "pending" | "approved" | "rejected";
-
-export type UserFranchiseRequestModel = {
-  id: number;
-  userId: number;
-  franchiseId: number;
-  franchiseName?: string;
-  userEmail?: string;
-  userName?: string;
-  status: FranchiseAccessStatus;
-  rejectionReason: string | null;
-  approvedBy: number | null;
-  approvedAt: string | null;
-  createdAt: string;
-  updatedAt: string;
-};
-
 export type BannerOrientation = "landscape" | "portrait" | "square";
 
 export type BannerTemplateImageModel = {
