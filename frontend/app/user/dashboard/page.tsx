@@ -257,10 +257,17 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
       ? resolveImageUrl(clientUser.brandingLogoUrl)
       : null;
 
+  const totalBannerImages = useMemo(() => {
+    return bannerTemplates.reduce(
+      (sum, t) => sum + (t.images && t.images.length > 0 ? t.images.length : 1),
+      0,
+    );
+  }, [bannerTemplates]);
+
   const navItems: SidebarNavItem[] = [
     { id: "projects", label: "My Design Proofs", icon: FolderKanban, badge: projects.length },
     { id: "franchise", label: "My Franchise", icon: Building2 },
-    { id: "banner-templates", label: "Banner Templates", icon: LayoutTemplate, badge: bannerTemplates.length },
+    { id: "banner-templates", label: "Banner Templates", icon: LayoutTemplate, badge: totalBannerImages },
   ];
 
   async function loadClientProjects() {
@@ -348,7 +355,10 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
       if (query) {
         const matchesName = item.name.toLowerCase().includes(query);
         const matchesDesc = (item.description || "").toLowerCase().includes(query);
-        const matchesDim = (item.dimensionsLabel || "").toLowerCase().includes(query);
+        const matchesDim =
+          (item.dimensionsLabel || "").toLowerCase().includes(query) ||
+          `${item.widthPx}x${item.heightPx}`.includes(query) ||
+          `${item.widthPx} x ${item.heightPx}`.includes(query);
         if (!matchesName && !matchesDesc && !matchesDim) {
           return false;
         }
@@ -365,6 +375,44 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
       return true;
     });
   }, [bannerTemplates, userFranchiseId, bannerSearch, bannerOrientationFilter]);
+
+  // Flatten templates by their images so each image is displayed separately on the user side
+  const bannerDisplayItems = useMemo(() => {
+    const list: Array<{
+      key: string;
+      template: BannerTemplateModel;
+      imageIndex: number;
+      imageUrl: string;
+      imageName?: string | null;
+      totalImages: number;
+    }> = [];
+
+    for (const template of filteredBanners) {
+      if (!template.images || template.images.length === 0) {
+        list.push({
+          key: `tpl-${template.id}-0`,
+          template,
+          imageIndex: 0,
+          imageUrl: "",
+          imageName: template.name,
+          totalImages: 0,
+        });
+      } else {
+        template.images.forEach((img, idx) => {
+          list.push({
+            key: `tpl-${template.id}-img-${img.id || idx}`,
+            template,
+            imageIndex: idx,
+            imageUrl: img.imageUrl,
+            imageName: img.imageName,
+            totalImages: template.images.length,
+          });
+        });
+      }
+    }
+
+    return list;
+  }, [filteredBanners]);
 
   // Download banner image
   async function handleDownloadBanner(imgUrl: string, fileName?: string) {
@@ -680,7 +728,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
               <p className="font-semibold text-slate-700">Loading banner templates...</p>
               <p className="text-[11px] text-slate-400">Fetching graphics for {activeFranchiseName}</p>
             </Card>
-          ) : filteredBanners.length === 0 ? (
+          ) : bannerDisplayItems.length === 0 ? (
             <Card className="p-12 text-center text-slate-400 space-y-3 bg-white border border-slate-200">
               <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-500 mx-auto flex items-center justify-center border border-indigo-100 shadow-inner">
                 <LayoutTemplate size={28} />
@@ -711,28 +759,28 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
             </Card>
           ) : bannerViewMode === "grid" ? (
             /* Grid View */
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {filteredBanners.map((template) => {
-                const primaryImage = template.images?.[0]?.imageUrl
-                  ? resolveImageUrl(template.images[0].imageUrl)
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {bannerDisplayItems.map((item) => {
+                const effectiveImage = item.imageUrl
+                  ? resolveImageUrl(item.imageUrl)
                   : "";
 
                 return (
                   <Card
-                    key={template.id}
+                    key={item.key}
                     className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs hover:shadow-lg hover:border-indigo-300 transition-all duration-200 p-0 flex flex-col"
                   >
                     {/* Top Image Preview Banner */}
                     <div
                       onClick={() => {
-                        setViewingTemplate(template);
-                        setActiveImageIndex(0);
+                        setViewingTemplate(item.template);
+                        setActiveImageIndex(item.imageIndex);
                       }}
                       className="cursor-pointer relative aspect-[16/10] bg-slate-50 border-b border-slate-100 overflow-hidden"
                     >
                       <BannerImageThumbnail
-                        src={primaryImage}
-                        alt={template.name}
+                        src={effectiveImage}
+                        alt={item.imageName || item.template.name}
                         containerClassName="w-full h-full"
                         className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 bg-white"
                       />
@@ -740,18 +788,18 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                       {/* Overlay Badges */}
                       <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10">
                         <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/95 backdrop-blur-xs text-slate-800 shadow-xs capitalize border border-slate-200">
-                          {template.orientation}
+                          {item.template.orientation}
                         </span>
-                        {template.images && template.images.length > 1 && (
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-900/80 text-white shadow-xs backdrop-blur-xs">
-                            {template.images.length} Assets
+                        {item.totalImages > 1 && (
+                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-900/80 text-white shadow-xs backdrop-blur-xs font-mono">
+                            #{item.imageIndex + 1}
                           </span>
                         )}
                       </div>
 
                       <div className="absolute top-2.5 right-2.5 z-10">
                         <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-600 text-white shadow-xs font-mono">
-                          {template.widthPx} × {template.heightPx} px
+                          {item.template.widthPx} × {item.template.heightPx} px
                         </span>
                       </div>
                     </div>
@@ -763,17 +811,22 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                           <h3
                             className="font-bold text-slate-900 text-base group-hover:text-indigo-600 transition truncate cursor-pointer"
                             onClick={() => {
-                              setViewingTemplate(template);
-                              setActiveImageIndex(0);
+                              setViewingTemplate(item.template);
+                              setActiveImageIndex(item.imageIndex);
                             }}
                           >
-                            {template.name}
+                            {item.template.name}
+                            {item.totalImages > 1 && (
+                              <span className="text-xs text-slate-400 font-normal ml-1.5">
+                                (#{item.imageIndex + 1})
+                              </span>
+                            )}
                           </h3>
                         </div>
 
-                        {template.description ? (
+                        {item.template.description ? (
                           <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
-                            {template.description}
+                            {item.template.description}
                           </p>
                         ) : (
                           <p className="text-xs text-slate-400 mt-1 italic">
@@ -785,18 +838,21 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                       {/* Card Footer Actions */}
                       <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
                         <span className="text-[11px] text-slate-400 font-mono">
-                          {template.widthPx} × {template.heightPx} px
+                          {item.template.widthPx} × {item.template.heightPx} px
                         </span>
 
                         <div className="flex items-center gap-1.5">
-                          {primaryImage && (
+                          {effectiveImage && (
                             <Button
                               variant="ghost"
                               size="icon-sm"
                               title="Download Banner"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                handleDownloadBanner(template.images[0].imageUrl, `${template.name}-banner.png`);
+                                handleDownloadBanner(
+                                  item.imageUrl,
+                                  item.imageName || `${item.template.name}-banner-${item.imageIndex + 1}.png`
+                                );
                               }}
                               className="h-8 w-8 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50"
                             >
@@ -807,8 +863,8 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                             variant="outline"
                             size="sm"
                             onClick={() => {
-                              setViewingTemplate(template);
-                              setActiveImageIndex(0);
+                              setViewingTemplate(item.template);
+                              setActiveImageIndex(item.imageIndex);
                             }}
                             className="h-8 text-xs font-semibold gap-1.5 border-slate-200 text-slate-700 hover:text-indigo-600 hover:border-indigo-300"
                           >
@@ -824,27 +880,27 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
           ) : (
             /* List View */
             <div className="space-y-2.5">
-              {filteredBanners.map((template) => {
-                const primaryImage = template.images?.[0]?.imageUrl
-                  ? resolveImageUrl(template.images[0].imageUrl)
+              {bannerDisplayItems.map((item) => {
+                const effectiveImage = item.imageUrl
+                  ? resolveImageUrl(item.imageUrl)
                   : "";
 
                 return (
                   <Card
-                    key={template.id}
+                    key={item.key}
                     className="p-3.5 bg-white border border-slate-200 hover:border-indigo-300 hover:shadow-sm transition rounded-xl flex items-center justify-between gap-4"
                   >
                     <div
                       onClick={() => {
-                        setViewingTemplate(template);
-                        setActiveImageIndex(0);
+                        setViewingTemplate(item.template);
+                        setActiveImageIndex(item.imageIndex);
                       }}
                       className="flex items-center gap-3.5 min-w-0 flex-1 cursor-pointer"
                     >
                       <div className="w-16 h-12 rounded-lg bg-slate-50 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
                         <BannerImageThumbnail
-                          src={primaryImage}
-                          alt={template.name}
+                          src={effectiveImage}
+                          alt={item.imageName || item.template.name}
                           containerClassName="w-full h-full"
                           className="w-full h-full object-cover"
                         />
@@ -852,26 +908,38 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-bold text-slate-900 text-sm truncate">{template.name}</h4>
+                          <h4 className="font-bold text-slate-900 text-sm truncate">
+                            {item.template.name}
+                            {item.totalImages > 1 && (
+                              <span className="text-xs text-slate-400 font-normal ml-1">
+                                (#{item.imageIndex + 1})
+                              </span>
+                            )}
+                          </h4>
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono">
-                            {template.widthPx} × {template.heightPx} px
+                            {item.template.widthPx} × {item.template.heightPx} px
                           </span>
                           <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600 capitalize">
-                            {template.orientation}
+                            {item.template.orientation}
                           </span>
                         </div>
                         <p className="text-xs text-slate-500 truncate mt-0.5">
-                          {template.description || `${template.widthPx}x${template.heightPx} px blueprint`}
+                          {item.template.description || `${item.template.widthPx}x${item.template.heightPx} px blueprint`}
                         </p>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-2 flex-shrink-0">
-                      {primaryImage && (
+                      {effectiveImage && (
                         <Button
                           variant="ghost"
                           size="icon-sm"
-                          onClick={() => handleDownloadBanner(template.images[0].imageUrl, `${template.name}-banner.png`)}
+                          onClick={() =>
+                            handleDownloadBanner(
+                              item.imageUrl,
+                              item.imageName || `${item.template.name}-banner-${item.imageIndex + 1}.png`
+                            )
+                          }
                           title="Download Image"
                           className="h-8 w-8 text-slate-500 hover:text-indigo-600"
                         >
@@ -882,8 +950,8 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          setViewingTemplate(template);
-                          setActiveImageIndex(0);
+                          setViewingTemplate(item.template);
+                          setActiveImageIndex(item.imageIndex);
                         }}
                         className="h-8 text-xs font-semibold gap-1.5"
                       >
@@ -1063,7 +1131,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                           )}
                           <div className="absolute top-1.5 right-1.5">
                             <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-black/60 text-white backdrop-blur-xs font-mono">
-                              {bt.dimensionsLabel}
+                              {bt.widthPx} × {bt.heightPx} px
                             </span>
                           </div>
                         </div>
@@ -1118,6 +1186,11 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                 <div className="min-w-0">
                   <h3 className="font-bold text-slate-900 text-sm sm:text-base truncate">
                     {viewingTemplate.name}
+                    {viewingTemplate.images && viewingTemplate.images.length > 1 && (
+                      <span className="text-xs text-slate-400 font-normal ml-1.5 font-mono">
+                        (#{activeImageIndex + 1})
+                      </span>
+                    )}
                   </h3>
                   <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
                     <span className="font-medium text-slate-700">{activeFranchiseName}</span>
@@ -1170,34 +1243,6 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                   </a>
                 )}
               </div>
-
-              {/* Multiple Images Selector Strip */}
-              {viewingTemplate.images && viewingTemplate.images.length > 1 && (
-                <div className="space-y-1.5">
-                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                    Template Assets ({viewingTemplate.images.length})
-                  </p>
-                  <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                    {viewingTemplate.images.map((img, idx) => (
-                      <button
-                        key={img.id || idx}
-                        type="button"
-                        onClick={() => setActiveImageIndex(idx)}
-                        className={`w-16 h-12 rounded-lg overflow-hidden border-2 flex-shrink-0 transition bg-slate-900 relative ${activeImageIndex === idx
-                            ? "border-indigo-600 shadow-xs ring-2 ring-indigo-200"
-                            : "border-slate-200 hover:border-slate-400 opacity-70 hover:opacity-100"
-                          }`}
-                      >
-                        <img
-                          src={resolveImageUrl(img.imageUrl)}
-                          alt={img.imageName || `Asset ${idx + 1}`}
-                          className="w-full h-full object-contain"
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
 
               {/* Specifications & Description */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -1599,7 +1644,10 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                       const cur = viewingTemplate.images[activeImageIndex];
                       handleDownloadBanner(
                         cur.imageUrl,
-                        cur.imageName || `${viewingTemplate.name}-banner.png`
+                        cur.imageName ||
+                          (viewingTemplate.images && viewingTemplate.images.length > 1
+                            ? `${viewingTemplate.name}-banner-${activeImageIndex + 1}.png`
+                            : `${viewingTemplate.name}-banner.png`)
                       );
                     }}
                     className="text-xs h-8 gap-1.5 bg-indigo-600 hover:bg-indigo-700 shadow-xs"

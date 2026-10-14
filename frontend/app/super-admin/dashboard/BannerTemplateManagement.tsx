@@ -339,7 +339,7 @@ export function BannerTemplateManagement() {
   }, [masterImagePreview, previewImagePreview]);
 
   // Load templates & franchises from backend
-  async function loadData(silent = false) {
+  async function loadData(silent = false, franchiseFilter?: string) {
     if (!silent) {
       setIsLoading(true);
     } else {
@@ -347,16 +347,27 @@ export function BannerTemplateManagement() {
     }
     setLoadError(null);
 
+    const activeFilter =
+      franchiseFilter !== undefined ? franchiseFilter : selectedFranchiseFilter;
+    const fId =
+      activeFilter && activeFilter !== "all"
+        ? Number(activeFilter)
+        : undefined;
+
     try {
       const [tData, fData] = await Promise.all([
-        bannerTemplateApi.getBannerTemplates(),
-        bannerTemplateApi.getFranchises().catch((err) => {
-          console.warn("Could not load franchises:", err);
-          return [] as FranchiseOption[];
-        }),
+        bannerTemplateApi.getBannerTemplates(fId, true),
+        franchises.length === 0 || !silent
+          ? bannerTemplateApi.getFranchises().catch((err) => {
+              console.warn("Could not load franchises:", err);
+              return [] as FranchiseOption[];
+            })
+          : Promise.resolve(franchises),
       ]);
       setTemplates(tData);
-      setFranchises(fData);
+      if (fData && fData.length > 0) {
+        setFranchises(fData);
+      }
     } catch (err: any) {
       console.error("Failed to load banner templates:", err);
       setLoadError(
@@ -370,31 +381,27 @@ export function BannerTemplateManagement() {
   }
 
   useEffect(() => {
-    loadData();
-  }, []);
+    loadData(false, selectedFranchiseFilter);
+  }, [selectedFranchiseFilter]);
 
-  // Filtered templates
+  // Filtered templates (Franchise filtering is handled directly by backend)
   const filteredTemplates = useMemo(() => {
     return templates.filter((item) => {
-      const matchesSearch =
-        searchQuery.trim() === "" ||
-        item.name.toLowerCase().includes(searchQuery.toLowerCase().trim()) ||
-        (item.franchiseName &&
-          item.franchiseName
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase().trim())) ||
-        (item.dimensionsLabel &&
-          item.dimensionsLabel
-            .toLowerCase()
-            .includes(searchQuery.toLowerCase().trim()));
+      const query = searchQuery.trim().toLowerCase();
+      if (!query) return true;
 
-      const matchesFranchise =
-        selectedFranchiseFilter === "all" ||
-        String(item.franchiseId) === selectedFranchiseFilter;
+      const matchesName = item.name.toLowerCase().includes(query);
+      const matchesFranchise = Boolean(
+        item.franchiseName && item.franchiseName.toLowerCase().includes(query)
+      );
+      const matchesDimensions =
+        `${item.widthPx}x${item.heightPx}`.includes(query) ||
+        `${item.widthPx} x ${item.heightPx}`.includes(query) ||
+        Boolean(item.dimensionsLabel && item.dimensionsLabel.toLowerCase().includes(query));
 
-      return matchesSearch && matchesFranchise;
+      return matchesName || matchesFranchise || matchesDimensions;
     });
-  }, [templates, searchQuery, selectedFranchiseFilter]);
+  }, [templates, searchQuery]);
 
   // Open Create Modal
   function handleOpenCreateModal() {
@@ -1619,13 +1626,13 @@ export function BannerTemplateManagement() {
                   return (
                     <tr
                       key={template.id}
-                      className="hover:bg-slate-50/60 transition-colors group"
+                      onClick={() => setViewingTemplate(template)}
+                      className="hover:bg-slate-50/90 transition-colors group cursor-pointer"
                     >
                       {/* Preview Image Thumbnail */}
                       <td className="px-5 py-3.5 whitespace-nowrap">
                         <div
-                          onClick={() => setViewingTemplate(template)}
-                          className="w-16 h-12 rounded-lg bg-slate-50 border border-slate-200 overflow-hidden relative cursor-pointer group/img flex-shrink-0"
+                          className="w-16 h-12 rounded-lg bg-slate-50 border border-slate-200 overflow-hidden relative group/img flex-shrink-0"
                           title="Click to view details"
                         >
                           <ImagePreviewWithFallback
@@ -1651,7 +1658,7 @@ export function BannerTemplateManagement() {
                       {/* Template Name & Description */}
                       <td className="px-5 py-3.5">
                         <div className="max-w-xs">
-                          <p className="font-bold text-slate-900 text-sm truncate">
+                          <p className="font-bold text-slate-900 text-sm truncate group-hover:text-indigo-600 transition">
                             {template.name}
                           </p>
                           {template.description ? (
@@ -1728,17 +1735,10 @@ export function BannerTemplateManagement() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => setViewingTemplate(template)}
-                            className="h-8 w-8 p-0 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg"
-                            title="View Template Details"
-                          >
-                            <Eye size={15} />
-                          </Button>
-
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleOpenEditModal(template)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenEditModal(template);
+                            }}
                             className="h-8 w-8 p-0 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg"
                             title="Edit Template"
                           >
@@ -1748,7 +1748,10 @@ export function BannerTemplateManagement() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => setDeleteTarget(template)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setDeleteTarget(template);
+                            }}
                             className="h-8 w-8 p-0 text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg"
                             title="Delete Template"
                           >
@@ -2420,18 +2423,6 @@ export function BannerTemplateManagement() {
                   </div>
                 </div>
               )}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="flex items-center justify-end border-t pt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setViewingTemplate(null)}
-                className="text-xs font-semibold"
-              >
-                Close
-              </Button>
             </div>
           </div>
         </div>

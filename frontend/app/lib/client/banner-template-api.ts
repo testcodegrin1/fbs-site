@@ -397,9 +397,20 @@ export const bannerTemplateApi = {
    * 1. GET /api/getBannerTemplates
    * Fetches all banner templates or filtered by franchiseId
    */
-  async getBannerTemplates(franchiseId?: number): Promise<BannerTemplateModel[]> {
-    const url = franchiseId
-      ? `/api/getBannerTemplates?franchiseId=${encodeURIComponent(franchiseId)}`
+  async getBannerTemplates(
+    franchiseId?: number,
+    includeInactive = true,
+  ): Promise<BannerTemplateModel[]> {
+    const params = new URLSearchParams();
+    if (franchiseId !== undefined && franchiseId !== null && !isNaN(Number(franchiseId))) {
+      params.append("franchiseId", String(franchiseId));
+    }
+    if (includeInactive) {
+      params.append("includeInactive", "true");
+    }
+    const queryString = params.toString();
+    const url = queryString
+      ? `/api/getBannerTemplates?${queryString}`
       : "/api/getBannerTemplates";
     const data = await request<any>(url, {
       method: "GET",
