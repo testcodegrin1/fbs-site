@@ -640,7 +640,7 @@ export function BannerSubmissionsManagement() {
                 )}
               </div>
 
-              {/* Right: Status dropdown & update + close */}
+              {/* Right: Status dropdown & update */}
               <div className="flex items-center gap-2 justify-end">
                 {detailData && (
                   <div className="flex items-center gap-1.5">
@@ -648,7 +648,7 @@ export function BannerSubmissionsManagement() {
                       value={statusChoice}
                       onChange={(e) => handleStatusChange(e.target.value)}
                       disabled={updatingStatus}
-                      className="h-8.5 px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50"
+                      className="h-8.5 px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 disabled:opacity-50 cursor-pointer"
                     >
                       {STATUS_OPTIONS.map((st) => (
                         <option key={st} value={st}>
@@ -658,18 +658,6 @@ export function BannerSubmissionsManagement() {
                     </select>
                   </div>
                 )}
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    setSelectedSubmissionId(null);
-                    setDetailData(null);
-                  }}
-                  className="text-xs font-semibold h-8.5 px-4"
-                >
-                  Close
-                </Button>
               </div>
             </div>
           </div>

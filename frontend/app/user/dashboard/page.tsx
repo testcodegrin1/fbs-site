@@ -39,6 +39,7 @@ import {
   Inbox,
   Clock,
   CheckCircle,
+  Send,
 } from "lucide-react";
 import {
   bannerTemplateApi,
@@ -1590,6 +1591,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                   )}
 
                   <form
+                    id="banner-customization-form"
                     onSubmit={handleSaveCustomization}
                     className="space-y-4"
                   >
@@ -1847,87 +1849,32 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                         );
                       })}
                     </div>
-
-                    <div className="flex items-center justify-end pt-2 border-t border-slate-100">
-                      <Button
-                        type="submit"
-                        disabled={savingCustomization}
-                        className="text-xs h-8 px-5 font-semibold gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs"
-                      >
-                        {savingCustomization ? (
-                          <>
-                            <Loader2 size={13} className="animate-spin" />
-                            <span>Submitting...</span>
-                          </>
-                        ) : (
-                          <>
-                            <span>Submit</span>
-                          </>
-                        )}
-                      </Button>
-                    </div>
                   </form>
                 </div>
               )}
             </div>
 
             {/* Modal Footer (Sticky at bottom) */}
-            <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3 flex-shrink-0">
+            <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-end flex-shrink-0">
               <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  const currImg =
-                    viewingTemplate.images?.[activeImageIndex]?.imageUrl;
-                  if (currImg) handleCopyImageLink(currImg);
-                }}
-                className="text-xs h-8 gap-1.5"
+                type="submit"
+                form="banner-customization-form"
+                onClick={() => handleSaveCustomization()}
+                disabled={savingCustomization}
+                className="text-xs h-8 px-5 font-semibold gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs"
               >
-                {copiedLink ? (
+                {savingCustomization ? (
                   <>
-                    <Check size={13} className="text-emerald-600" />
-                    Copied!
+                    <Loader2 size={13} className="animate-spin" />
+                    <span>Submitting...</span>
                   </>
                 ) : (
                   <>
-                    <Copy size={13} />
-                    Copy Link
+                    <Send size={13} />
+                    <span>Submit</span>
                   </>
                 )}
               </Button>
-
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setViewingTemplate(null)}
-                  className="text-xs h-8"
-                >
-                  Close
-                </Button>
-
-                {viewingTemplate.images &&
-                  viewingTemplate.images[activeImageIndex] && (
-                    <Button
-                      variant="default"
-                      size="sm"
-                      onClick={() => {
-                        const cur = viewingTemplate.images[activeImageIndex];
-                        handleDownloadBanner(
-                          cur.imageUrl,
-                          cur.imageName ||
-                            (viewingTemplate.images &&
-                            viewingTemplate.images.length > 1
-                              ? `${viewingTemplate.name}-banner-${activeImageIndex + 1}.png`
-                              : `${viewingTemplate.name}-banner.png`),
-                        );
-                      }}
-                      className="text-xs h-8 gap-1.5 bg-indigo-600 hover:bg-indigo-700 shadow-xs"
-                    >
-                      <Download size={13} /> Download Banner
-                    </Button>
-                  )}
-              </div>
             </div>
           </div>
         </div>
@@ -2066,8 +2013,8 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between flex-shrink-0">
-              {selectedMySubmission.previewImageUrl ? (
+            {selectedMySubmission.previewImageUrl && (
+              <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-start flex-shrink-0">
                 <Button
                   variant="outline"
                   size="sm"
@@ -2077,19 +2024,8 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                   <Download size={13} />
                   <span>Download Banner</span>
                 </Button>
-              ) : <div />}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  setSelectedMySubmission(null);
-                  setMySubmissionDetail(null);
-                }}
-                className="text-xs font-semibold h-8 px-4"
-              >
-                Close
-              </Button>
-            </div>
+              </div>
+            )}
           </div>
         </div>
       )}
