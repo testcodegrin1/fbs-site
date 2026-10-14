@@ -188,4 +188,96 @@ export const franchiseApi = {
     });
     return { success: true, ...data };
   },
+
+  async getUserRequests(
+    status?: "pending" | "approved" | "rejected",
+    franchiseId?: number,
+  ): Promise<FranchiseAccessRequestModel[]> {
+    const params = new URLSearchParams();
+    if (status) params.append("status", status);
+    if (franchiseId) params.append("franchiseId", String(franchiseId));
+    const queryStr = params.toString() ? `?${params.toString()}` : "";
+    const data = await request<any>(`/api/getUserRequests${queryStr}`, {
+      method: "GET",
+    });
+    const list = Array.isArray(data?.requests)
+      ? data.requests
+      : Array.isArray(data)
+        ? data
+        : [];
+    return list.map((r: any) => ({
+      id: Number(r.id),
+      userId: Number(r.userId ?? r.user_id),
+      franchiseId: Number(r.franchiseId ?? r.franchise_id),
+      franchiseName: r.franchiseName ?? r.franchise_name ?? "",
+      brandingLogoUrl: r.brandingLogoUrl ?? r.branding_logo_url ?? null,
+      userEmail: r.userEmail ?? r.user_email ?? "",
+      userName: r.userName ?? r.user_name ?? "",
+      status: (r.status as "pending" | "approved" | "rejected") || "pending",
+      rejectionReason: r.rejectionReason ?? r.rejection_reason ?? null,
+      approvedBy: r.approvedBy ?? r.approved_by ?? null,
+      approvedAt: r.approvedAt ?? r.approved_at ?? null,
+      createdAt: r.createdAt ?? r.created_at,
+      updatedAt: r.updatedAt ?? r.updated_at,
+    }));
+  },
+
+  async updateUserRequestStatus(
+    id: number,
+    status: "pending" | "approved" | "rejected",
+    rejectionReason?: string,
+  ): Promise<{ message: string; request?: FranchiseAccessRequestModel }> {
+    const data = await request<any>(`/api/updateUserRequestStatus/${id}`, {
+      method: "PUT",
+      body: JSON.stringify({ status, rejectionReason }),
+    });
+    return data;
+  },
+
+  async getMyFranchise(): Promise<{
+    franchise: FranchiseModel | null;
+    access: FranchiseAccessRequestModel | null;
+    status: "pending" | "approved" | "rejected";
+  }> {
+    const data = await request<any>("/api/myFranchise", {
+      method: "GET",
+    });
+    return {
+      franchise: data?.franchise ? normalizeFranchise(data.franchise) : null,
+      access: data?.access
+        ? {
+            id: Number(data.access.id),
+            userId: Number(data.access.userId ?? data.access.user_id),
+            franchiseId: Number(data.access.franchiseId ?? data.access.franchise_id),
+            franchiseName: data.access.franchiseName ?? data.access.franchise_name ?? "",
+            brandingLogoUrl: data.access.brandingLogoUrl ?? data.access.branding_logo_url ?? null,
+            userEmail: data.access.userEmail ?? data.access.user_email ?? "",
+            userName: data.access.userName ?? data.access.user_name ?? "",
+            status: data.access.status || "pending",
+            rejectionReason: data.access.rejectionReason ?? data.access.rejection_reason ?? null,
+            approvedBy: data.access.approvedBy ?? data.access.approved_by ?? null,
+            approvedAt: data.access.approvedAt ?? data.access.approved_at ?? null,
+            createdAt: data.access.createdAt ?? data.access.created_at,
+            updatedAt: data.access.updatedAt ?? data.access.updated_at,
+          }
+        : null,
+      status: (data?.status as "pending" | "approved" | "rejected") || "pending",
+    };
+  },
+};
+
+export type FranchiseAccessRequestModel = {
+  id: number;
+  userId: number;
+  franchiseId: number;
+  franchiseName?: string;
+  brandingLogoUrl?: string | null;
+  userEmail?: string;
+  userName?: string;
+  status: "pending" | "approved" | "rejected";
+  rejectionReason?: string | null;
+  approvedBy?: number | null;
+  approvedAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 };

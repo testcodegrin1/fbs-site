@@ -21,7 +21,20 @@ import {
   Search,
   List,
   LayoutGrid,
+  Building2,
+  CheckCircle2,
+  Clock,
+  XCircle,
+  ShieldCheck,
+  MapPin,
+  Calendar,
 } from "lucide-react";
+import {
+  franchiseApi,
+  resolveImageUrl,
+  type FranchiseModel,
+  type FranchiseAccessRequestModel,
+} from "@/app/lib/client/franchise";
 
 export default function ClientDashboardPage() {
   return (
@@ -39,10 +52,19 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
   const [projectSearch, setProjectSearch] = useState("");
   const [projectListViewMode, setProjectListViewMode] = useState<"card" | "list">("card");
 
+  // Franchise info state
+  const [franchiseData, setFranchiseData] = useState<{
+    franchise: FranchiseModel | null;
+    access: FranchiseAccessRequestModel | null;
+    status: "pending" | "approved" | "rejected";
+  } | null>(null);
+  const [loadingFranchise, setLoadingFranchise] = useState(true);
+
   const backendHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
   const navItems: SidebarNavItem[] = [
     { id: "projects", label: "My Design Proofs", icon: FolderKanban, badge: projects.length },
+    { id: "franchise", label: "My Franchise", icon: Building2 },
   ];
 
   async function loadClientProjects() {
@@ -57,8 +79,20 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
     }
   }
 
+  async function loadUserFranchise() {
+    try {
+      const data = await franchiseApi.getMyFranchise();
+      setFranchiseData(data);
+    } catch (err) {
+      console.error("Failed to load user franchise:", err);
+    } finally {
+      setLoadingFranchise(false);
+    }
+  }
+
   useEffect(() => {
     loadClientProjects();
+    loadUserFranchise();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectSearch]);
 
@@ -68,6 +102,18 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
     }
   }
 
+  const activeFranchiseName =
+    franchiseData?.franchise?.name ||
+    clientUser?.franchiseName ||
+    "Assigned Franchise";
+  const activeFranchiseStatus =
+    franchiseData?.status || clientUser?.franchiseStatus || "approved";
+  const franchiseLogoUrl = franchiseData?.franchise?.brandingLogoUrl
+    ? resolveImageUrl(franchiseData.franchise.brandingLogoUrl)
+    : clientUser?.brandingLogoUrl
+      ? resolveImageUrl(clientUser.brandingLogoUrl)
+      : null;
+
   return (
     <SidebarLayout
       title="Client Review Portal"
@@ -75,10 +121,13 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
       roleName="Client User"
       userEmail={clientUser.email}
       userName={clientUser.name}
+      franchiseName={activeFranchiseName}
+      franchiseStatus={activeFranchiseStatus}
       navItems={navItems}
       activeTab={activeTab}
       onTabChange={setActiveTab}
     >
+      {/* TAB 1: DESIGN PROOFS */}
       {activeTab === "projects" && (
         <div className="space-y-5 max-w-3xl">
           {/* Toolbar */}
@@ -158,9 +207,8 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                 <Card
                   key={p.id}
                   onClick={() => openReview(p)}
-                  className={`p-3.5 transition hover:border-indigo-300 hover:shadow-md ${
-                    p.shareToken ? "cursor-pointer" : "opacity-70 cursor-not-allowed"
-                  }`}
+                  className={`p-3.5 transition hover:border-indigo-300 hover:shadow-md ${p.shareToken ? "cursor-pointer" : "opacity-70 cursor-not-allowed"
+                    }`}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
@@ -195,9 +243,8 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                   <Card
                     key={p.id}
                     onClick={() => openReview(p)}
-                    className={`overflow-hidden transition hover:border-indigo-300 hover:shadow-md p-0 ${
-                      p.shareToken ? "cursor-pointer" : "opacity-70 cursor-not-allowed"
-                    }`}
+                    className={`overflow-hidden transition hover:border-indigo-300 hover:shadow-md p-0 ${p.shareToken ? "cursor-pointer" : "opacity-70 cursor-not-allowed"
+                      }`}
                   >
                     {/* Small proof preview */}
                     <div className="relative aspect-[16/10] bg-slate-50 border-b border-slate-100">
@@ -249,6 +296,120 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
               })}
             </div>
           )}
+        </div>
+      )}
+
+      {/* TAB 2: MY FRANCHISE DETAILS */}
+      {activeTab === "franchise" && (
+        <div className="space-y-6 max-w-3xl animate-in fade-in duration-200">
+          <Card className="p-6 sm:p-8 bg-white border border-slate-200 shadow-sm rounded-2xl">
+            {/* Top Branding Section */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-slate-100">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center flex-shrink-0 p-2 overflow-hidden shadow-inner">
+                  {franchiseLogoUrl ? (
+                    <img
+                      src={franchiseLogoUrl}
+                      alt={activeFranchiseName}
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <Building2 size={32} className="text-slate-400" />
+                  )}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-xl font-black text-slate-900 tracking-tight">
+                      {activeFranchiseName}
+                    </h2>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
+                    <MapPin size={13} className="text-slate-400" />
+                    Authorized Regional Branch
+                  </p>
+                </div>
+              </div>
+
+              {/* Status Badge */}
+              <div className="flex items-center gap-2">
+                <span
+                  className={`inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full ${activeFranchiseStatus === "approved"
+                      ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                      : activeFranchiseStatus === "pending"
+                        ? "bg-amber-50 text-amber-700 border border-amber-200"
+                        : "bg-rose-50 text-rose-700 border border-rose-200"
+                    }`}
+                >
+                  {activeFranchiseStatus === "approved" && (
+                    <CheckCircle2 size={14} className="text-emerald-600" />
+                  )}
+                  {activeFranchiseStatus === "pending" && (
+                    <Clock size={14} className="text-amber-600" />
+                  )}
+                  {activeFranchiseStatus === "rejected" && (
+                    <XCircle size={14} className="text-rose-600" />
+                  )}
+                  {activeFranchiseStatus === "approved"
+                    ? "Approved & Active"
+                    : activeFranchiseStatus === "pending"
+                      ? "Pending Super Admin Approval"
+                      : "Access Rejected"}
+                </span>
+              </div>
+            </div>
+
+            {/* Franchise Info Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-6 text-xs">
+              <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-100 space-y-1">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Franchise Description
+                </span>
+                <p className="text-slate-700 leading-relaxed font-medium">
+                  {franchiseData?.franchise?.description ||
+                    "Official partner franchise branch for custom signs, banners, and printing services."}
+                </p>
+              </div>
+
+              <div className="bg-slate-50/80 p-4 rounded-xl border border-slate-100 space-y-2">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Membership Details
+                </span>
+                <div className="space-y-1 text-slate-600">
+                  <p className="flex items-center justify-between">
+                    <span>Account User:</span>
+                    <strong className="text-slate-900">{clientUser.name}</strong>
+                  </p>
+                  <p className="flex items-center justify-between">
+                    <span>Registered Email:</span>
+                    <strong className="text-slate-900">{clientUser.email}</strong>
+                  </p>
+                  {franchiseData?.access?.createdAt && (
+                    <p className="flex items-center justify-between">
+                      <span>Requested On:</span>
+                      <strong className="text-slate-900">
+                        {new Date(franchiseData.access.createdAt).toLocaleDateString()}
+                      </strong>
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Rejection / Note banner */}
+            {activeFranchiseStatus === "rejected" && franchiseData?.access?.rejectionReason && (
+              <div className="mt-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-900 space-y-1">
+                <h4 className="font-bold flex items-center gap-1.5 text-rose-800">
+                  <XCircle size={15} /> Rejection Reason Given by Administrator
+                </h4>
+                <p className="font-medium pl-5">{franchiseData.access.rejectionReason}</p>
+              </div>
+            )}
+
+            {/* Action Bar */}
+            <p className="text-xs text-slate-400">
+              Need to transfer to another franchise? Contact support.
+            </p>
+          </Card>
         </div>
       )}
     </SidebarLayout>

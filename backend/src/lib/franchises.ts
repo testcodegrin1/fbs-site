@@ -114,6 +114,7 @@ function mapFranchiseRequest(row: any): UserFranchiseRequestModel {
     userId: row.user_id,
     franchiseId: row.franchise_id,
     franchiseName: row.franchise_name,
+    brandingLogoUrl: row.branding_logo_url || null,
     userEmail: row.user_email,
     userName: row.user_name,
     status: row.status,
@@ -132,7 +133,7 @@ export async function getFranchiseUserAccess(
   franchiseId?: number,
 ): Promise<UserFranchiseRequestModel | null> {
   let sql = `
-    SELECT vp.*, f.name AS franchise_name, u.email AS user_email, u.name AS user_name
+    SELECT vp.*, f.name AS franchise_name, f.branding_logo_url, u.email AS user_email, u.name AS user_name
     FROM vendor_profiles vp
     JOIN franchises f ON vp.franchise_id = f.id
     JOIN users u ON vp.user_id = u.id
@@ -154,16 +155,27 @@ export async function requestFranchiseAccess(
 ): Promise<UserFranchiseRequestModel> {
   const [res] = await execute<ResultSetHeader>(
     `INSERT INTO vendor_profiles (user_id, franchise_id, phone, status)
-     VALUES (?, ?, 'N/A', 'pending')`,
+     VALUES (?, ?, 'N/A', 'pending')
+     ON DUPLICATE KEY UPDATE status = 'pending', rejection_reason = NULL, updated_at = CURRENT_TIMESTAMP`,
     [userId, franchiseId],
   );
+
+  let targetId = res.insertId;
+  if (!targetId) {
+    const [existing] = await query<RowDataPacket[]>(
+      `SELECT id FROM vendor_profiles WHERE user_id = ? AND franchise_id = ?`,
+      [userId, franchiseId],
+    );
+    targetId = existing[0]?.id;
+  }
+
   const [rows] = await query<RowDataPacket[]>(
-    `SELECT vp.*, f.name AS franchise_name, u.email AS user_email, u.name AS user_name
+    `SELECT vp.*, f.name AS franchise_name, f.branding_logo_url, u.email AS user_email, u.name AS user_name
      FROM vendor_profiles vp
      JOIN franchises f ON vp.franchise_id = f.id
      JOIN users u ON vp.user_id = u.id
      WHERE vp.id = ?`,
-    [res.insertId],
+    [targetId],
   );
   return mapFranchiseRequest(rows[0]);
 }
@@ -173,7 +185,7 @@ export async function listFranchiseUserRequests(
   franchiseId?: number,
 ): Promise<UserFranchiseRequestModel[]> {
   let sql = `
-    SELECT vp.*, f.name AS franchise_name, u.email AS user_email, u.name AS user_name
+    SELECT vp.*, f.name AS franchise_name, f.branding_logo_url, u.email AS user_email, u.name AS user_name
     FROM vendor_profiles vp
     JOIN franchises f ON vp.franchise_id = f.id
     JOIN users u ON vp.user_id = u.id
@@ -205,6 +217,14 @@ export async function updateFranchiseAccessStatus(
   const approvedAt = isApproved ? new Date() : null;
   const reason = isRejected ? rejectionReason?.trim() || null : null;
 
+  const [targetRows] = await query<RowDataPacket[]>(
+    `SELECT user_id, franchise_id FROM vendor_profiles WHERE id = ?`,
+    [id],
+  );
+  if (!targetRows[0]) throw new AuthError("Request not found.", 404);
+  const targetUserId = targetRows[0].user_id;
+  const targetFranchiseId = targetRows[0].franchise_id;
+
   await execute(
     `UPDATE vendor_profiles
      SET status = ?, approved_by = ?, approved_at = ?, rejection_reason = ?
@@ -212,8 +232,21 @@ export async function updateFranchiseAccessStatus(
     [status, approvedBy, approvedAt, reason, id],
   );
 
+  // Sync users table is_active & franchise_id state
+  if (isApproved) {
+    await execute(
+      `UPDATE users SET is_active = 1, franchise_id = ? WHERE id = ?`,
+      [targetFranchiseId, targetUserId],
+    );
+  } else if (isRejected || status === "pending") {
+    await execute(
+      `UPDATE users SET is_active = 0 WHERE id = ?`,
+      [targetUserId],
+    );
+  }
+
   const [rows] = await query<RowDataPacket[]>(
-    `SELECT vp.*, f.name AS franchise_name, u.email AS user_email, u.name AS user_name
+    `SELECT vp.*, f.name AS franchise_name, f.branding_logo_url, u.email AS user_email, u.name AS user_name
      FROM vendor_profiles vp
      JOIN franchises f ON vp.franchise_id = f.id
      JOIN users u ON vp.user_id = u.id

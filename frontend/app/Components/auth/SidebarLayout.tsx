@@ -11,6 +11,7 @@ import {
   UserCheck,
   Menu,
   X,
+  Building2,
 } from "lucide-react";
 
 export type SidebarNavItem = {
@@ -26,6 +27,8 @@ type SidebarLayoutProps = {
   roleName: string;
   userEmail?: string;
   userName?: string;
+  franchiseName?: string | null;
+  franchiseStatus?: string | null;
   navItems: SidebarNavItem[];
   activeTab: string;
   onTabChange: (tabId: string) => void;
@@ -40,6 +43,8 @@ export function SidebarLayout({
   roleName,
   userEmail,
   userName,
+  franchiseName,
+  franchiseStatus,
   navItems,
   activeTab,
   onTabChange,
@@ -197,6 +202,12 @@ export function SidebarLayout({
               {userName || "Authenticated User"}
             </p>
             <p className="text-xs text-slate-100/70 truncate">{userEmail || roleName}</p>
+            {franchiseName && (
+              <p className="text-[11px] text-amber-300 font-semibold truncate flex items-center gap-1 mt-0.5" title={`Franchise: ${franchiseName}`}>
+                <Building2 size={12} className="text-amber-300 flex-shrink-0" />
+                <span className="truncate">{franchiseName}</span>
+              </p>
+            )}
           </div>
         </div>
 
@@ -286,6 +297,28 @@ export function SidebarLayout({
           </div>
 
           <div className="flex items-center gap-3 flex-shrink-0">
+            {franchiseName && (
+              <div
+                className="hidden sm:flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 text-indigo-900 px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm"
+                title={`Active Franchise: ${franchiseName}`}
+              >
+                <Building2 size={14} className="text-indigo-600" />
+                <span className="max-w-[200px] truncate">{franchiseName}</span>
+                {franchiseStatus && (
+                  <span
+                    className={`ml-1 px-1.5 py-0.2 text-[10px] uppercase font-extrabold rounded ${
+                      franchiseStatus === "approved"
+                        ? "bg-emerald-100 text-emerald-800"
+                        : franchiseStatus === "pending"
+                          ? "bg-amber-100 text-amber-800"
+                          : "bg-rose-100 text-rose-800"
+                    }`}
+                  >
+                    {franchiseStatus}
+                  </span>
+                )}
+              </div>
+            )}
             <div className="hidden sm:flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200 text-sm font-medium text-slate-600">
               <UserCheck size={16} className="text-slate-600" />
               <span className="max-w-[220px] truncate">{userEmail}</span>

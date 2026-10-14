@@ -24,6 +24,7 @@ export type AuthUser = {
   permissions: Permission[];
   franchiseId?: number | null;
   franchiseName?: string | null;
+  franchiseStatus?: FranchiseAccessStatus | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -59,6 +60,7 @@ export type UserFranchiseRequestModel = {
   userId: number;
   franchiseId: number;
   franchiseName?: string;
+  brandingLogoUrl?: string | null;
   userEmail?: string;
   userName?: string;
   status: FranchiseAccessStatus;
