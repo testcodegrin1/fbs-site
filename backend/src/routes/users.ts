@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { AuthError, getErrorResponse } from "../lib/errors.js";
-import { requirePermission, invalidateUserCache } from "../lib/auth.js";
+import { requirePermission } from "../lib/auth.js";
 import {
   createUser,
   deleteUser,
@@ -131,9 +131,8 @@ usersRouter.put("/updateUserRequestStatus/:id", async (req, res) => {
       return;
     }
 
-    const updated = await updateFranchiseAccessStatus(id, status, actor.id, rejectionReason);
-    invalidateUserCache(updated.userId);
-    res.json({ message: `User request ${status} successfully`, request: updated });
+    await updateFranchiseAccessStatus(id, status, actor.id, rejectionReason);
+    res.json({ message: `User request ${status} successfully` });
   } catch (error) {
     const { message, status } = getErrorResponse(error);
     res.status(status).json({ message });

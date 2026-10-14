@@ -11,7 +11,6 @@ import {
 } from "../lib/auth.js";
 import {
   getFranchiseById,
-  getFranchiseUserAccess,
   listFranchises,
   requestFranchiseAccess,
 } from "../lib/franchises.js";
@@ -131,22 +130,7 @@ authRouter.get("/me", async (req, res) => {
       return;
     }
 
-    let franchise = null;
-    const access = await getFranchiseUserAccess(user.id);
-    const targetFranchiseId = user.franchiseId || access?.franchiseId;
-    if (targetFranchiseId) {
-      franchise = await getFranchiseById(targetFranchiseId);
-    }
-
-    const enrichedUser = {
-      ...user,
-      franchiseId: user.franchiseId || access?.franchiseId || null,
-      franchiseName: user.franchiseName || franchise?.name || access?.franchiseName || null,
-      franchiseStatus: access?.status || (user.isActive ? "approved" : "pending"),
-      brandingLogoUrl: franchise?.brandingLogoUrl || access?.brandingLogoUrl || null,
-    };
-
-    res.json({ user: enrichedUser, franchise, access });
+    res.json({ user });
   } catch (error) {
     const { message, status } = getErrorResponse(error);
     res.status(status).json({ message });

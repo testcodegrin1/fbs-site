@@ -3,7 +3,7 @@ import multer from "multer";
 import path from "path";
 import fs from "fs/promises";
 import { getErrorResponse } from "../lib/errors.js";
-import { requireAuth, requirePermission, getCurrentUser, invalidateUserCache } from "../lib/auth.js";
+import { requireAuth, requirePermission } from "../lib/auth.js";
 import { UPLOADS_DIR } from "../lib/canvas/watermark.js";
 import {
   listFranchises,
@@ -13,7 +13,6 @@ import {
   deleteFranchise,
   listFranchiseUserRequests,
   updateFranchiseAccessStatus,
-  getFranchiseUserAccess,
 } from "../lib/franchises.js";
 
 export const franchisesRouter = Router();
@@ -88,10 +87,7 @@ franchisesRouter.post(
       const brandingLogoUrl = getUploadedLogoUrl(req);
       const is_active =
         isActive != null
-          ? String(isActive) === "true" ||
-            isActive === true ||
-            isActive === 1 ||
-            isActive === "1"
+          ? String(isActive) === "true" || isActive === true || isActive === 1 || isActive === "1"
           : true;
       await createFranchise({
         name,
@@ -186,39 +182,16 @@ franchisesRouter.put(
         return;
       }
 
-      const updated = await updateFranchiseAccessStatus(id, status, actor.id, rejectionReason);
-      invalidateUserCache(updated.userId);
-      res.json({ message: `User request ${status} successfully`, request: updated });
+      await updateFranchiseAccessStatus(
+        id,
+        status,
+        actor.id,
+        rejectionReason,
+      );
+      res.json({ message: `User request ${status} successfully` });
     } catch (error) {
       const { message, status } = getErrorResponse(error);
       res.status(status).json({ message });
     }
   },
 );
-
-// GET /api/myFranchise - Get currently authenticated user's franchise info & request status
-franchisesRouter.get("/myFranchise", requireAuth(), async (req, res) => {
-  try {
-    const user = await getCurrentUser(req);
-    if (!user) {
-      res.status(401).json({ message: "Authentication required." });
-      return;
-    }
-
-    const access = await getFranchiseUserAccess(user.id);
-    let franchise = null;
-    const targetFranchiseId = user.franchiseId || access?.franchiseId;
-    if (targetFranchiseId) {
-      franchise = await getFranchiseById(targetFranchiseId);
-    }
-
-    res.json({
-      franchise,
-      access,
-      status: access?.status || (user.isActive ? "approved" : "pending"),
-    });
-  } catch (error) {
-    const { message, status } = getErrorResponse(error);
-    res.status(status).json({ message });
-  }
-});
