@@ -2,7 +2,10 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { AuthGuard } from "@/app/Components/auth/AuthGuard";
-import { SidebarLayout, type SidebarNavItem } from "@/app/Components/auth/SidebarLayout";
+import {
+  SidebarLayout,
+  type SidebarNavItem,
+} from "@/app/Components/auth/SidebarLayout";
 import {
   Button,
   Card,
@@ -11,10 +14,7 @@ import {
   Label,
   StatusBadge,
 } from "@/app/Components/ui";
-import {
-  canvasApi,
-  type ProjectModel,
-} from "@/app/lib/client/canvas-api";
+import { canvasApi, type ProjectModel } from "@/app/lib/client/canvas-api";
 import {
   FolderKanban,
   Eye,
@@ -42,6 +42,10 @@ import {
   resolveImageUrl,
   type BannerTemplateModel,
 } from "@/app/lib/client/banner-template-api";
+import {
+  franchiseApi,
+  type FranchiseModel,
+} from "@/app/lib/client/franchise";
 
 export default function ClientDashboardPage() {
   return (
@@ -83,7 +87,9 @@ function BannerImageThumbnail({
       {error || !src ? (
         <div className="flex flex-col items-center justify-center text-slate-300 gap-1.5 p-3 text-center">
           <FileImage size={24} className="text-slate-300" />
-          <span className="text-[10px] font-semibold text-slate-400">Preview not available</span>
+          <span className="text-[10px] font-semibold text-slate-400">
+            Preview not available
+          </span>
         </div>
       ) : (
         <img
@@ -104,22 +110,33 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState("projects");
   const [projectSearch, setProjectSearch] = useState("");
-  const [projectListViewMode, setProjectListViewMode] = useState<"card" | "list">("card");
+  const [projectListViewMode, setProjectListViewMode] = useState<
+    "card" | "list"
+  >("card");
 
   // Banner Templates state for the user's selected franchise
-  const [bannerTemplates, setBannerTemplates] = useState<BannerTemplateModel[]>([]);
+  const [bannerTemplates, setBannerTemplates] = useState<BannerTemplateModel[]>(
+    [],
+  );
   const [loadingBanners, setLoadingBanners] = useState(true);
   const [refreshingBanners, setRefreshingBanners] = useState(false);
   const [bannerSearch, setBannerSearch] = useState("");
-  const [bannerOrientationFilter, setBannerOrientationFilter] = useState<"all" | "landscape" | "portrait">("all");
+  const [bannerOrientationFilter, setBannerOrientationFilter] = useState<
+    "all" | "landscape" | "portrait"
+  >("all");
   const [bannerViewMode, setBannerViewMode] = useState<"grid" | "list">("grid");
-  const [viewingTemplate, setViewingTemplate] = useState<BannerTemplateModel | null>(null);
+  const [viewingTemplate, setViewingTemplate] =
+    useState<BannerTemplateModel | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [copiedLink, setCopiedLink] = useState(false);
 
   // Dynamic Custom Input Fields state & attachments
-  const [customFieldValues, setCustomFieldValues] = useState<Record<string, any>>({});
-  const [customFieldFiles, setCustomFieldFiles] = useState<Record<string, File>>({});
+  const [customFieldValues, setCustomFieldValues] = useState<
+    Record<string, any>
+  >({});
+  const [customFieldFiles, setCustomFieldFiles] = useState<
+    Record<string, File>
+  >({});
   const [loadingCustomization, setLoadingCustomization] = useState(false);
   const [savingCustomization, setSavingCustomization] = useState(false);
   const [customizationNotice, setCustomizationNotice] = useState<{
@@ -142,7 +159,9 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
       setLoadingCustomization(true);
       setCustomizationNotice(null);
       try {
-        const cust = await bannerTemplateApi.getBannerCustomization(viewingTemplate.id);
+        const cust = await bannerTemplateApi.getBannerCustomization(
+          viewingTemplate.id,
+        );
         if (isMounted && cust?.customizationValues) {
           setCustomFieldValues(cust.customizationValues);
         }
@@ -208,7 +227,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
 
       setCustomizationNotice({
         type: "success",
-        message: "Customization details saved successfully!",
+        message: "Customization details submitted successfully!",
       });
     } catch (err: any) {
       console.error("Failed to save customization:", err);
@@ -221,13 +240,39 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
     }
   }
 
-  const backendHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+  const backendHost =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
   const userFranchiseId = clientUser?.franchiseId;
 
-  const activeFranchiseName =
-    clientUser?.franchiseName ||
-    "Assigned Franchise";
+  const activeFranchiseName = clientUser?.franchiseName || "Assigned Franchise";
+
+  // Franchise detail state for user
+  const [franchiseDetail, setFranchiseDetail] = useState<FranchiseModel | null>(null);
+  const [loadingFranchise, setLoadingFranchise] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchFranchiseInfo() {
+      if (!userFranchiseId) return;
+      setLoadingFranchise(true);
+      try {
+        const data = await franchiseApi.getFranchiseById(Number(userFranchiseId));
+        if (isMounted && data) {
+          setFranchiseDetail(data);
+        }
+      } catch (err) {
+        console.warn("Could not fetch full franchise profile:", err);
+      } finally {
+        if (isMounted) setLoadingFranchise(false);
+      }
+    }
+
+    fetchFranchiseInfo();
+    return () => {
+      isMounted = false;
+    };
+  }, [userFranchiseId]);
 
   const totalBannerImages = useMemo(() => {
     return bannerTemplates.reduce(
@@ -237,8 +282,23 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
   }, [bannerTemplates]);
 
   const navItems: SidebarNavItem[] = [
-    { id: "projects", label: "My Design Proofs", icon: FolderKanban, badge: projects.length },
-    { id: "banner-templates", label: "Banner Templates", icon: LayoutTemplate, badge: totalBannerImages },
+    {
+      id: "projects",
+      label: "My Design Proofs",
+      icon: FolderKanban,
+      badge: projects.length,
+    },
+    {
+      id: "my-franchise",
+      label: "My Franchise",
+      icon: Building2,
+    },
+    {
+      id: "banner-templates",
+      label: "Banner Templates",
+      icon: LayoutTemplate,
+      badge: totalBannerImages,
+    },
   ];
 
   async function loadClientProjects() {
@@ -253,7 +313,10 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
     }
   }
 
-  async function loadFranchiseBanners(targetFranchiseId?: number, isSilent = false) {
+  async function loadFranchiseBanners(
+    targetFranchiseId?: number,
+    isSilent = false,
+  ) {
     if (!isSilent) {
       setLoadingBanners(true);
     } else {
@@ -261,7 +324,9 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
     }
     try {
       const fId = targetFranchiseId ?? userFranchiseId;
-      const data = await bannerTemplateApi.getBannerTemplates(fId ? Number(fId) : undefined);
+      const data = await bannerTemplateApi.getBannerTemplates(
+        fId ? Number(fId) : undefined,
+      );
       setBannerTemplates(data);
     } catch (err) {
       console.error("Failed to load franchise banner templates:", err);
@@ -297,7 +362,11 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
   const filteredBanners = useMemo(() => {
     return bannerTemplates.filter((item) => {
       // If user has a specific franchise, filter to ensure it belongs to that franchise
-      if (userFranchiseId && item.franchiseId && Number(item.franchiseId) !== Number(userFranchiseId)) {
+      if (
+        userFranchiseId &&
+        item.franchiseId &&
+        Number(item.franchiseId) !== Number(userFranchiseId)
+      ) {
         return false;
       }
 
@@ -305,7 +374,9 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
       const query = bannerSearch.toLowerCase().trim();
       if (query) {
         const matchesName = item.name.toLowerCase().includes(query);
-        const matchesDesc = (item.description || "").toLowerCase().includes(query);
+        const matchesDesc = (item.description || "")
+          .toLowerCase()
+          .includes(query);
         const matchesDim =
           (item.dimensionsLabel || "").toLowerCase().includes(query) ||
           `${item.widthPx}x${item.heightPx}`.includes(query) ||
@@ -483,18 +554,25 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                 <Card
                   key={p.id}
                   onClick={() => openReview(p)}
-                  className={`p-3.5 transition hover:border-indigo-300 hover:shadow-md ${p.shareToken ? "cursor-pointer" : "opacity-70 cursor-not-allowed"
-                    }`}
+                  className={`p-3.5 transition hover:border-indigo-300 hover:shadow-md ${
+                    p.shareToken
+                      ? "cursor-pointer"
+                      : "opacity-70 cursor-not-allowed"
+                  }`}
                 >
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-bold text-slate-900 text-sm truncate">{p.name}</h3>
+                        <h3 className="font-bold text-slate-900 text-sm truncate">
+                          {p.name}
+                        </h3>
                         <StatusBadge status={p.status} />
                       </div>
                       <p className="text-[11px] text-slate-500 truncate mt-0.5">
                         Designer:{" "}
-                        <strong className="text-slate-700">{p.designerName || "Designer"}</strong>
+                        <strong className="text-slate-700">
+                          {p.designerName || "Designer"}
+                        </strong>
                         {" · "}
                         Updated {new Date(p.updatedAt).toLocaleDateString()}
                       </p>
@@ -519,8 +597,11 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                   <Card
                     key={p.id}
                     onClick={() => openReview(p)}
-                    className={`overflow-hidden transition hover:border-indigo-300 hover:shadow-md p-0 ${p.shareToken ? "cursor-pointer" : "opacity-70 cursor-not-allowed"
-                      }`}
+                    className={`overflow-hidden transition hover:border-indigo-300 hover:shadow-md p-0 ${
+                      p.shareToken
+                        ? "cursor-pointer"
+                        : "opacity-70 cursor-not-allowed"
+                    }`}
                   >
                     {/* Small proof preview */}
                     <div className="relative aspect-[16/10] bg-slate-50 border-b border-slate-100">
@@ -533,7 +614,9 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-1">
                           <FileImage size={28} />
-                          <span className="text-[10px] font-medium text-slate-400">No preview yet</span>
+                          <span className="text-[10px] font-medium text-slate-400">
+                            No preview yet
+                          </span>
                         </div>
                       )}
                       <div className="absolute top-2 right-2">
@@ -575,9 +658,134 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
         </div>
       )}
 
-      {/* TAB 2: BANNER TEMPLATES FOR USER'S FRANCHISE */}
-      {activeTab === "banner-templates" && (
+      {/* TAB 2: MY FRANCHISE (READ ONLY) */}
+      {activeTab === "my-franchise" && (
         <div className="space-y-6 max-w-4xl animate-in fade-in duration-200">
+          {/* Header & Subtitle */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+            <div>
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-xl font-black text-slate-900 tracking-tight">
+                  My Franchise
+                </h2>
+                <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs">
+                  <CheckCircle2 size={13} className="text-emerald-600" />
+                  Assigned
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Your assigned franchise association, branding overview, and specifications
+              </p>
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setActiveTab("banner-templates")}
+              className="text-xs h-9 font-medium gap-1.5"
+            >
+              <LayoutTemplate size={13} className="text-indigo-600" />
+              View Franchise Banners
+            </Button>
+          </div>
+
+          {loadingFranchise ? (
+            <Card className="p-12 text-center text-xs text-slate-500 space-y-2">
+              <Loader2 size={24} className="animate-spin mx-auto text-indigo-600" />
+              <p className="font-semibold text-slate-700">Loading franchise information...</p>
+            </Card>
+          ) : !userFranchiseId && !franchiseDetail ? (
+            <Card className="p-12 text-center text-slate-400 space-y-3 bg-white border border-slate-200">
+              <div className="w-14 h-14 rounded-2xl bg-slate-100 text-slate-400 mx-auto flex items-center justify-center border border-slate-200">
+                <Building2 size={28} />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-bold text-slate-800">No Franchise Assigned</p>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  You are not currently linked to an official franchise partner. Please contact your administrator.
+                </p>
+              </div>
+            </Card>
+          ) : (
+            <div className="space-y-5">
+              {/* Main Franchise Card */}
+              <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden relative">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+                  {/* Franchise Logo Preview */}
+                  <div className="w-20 h-20 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-inner">
+                    {franchiseDetail?.brandingLogoUrl ? (
+                      <img
+                        src={resolveImageUrl(franchiseDetail.brandingLogoUrl)}
+                        alt={franchiseDetail.name || activeFranchiseName}
+                        className="w-full h-full object-contain p-2"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = "none";
+                          const parent = (e.target as HTMLElement).parentElement;
+                          if (parent && !parent.querySelector(".fallback-building-icon")) {
+                            const iconWrap = document.createElement("div");
+                            iconWrap.className = "fallback-building-icon text-indigo-500 font-bold text-sm";
+                            iconWrap.textContent = (franchiseDetail?.name || activeFranchiseName).slice(0, 2).toUpperCase();
+                            parent.appendChild(iconWrap);
+                          }
+                        }}
+                      />
+                    ) : (
+                      <Building2 size={36} className="text-indigo-500" />
+                    )}
+                  </div>
+
+                  <div className="flex-1 min-w-0 space-y-1">
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <h3 className="text-2xl font-black text-slate-900 tracking-tight">
+                        {franchiseDetail?.name || activeFranchiseName}
+                      </h3>
+                      <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                        <Building2 size={12} /> Franchise
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-slate-600 leading-relaxed max-w-2xl">
+                      {franchiseDetail?.description ||
+                        "Official franchise partner organization associated with your client account."}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Details Grid (Read-only, clean 2-column) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-6 pt-6 border-t border-slate-100">
+                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-150">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                      Assigned Member
+                    </span>
+                    <p className="text-xs font-bold text-slate-900 mt-1 truncate">
+                      {clientUser?.name || "Client User"}
+                    </p>
+                    <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                      {clientUser?.email}
+                    </p>
+                  </div>
+
+                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-150">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                      Marketing Banners
+                    </span>
+                    <p className="text-xs font-bold text-slate-900 mt-1">
+                      {totalBannerImages} Templates
+                    </p>
+                    <p className="text-[11px] text-indigo-600 font-medium mt-0.5">
+                      Available for customization
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* TAB 3: BANNER TEMPLATES FOR USER'S FRANCHISE */}
+      {activeTab === "banner-templates" && (
+        <div className="space-y-6 max-w-6xl animate-in fade-in duration-200">
           {/* Header & Subtitle */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
             <div>
@@ -591,7 +799,8 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-1">
-                Official banners, marketing blueprints, and dimension specifications for {activeFranchiseName}
+                Official banners, marketing blueprints, and dimension
+                specifications for {activeFranchiseName}
               </p>
             </div>
 
@@ -600,12 +809,19 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                 variant="outline"
                 size="sm"
                 disabled={loadingBanners || refreshingBanners}
-                onClick={() => loadFranchiseBanners(userFranchiseId ? Number(userFranchiseId) : undefined, true)}
+                onClick={() =>
+                  loadFranchiseBanners(
+                    userFranchiseId ? Number(userFranchiseId) : undefined,
+                    true,
+                  )
+                }
                 className="text-xs h-9 font-medium"
               >
                 <RefreshCw
                   size={13}
-                  className={refreshingBanners ? "animate-spin text-indigo-600" : ""}
+                  className={
+                    refreshingBanners ? "animate-spin text-indigo-600" : ""
+                  }
                 />
                 {refreshingBanners ? "Refreshing..." : "Refresh"}
               </Button>
@@ -636,10 +852,11 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                     key={ori}
                     type="button"
                     onClick={() => setBannerOrientationFilter(ori)}
-                    className={`px-3 py-1 text-xs font-semibold rounded-lg capitalize transition ${bannerOrientationFilter === ori
+                    className={`px-3 py-1 text-xs font-semibold rounded-lg capitalize transition ${
+                      bannerOrientationFilter === ori
                         ? "bg-white text-indigo-700 shadow-xs"
                         : "text-slate-600 hover:text-slate-900"
-                      }`}
+                    }`}
                   >
                     {ori}
                   </button>
@@ -673,9 +890,16 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
           {/* Banner Content Grid / List */}
           {loadingBanners ? (
             <Card className="p-12 text-center text-xs text-slate-500 space-y-2">
-              <Loader2 size={24} className="animate-spin mx-auto text-indigo-600" />
-              <p className="font-semibold text-slate-700">Loading banner templates...</p>
-              <p className="text-[11px] text-slate-400">Fetching graphics for {activeFranchiseName}</p>
+              <Loader2
+                size={24}
+                className="animate-spin mx-auto text-indigo-600"
+              />
+              <p className="font-semibold text-slate-700">
+                Loading banner templates...
+              </p>
+              <p className="text-[11px] text-slate-400">
+                Fetching graphics for {activeFranchiseName}
+              </p>
             </Card>
           ) : bannerDisplayItems.length === 0 ? (
             <Card className="p-12 text-center text-slate-400 space-y-3 bg-white border border-slate-200">
@@ -708,7 +932,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
             </Card>
           ) : bannerViewMode === "grid" ? (
             /* Grid View */
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {bannerDisplayItems.map((item) => {
                 const effectiveImage = item.imageUrl
                   ? resolveImageUrl(item.imageUrl)
@@ -717,7 +941,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                 return (
                   <Card
                     key={item.key}
-                    className="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs hover:shadow-lg hover:border-indigo-300 transition-all duration-200 p-0 flex flex-col"
+                    className="group overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs hover:shadow-xl hover:border-indigo-300 hover:-translate-y-0.5 transition-all duration-200 p-0 flex flex-col"
                   >
                     {/* Top Image Preview Banner */}
                     <div
@@ -725,30 +949,38 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                         setViewingTemplate(item.template);
                         setActiveImageIndex(item.imageIndex);
                       }}
-                      className="cursor-pointer relative aspect-[16/10] bg-slate-50 border-b border-slate-100 overflow-hidden"
+                      className="cursor-pointer relative aspect-[16/10] bg-slate-900/5 border-b border-slate-100 overflow-hidden flex items-center justify-center"
                     >
                       <BannerImageThumbnail
                         src={effectiveImage}
                         alt={item.imageName || item.template.name}
-                        containerClassName="w-full h-full"
-                        className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 bg-white"
+                        containerClassName="w-full h-full flex items-center justify-center bg-slate-50"
+                        className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                       />
 
+                      {/* Hover Overlay with Quick Preview */}
+                      <div className="absolute inset-0 bg-slate-950/25 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none z-10">
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 text-slate-800 text-xs font-bold shadow-md transform translate-y-1 group-hover:translate-y-0 transition-transform duration-200">
+                          <Eye size={13} className="text-indigo-600" />
+                          View Preview
+                        </span>
+                      </div>
+
                       {/* Overlay Badges */}
-                      <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-10">
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-white/95 backdrop-blur-xs text-slate-800 shadow-xs capitalize border border-slate-200">
+                      <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-20 pointer-events-none">
+                        <span className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-white/95 backdrop-blur-md text-slate-800 shadow-xs capitalize border border-slate-200/90">
                           {item.template.orientation}
                         </span>
                         {item.totalImages > 1 && (
-                          <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-900/80 text-white shadow-xs backdrop-blur-xs font-mono">
+                          <span className="px-2 py-1 rounded-md text-[10px] font-bold bg-slate-900/80 text-white shadow-xs backdrop-blur-xs font-mono">
                             #{item.imageIndex + 1}
                           </span>
                         )}
                       </div>
 
-                      <div className="absolute top-2.5 right-2.5 z-10">
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-indigo-600 text-white shadow-xs font-mono">
-                          {item.template.widthPx} × {item.template.heightPx} px
+                      <div className="absolute top-2.5 right-2.5 z-20 pointer-events-none">
+                        <span className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-slate-900/80 text-white shadow-xs font-mono backdrop-blur-xs">
+                          {item.template.widthPx} × {item.template.heightPx}
                         </span>
                       </div>
                     </div>
@@ -758,7 +990,8 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                       <div>
                         <div className="flex items-start justify-between gap-2">
                           <h3
-                            className="font-bold text-slate-900 text-base group-hover:text-indigo-600 transition truncate cursor-pointer"
+                            className="font-bold text-slate-900 text-sm group-hover:text-indigo-600 transition truncate cursor-pointer"
+                            title={item.template.name}
                             onClick={() => {
                               setViewingTemplate(item.template);
                               setActiveImageIndex(item.imageIndex);
@@ -774,11 +1007,11 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                         </div>
 
                         {item.template.description ? (
-                          <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed">
+                          <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed min-h-[2rem]">
                             {item.template.description}
                           </p>
                         ) : (
-                          <p className="text-xs text-slate-400 mt-1 italic">
+                          <p className="text-xs text-slate-400 mt-1 italic min-h-[2rem]">
                             No description provided
                           </p>
                         )}
@@ -786,11 +1019,11 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
 
                       {/* Card Footer Actions */}
                       <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                        <span className="text-[11px] text-slate-400 font-mono">
+                        <span className="inline-flex items-center text-[11px] font-mono font-medium text-slate-500 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200/70 whitespace-nowrap shrink-0">
                           {item.template.widthPx} × {item.template.heightPx} px
                         </span>
 
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 shrink-0">
                           {effectiveImage && (
                             <Button
                               variant="ghost"
@@ -800,7 +1033,8 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                                 e.stopPropagation();
                                 handleDownloadBanner(
                                   item.imageUrl,
-                                  item.imageName || `${item.template.name}-banner-${item.imageIndex + 1}.png`
+                                  item.imageName ||
+                                    `${item.template.name}-banner-${item.imageIndex + 1}.png`,
                                 );
                               }}
                               className="h-8 w-8 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50"
@@ -815,7 +1049,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                               setViewingTemplate(item.template);
                               setActiveImageIndex(item.imageIndex);
                             }}
-                            className="h-8 text-xs font-semibold gap-1.5 border-slate-200 text-slate-700 hover:text-indigo-600 hover:border-indigo-300"
+                            className="h-8 px-3 text-xs font-semibold gap-1.5 border-slate-200 text-slate-700 hover:text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50/50 whitespace-nowrap shrink-0 shadow-2xs"
                           >
                             <Eye size={13} /> View Banner
                           </Button>
@@ -866,14 +1100,16 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                             )}
                           </h4>
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono">
-                            {item.template.widthPx} × {item.template.heightPx} px
+                            {item.template.widthPx} × {item.template.heightPx}{" "}
+                            px
                           </span>
                           <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600 capitalize">
                             {item.template.orientation}
                           </span>
                         </div>
                         <p className="text-xs text-slate-500 truncate mt-0.5">
-                          {item.template.description || `${item.template.widthPx}x${item.template.heightPx} px blueprint`}
+                          {item.template.description ||
+                            `${item.template.widthPx}x${item.template.heightPx} px blueprint`}
                         </p>
                       </div>
                     </div>
@@ -886,7 +1122,8 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                           onClick={() =>
                             handleDownloadBanner(
                               item.imageUrl,
-                              item.imageName || `${item.template.name}-banner-${item.imageIndex + 1}.png`
+                              item.imageName ||
+                                `${item.template.name}-banner-${item.imageIndex + 1}.png`,
                             )
                           }
                           title="Download Image"
@@ -933,20 +1170,25 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                 <div className="min-w-0">
                   <h3 className="font-bold text-slate-900 text-sm sm:text-base truncate">
                     {viewingTemplate.name}
-                    {viewingTemplate.images && viewingTemplate.images.length > 1 && (
-                      <span className="text-xs text-slate-400 font-normal ml-1.5 font-mono">
-                        (#{activeImageIndex + 1})
-                      </span>
-                    )}
+                    {viewingTemplate.images &&
+                      viewingTemplate.images.length > 1 && (
+                        <span className="text-xs text-slate-400 font-normal ml-1.5 font-mono">
+                          (#{activeImageIndex + 1})
+                        </span>
+                      )}
                   </h3>
                   <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
-                    <span className="font-medium text-slate-700">{activeFranchiseName}</span>
+                    <span className="font-medium text-slate-700">
+                      {activeFranchiseName}
+                    </span>
                     <span>·</span>
                     <span className="font-mono text-indigo-600 font-semibold">
                       {viewingTemplate.widthPx} × {viewingTemplate.heightPx} px
                     </span>
                     <span>·</span>
-                    <span className="capitalize">{viewingTemplate.orientation}</span>
+                    <span className="capitalize">
+                      {viewingTemplate.orientation}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -964,31 +1206,40 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
             <div className="p-5 space-y-4 overflow-y-auto flex-1">
               {/* Main Banner Image Display */}
               <div className="rounded-xl border border-slate-200 overflow-hidden bg-slate-950 flex items-center justify-center relative h-56 sm:h-64 w-full shadow-inner">
-                {viewingTemplate.images && viewingTemplate.images[activeImageIndex] ? (
+                {viewingTemplate.images &&
+                viewingTemplate.images[activeImageIndex] ? (
                   <img
-                    src={resolveImageUrl(viewingTemplate.images[activeImageIndex].imageUrl)}
+                    src={resolveImageUrl(
+                      viewingTemplate.images[activeImageIndex].imageUrl,
+                    )}
                     alt={`${viewingTemplate.name} preview`}
                     className="w-full h-full object-contain"
                   />
                 ) : (
                   <div className="p-8 text-center text-slate-500">
-                    <FileImage size={32} className="mx-auto mb-2 text-slate-600" />
+                    <FileImage
+                      size={32}
+                      className="mx-auto mb-2 text-slate-600"
+                    />
                     <p className="text-xs">No preview image available</p>
                   </div>
                 )}
 
                 {/* View Fullscreen / New Tab Action */}
-                {viewingTemplate.images && viewingTemplate.images[activeImageIndex] && (
-                  <a
-                    href={resolveImageUrl(viewingTemplate.images[activeImageIndex].imageUrl)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="Open full resolution in new tab"
-                    className="absolute top-2.5 right-2.5 z-10 p-1.5 rounded-lg bg-black/60 text-white hover:bg-black/80 backdrop-blur-xs transition"
-                  >
-                    <ExternalLink size={14} />
-                  </a>
-                )}
+                {viewingTemplate.images &&
+                  viewingTemplate.images[activeImageIndex] && (
+                    <a
+                      href={resolveImageUrl(
+                        viewingTemplate.images[activeImageIndex].imageUrl,
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Open full resolution in new tab"
+                      className="absolute top-2.5 right-2.5 z-10 p-1.5 rounded-lg bg-black/60 text-white hover:bg-black/80 backdrop-blur-xs transition"
+                    >
+                      <ExternalLink size={14} />
+                    </a>
+                  )}
               </div>
 
               {/* Specifications & Description */}
@@ -998,7 +1249,8 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                     Template Description
                   </span>
                   <p className="text-slate-700 leading-relaxed font-medium">
-                    {viewingTemplate.description || "No specific instructions provided with this template."}
+                    {viewingTemplate.description ||
+                      "No specific instructions provided with this template."}
                   </p>
                 </div>
 
@@ -1009,12 +1261,15 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                   <div className="space-y-1 text-slate-600">
                     <p className="flex items-center justify-between">
                       <span>Franchise:</span>
-                      <strong className="text-slate-900">{activeFranchiseName}</strong>
+                      <strong className="text-slate-900">
+                        {activeFranchiseName}
+                      </strong>
                     </p>
                     <p className="flex items-center justify-between">
                       <span>Resolution:</span>
                       <strong className="text-slate-900 font-mono">
-                        {viewingTemplate.widthPx} × {viewingTemplate.heightPx} px
+                        {viewingTemplate.widthPx} × {viewingTemplate.heightPx}{" "}
+                        px
                       </strong>
                     </p>
                     <p className="flex items-center justify-between">
@@ -1036,17 +1291,23 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                         <span>Banner Customization & Details</span>
                         <span className="text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">
                           {viewingTemplate.fields.length}{" "}
-                          {viewingTemplate.fields.length === 1 ? "Field" : "Fields"}
+                          {viewingTemplate.fields.length === 1
+                            ? "Field"
+                            : "Fields"}
                         </span>
                       </h4>
                       <p className="text-[11px] text-slate-500 mt-0.5">
-                        Fill in your custom details and information for this banner request.
+                        Fill in your custom details and information for this
+                        banner request.
                       </p>
                     </div>
 
                     {loadingCustomization && (
                       <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                        <Loader2 size={13} className="animate-spin text-indigo-600" />
+                        <Loader2
+                          size={13}
+                          className="animate-spin text-indigo-600"
+                        />
                         <span>Loading saved values...</span>
                       </div>
                     )}
@@ -1075,7 +1336,10 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                     </div>
                   )}
 
-                  <form onSubmit={handleSaveCustomization} className="space-y-4">
+                  <form
+                    onSubmit={handleSaveCustomization}
+                    className="space-y-4"
+                  >
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {viewingTemplate.fields.map((field, fIdx) => {
                         const fieldKey = String(field.id || fIdx);
@@ -1086,14 +1350,18 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                           <div
                             key={fieldKey}
                             className={`space-y-1.5 ${
-                              field.fieldType === "textarea" ? "sm:col-span-2" : ""
+                              field.fieldType === "textarea"
+                                ? "sm:col-span-2"
+                                : ""
                             }`}
                           >
                             <div className="flex items-center justify-between">
                               <label className="text-xs font-bold text-slate-800 flex items-center gap-1">
                                 <span>{field.label}</span>
                                 {field.isRequired && (
-                                  <span className="text-red-500 font-bold">*</span>
+                                  <span className="text-red-500 font-bold">
+                                    *
+                                  </span>
                                 )}
                               </label>
                               {isReadOnly && (
@@ -1227,7 +1495,8 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                                 required={field.isRequired}
                               >
                                 <option value="">
-                                  {field.placeholder || "-- Select an option --"}
+                                  {field.placeholder ||
+                                    "-- Select an option --"}
                                 </option>
                                 {(field.options || []).map((opt, oIdx) => (
                                   <option key={oIdx} value={opt}>
@@ -1330,16 +1599,16 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                       <Button
                         type="submit"
                         disabled={savingCustomization}
-                        className="text-xs h-8 px-4 font-semibold gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs"
+                        className="text-xs h-8 px-5 font-semibold gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs"
                       >
                         {savingCustomization ? (
                           <>
                             <Loader2 size={13} className="animate-spin" />
-                            <span>Saving...</span>
+                            <span>Submitting...</span>
                           </>
                         ) : (
                           <>
-                            <span>Save Customization</span>
+                            <span>Submit</span>
                           </>
                         )}
                       </Button>
@@ -1355,7 +1624,8 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                 variant="outline"
                 size="sm"
                 onClick={() => {
-                  const currImg = viewingTemplate.images?.[activeImageIndex]?.imageUrl;
+                  const currImg =
+                    viewingTemplate.images?.[activeImageIndex]?.imageUrl;
                   if (currImg) handleCopyImageLink(currImg);
                 }}
                 className="text-xs h-8 gap-1.5"
@@ -1383,25 +1653,27 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                   Close
                 </Button>
 
-                {viewingTemplate.images && viewingTemplate.images[activeImageIndex] && (
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => {
-                      const cur = viewingTemplate.images[activeImageIndex];
-                      handleDownloadBanner(
-                        cur.imageUrl,
-                        cur.imageName ||
-                          (viewingTemplate.images && viewingTemplate.images.length > 1
-                            ? `${viewingTemplate.name}-banner-${activeImageIndex + 1}.png`
-                            : `${viewingTemplate.name}-banner.png`)
-                      );
-                    }}
-                    className="text-xs h-8 gap-1.5 bg-indigo-600 hover:bg-indigo-700 shadow-xs"
-                  >
-                    <Download size={13} /> Download Banner
-                  </Button>
-                )}
+                {viewingTemplate.images &&
+                  viewingTemplate.images[activeImageIndex] && (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => {
+                        const cur = viewingTemplate.images[activeImageIndex];
+                        handleDownloadBanner(
+                          cur.imageUrl,
+                          cur.imageName ||
+                            (viewingTemplate.images &&
+                            viewingTemplate.images.length > 1
+                              ? `${viewingTemplate.name}-banner-${activeImageIndex + 1}.png`
+                              : `${viewingTemplate.name}-banner.png`),
+                        );
+                      }}
+                      className="text-xs h-8 gap-1.5 bg-indigo-600 hover:bg-indigo-700 shadow-xs"
+                    >
+                      <Download size={13} /> Download Banner
+                    </Button>
+                  )}
               </div>
             </div>
           </div>
