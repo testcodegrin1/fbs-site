@@ -8,6 +8,7 @@ import type {
   BannerTemplateFieldModel,
   BannerTemplateImageModel,
   BannerTemplateModel,
+  BannerSubmissionDetailModel,
 } from "./types.js";
 
 function mapBannerTemplateImage(
@@ -662,6 +663,7 @@ export async function saveBannerCustomization(
   userId: number,
   customizationValues: Record<string, any>,
   franchiseId?: number,
+  isNewSubmission = false,
 ): Promise<any> {
   const template = await getBannerTemplateById(templateId);
   if (!template) {
@@ -700,24 +702,62 @@ export async function saveBannerCustomization(
   const fId = franchiseId || template.franchiseId || null;
 
   try {
-    const [existing] = await query<RowDataPacket[]>(
-      `SELECT id FROM banner_customizations WHERE template_id = ? AND user_id = ? LIMIT 1`,
-      [templateId, userId],
-    );
-
     let custId: number;
-    if (existing.length > 0) {
-      custId = Number(existing[0].id);
-      await execute(
-        `UPDATE banner_customizations SET customization_values = ?, franchise_id = ?, updated_at = NOW() WHERE id = ?`,
-        [valuesJson, fId, custId],
+
+    if (!isNewSubmission) {
+      const [existing] = await query<RowDataPacket[]>(
+        `SELECT id FROM banner_customizations WHERE template_id = ? AND user_id = ? ORDER BY id DESC LIMIT 1`,
+        [templateId, userId],
       );
-    } else {
+
+      if (existing.length > 0) {
+        custId = Number(existing[0].id);
+        try {
+          await execute(
+            `UPDATE banner_customizations SET customization_values = ?, franchise_id = ?, status = 'Pending', updated_at = NOW() WHERE id = ?`,
+            [valuesJson, fId, custId],
+          );
+        } catch (colErr: any) {
+          if (colErr.code === "ER_BAD_FIELD_ERROR" || String(colErr.message).includes("Unknown column")) {
+            await execute(
+              `UPDATE banner_customizations SET customization_values = ?, franchise_id = ?, updated_at = NOW() WHERE id = ?`,
+              [valuesJson, fId, custId],
+            );
+          } else {
+            throw colErr;
+          }
+        }
+
+        return {
+          id: custId,
+          templateId,
+          userId,
+          franchiseId: fId,
+          customizationValues,
+          status: "Pending",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+      }
+    }
+
+    // Insert new submission record
+    try {
       const [res] = await execute<ResultSetHeader>(
-        `INSERT INTO banner_customizations (template_id, user_id, franchise_id, customization_values) VALUES (?, ?, ?, ?)`,
+        `INSERT INTO banner_customizations (template_id, user_id, franchise_id, customization_values, status) VALUES (?, ?, ?, ?, 'Pending')`,
         [templateId, userId, fId, valuesJson],
       );
       custId = res.insertId;
+    } catch (colErr: any) {
+      if (colErr.code === "ER_BAD_FIELD_ERROR" || String(colErr.message).includes("Unknown column")) {
+        const [res] = await execute<ResultSetHeader>(
+          `INSERT INTO banner_customizations (template_id, user_id, franchise_id, customization_values) VALUES (?, ?, ?, ?)`,
+          [templateId, userId, fId, valuesJson],
+        );
+        custId = res.insertId;
+      } else {
+        throw colErr;
+      }
     }
 
     return {
@@ -726,18 +766,19 @@ export async function saveBannerCustomization(
       userId,
       franchiseId: fId,
       customizationValues,
+      status: "Pending",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
   } catch (err: any) {
     if (err.code === "ER_NO_SUCH_TABLE" || String(err.message).includes("doesn't exist")) {
-      // If table doesn't exist yet, return in-memory confirmation so user flow doesn't crash
       return {
         id: Date.now(),
         templateId,
         userId,
         franchiseId: fId,
         customizationValues,
+        status: "Pending",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -772,6 +813,7 @@ export async function getBannerCustomization(
       userId: Number(r.user_id),
       franchiseId: r.franchise_id ? Number(r.franchise_id) : null,
       customizationValues: vals,
+      status: r.status || "Pending",
       createdAt: new Date(r.created_at).toISOString(),
       updatedAt: new Date(r.updated_at).toISOString(),
     };
@@ -779,3 +821,291 @@ export async function getBannerCustomization(
     return null;
   }
 }
+
+export async function listBannerSubmissions(filter?: {
+  search?: string;
+  status?: string;
+  franchiseId?: number;
+  userId?: number;
+}): Promise<any[]> {
+  try {
+    let sql = `
+      SELECT 
+        bc.*,
+        bt.name AS template_name,
+        bt.width_px,
+        bt.height_px,
+        bt.orientation,
+        u.name AS user_name,
+        u.email AS user_email,
+        f.name AS franchise_name
+      FROM banner_customizations bc
+      LEFT JOIN banner_templates bt ON bc.template_id = bt.id
+      LEFT JOIN users u ON bc.user_id = u.id
+      LEFT JOIN franchises f ON bc.franchise_id = f.id
+      WHERE 1=1
+    `;
+    const params: any[] = [];
+
+    if (filter?.userId) {
+      sql += ` AND bc.user_id = ?`;
+      params.push(filter.userId);
+    }
+
+    if (filter?.franchiseId) {
+      sql += ` AND (bc.franchise_id = ? OR bt.franchise_id = ?)`;
+      params.push(filter.franchiseId, filter.franchiseId);
+    }
+
+    if (filter?.status && filter.status.toLowerCase() !== "all") {
+      sql += ` AND LOWER(COALESCE(bc.status, 'Pending')) = LOWER(?)`;
+      params.push(filter.status);
+    }
+
+    if (filter?.search) {
+      const q = `%${filter.search.trim()}%`;
+      sql += ` AND (
+        CAST(bc.id AS CHAR) LIKE ? OR
+        bt.name LIKE ? OR
+        u.name LIKE ? OR
+        u.email LIKE ? OR
+        f.name LIKE ?
+      )`;
+      params.push(q, q, q, q, q);
+    }
+
+    sql += ` ORDER BY bc.id DESC`;
+
+    const [rows] = await query<RowDataPacket[]>(sql, params);
+    if (rows.length === 0) return [];
+
+    const templateIds = [...new Set(rows.map((r) => Number(r.template_id)).filter((id) => !isNaN(id) && id > 0))];
+    let imageRows: any[] = [];
+    if (templateIds.length > 0) {
+      const placeholders = templateIds.map(() => "?").join(",");
+      const [imgs] = await query<RowDataPacket[]>(
+        `SELECT * FROM banner_template_images WHERE template_id IN (${placeholders}) ORDER BY sort_order ASC, id ASC`,
+        templateIds,
+      );
+      imageRows = imgs;
+    }
+
+    const imagesByTemplateId = new Map<number, any[]>();
+    for (const img of imageRows) {
+      const tId = Number(img.template_id);
+      if (!imagesByTemplateId.has(tId)) imagesByTemplateId.set(tId, []);
+      imagesByTemplateId.get(tId)!.push(mapBannerTemplateImage(img));
+    }
+
+    return rows.map((r) => {
+      let vals: Record<string, any> = {};
+      try {
+        vals =
+          typeof r.customization_values === "string"
+            ? JSON.parse(r.customization_values)
+            : r.customization_values || {};
+      } catch {
+        vals = {};
+      }
+
+      const tId = Number(r.template_id);
+      const tImages = imagesByTemplateId.get(tId) || [];
+      const previewImageUrl =
+        vals._selectedImageUrl ||
+        (vals._selectedImageIndex !== undefined && tImages[Number(vals._selectedImageIndex)]
+          ? tImages[Number(vals._selectedImageIndex)].imageUrl
+          : tImages[0]?.imageUrl || null);
+
+      const templateName =
+        vals._bannerTitle ||
+        (vals._selectedImageIndex !== undefined && tImages.length > 1
+          ? `${r.template_name} (#${Number(vals._selectedImageIndex) + 1})`
+          : r.template_name || `Template #${tId}`);
+
+      return {
+        id: Number(r.id),
+        templateId: tId,
+        templateName,
+        widthPx: Number(r.width_px || 1920),
+        heightPx: Number(r.height_px || 1080),
+        orientation: r.orientation || "landscape",
+        previewImageUrl,
+        userId: Number(r.user_id),
+        userName: r.user_name || "Unknown User",
+        userEmail: r.user_email || "",
+        franchiseId: r.franchise_id ? Number(r.franchise_id) : null,
+        franchiseName: r.franchise_name || null,
+        status: r.status || "Pending",
+        customizationValues: vals,
+        createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+        updatedAt: r.updated_at ? new Date(r.updated_at).toISOString() : new Date().toISOString(),
+      };
+    });
+  } catch (err: any) {
+    if (err.code === "ER_NO_SUCH_TABLE" || String(err.message).includes("doesn't exist")) {
+      return [];
+    }
+    throw err;
+  }
+}
+
+export async function getBannerSubmissionById(
+  submissionId: number,
+): Promise<BannerSubmissionDetailModel | null> {
+  try {
+    const [rows] = await query<RowDataPacket[]>(
+      `
+      SELECT 
+        bc.*,
+        bt.name AS template_name,
+        bt.width_px,
+        bt.height_px,
+        bt.orientation,
+        u.name AS user_name,
+        u.email AS user_email,
+        f.name AS franchise_name
+      FROM banner_customizations bc
+      LEFT JOIN banner_templates bt ON bc.template_id = bt.id
+      LEFT JOIN users u ON bc.user_id = u.id
+      LEFT JOIN franchises f ON bc.franchise_id = f.id
+      WHERE bc.id = ?
+      LIMIT 1
+      `,
+      [submissionId],
+    );
+
+    if (rows.length === 0) return null;
+    const r = rows[0];
+    const templateId = Number(r.template_id);
+
+    const fields = await getBannerTemplateFields(templateId);
+
+    const [imageRows] = await query<RowDataPacket[]>(
+      `SELECT * FROM banner_template_images WHERE template_id = ? ORDER BY sort_order ASC, id ASC`,
+      [templateId],
+    );
+    const images = imageRows.map(mapBannerTemplateImage);
+
+    let vals: Record<string, any> = {};
+    try {
+      vals =
+        typeof r.customization_values === "string"
+          ? JSON.parse(r.customization_values)
+          : r.customization_values || {};
+    } catch {
+      vals = {};
+    }
+
+    const submittedFields: Array<{
+      id: number | string;
+      label: string;
+      fieldType: string;
+      value: any;
+    }> = [];
+
+    const matchedKeys = new Set<string>();
+
+    for (let i = 0; i < fields.length; i++) {
+      const f = fields[i];
+      const strId = String(f.id);
+      const strIndex = String(i);
+
+      let foundVal =
+        vals[f.id] ??
+        vals[strId] ??
+        vals[f.label] ??
+        (f.fieldKey ? vals[f.fieldKey] : undefined) ??
+        vals[f.label.toLowerCase()] ??
+        vals[strIndex];
+
+      if (foundVal !== undefined) {
+        matchedKeys.add(strId);
+        matchedKeys.add(f.label);
+        if (f.fieldKey) matchedKeys.add(f.fieldKey);
+        matchedKeys.add(strIndex);
+      }
+
+      submittedFields.push({
+        id: f.id,
+        label: f.label,
+        fieldType: f.fieldType || "text",
+        value: foundVal !== undefined ? foundVal : "-",
+      });
+    }
+
+    for (const [key, val] of Object.entries(vals)) {
+      if (!matchedKeys.has(key) && key !== "templateId" && key !== "franchiseId" && !key.startsWith("_")) {
+        submittedFields.push({
+          id: key,
+          label: key,
+          fieldType: typeof val === "boolean" ? "checkbox" : "text",
+          value: val,
+        });
+      }
+    }
+
+    const templateName =
+      vals._bannerTitle ||
+      (vals._selectedImageIndex !== undefined && images.length > 1
+        ? `${r.template_name} (#${Number(vals._selectedImageIndex) + 1})`
+        : r.template_name || `Template #${templateId}`);
+
+    const previewImageUrl =
+      vals._selectedImageUrl ||
+      (vals._selectedImageIndex !== undefined && images[Number(vals._selectedImageIndex)]
+        ? images[Number(vals._selectedImageIndex)].imageUrl
+        : images[0]?.imageUrl || null);
+
+    return {
+      id: Number(r.id),
+      templateId,
+      templateName,
+      widthPx: Number(r.width_px || 1920),
+      heightPx: Number(r.height_px || 1080),
+      dimensionsLabel: `${r.width_px || 1920} × ${r.height_px || 1080} px`,
+      previewImageUrl,
+      images,
+      userId: Number(r.user_id),
+      userName: r.user_name || "Unknown User",
+      userEmail: r.user_email || "",
+      franchiseId: r.franchise_id ? Number(r.franchise_id) : null,
+      franchiseName: r.franchise_name || null,
+      status: r.status || "Pending",
+      customizationValues: vals,
+      submittedFields,
+      createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
+      updatedAt: r.updated_at ? new Date(r.updated_at).toISOString() : new Date().toISOString(),
+    };
+  } catch (err: any) {
+    if (err.code === "ER_NO_SUCH_TABLE" || String(err.message).includes("doesn't exist")) {
+      return null;
+    }
+    throw err;
+  }
+}
+
+export async function updateBannerSubmissionStatus(
+  submissionId: number,
+  status: string,
+): Promise<{ id: number; status: string }> {
+  const allowed = ["Pending", "In Review", "Approved", "Rejected", "Completed"];
+  const normalized =
+    allowed.find((s) => s.toLowerCase() === status.trim().toLowerCase()) ||
+    status.trim();
+
+  try {
+    await execute(
+      `UPDATE banner_customizations SET status = ?, updated_at = NOW() WHERE id = ?`,
+      [normalized, submissionId],
+    );
+  } catch (err: any) {
+    if (err.code === "ER_BAD_FIELD_ERROR" || String(err.message).includes("Unknown column")) {
+      console.warn("status column not in banner_customizations table yet.");
+    } else {
+      throw err;
+    }
+  }
+
+  return { id: submissionId, status: normalized };
+}
+

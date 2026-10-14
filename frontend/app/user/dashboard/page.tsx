@@ -36,11 +36,15 @@ import {
   Loader2,
   Check,
   Copy,
+  Inbox,
+  Clock,
+  CheckCircle,
 } from "lucide-react";
 import {
   bannerTemplateApi,
   resolveImageUrl,
   type BannerTemplateModel,
+  type BannerSubmissionListItem,
 } from "@/app/lib/client/banner-template-api";
 import {
   franchiseApi,
@@ -144,6 +148,85 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
     message: string;
   } | null>(null);
 
+  // User's Submitted Banners state
+  const [mySubmissions, setMySubmissions] = useState<BannerSubmissionListItem[]>([]);
+  const [loadingMySubmissions, setLoadingMySubmissions] = useState(false);
+  const [refreshingMySubmissions, setRefreshingMySubmissions] = useState(false);
+  const [selectedMySubmission, setSelectedMySubmission] = useState<BannerSubmissionListItem | null>(null);
+  const [loadingSubmissionDetail, setLoadingSubmissionDetail] = useState(false);
+  const [mySubmissionDetail, setMySubmissionDetail] = useState<any>(null);
+
+  async function loadMySubmissions(isSilent = false) {
+    if (!isSilent) setLoadingMySubmissions(true);
+    else setRefreshingMySubmissions(true);
+    try {
+      const res = await bannerTemplateApi.getMyBannerSubmissions();
+      setMySubmissions(res.submissions || []);
+    } catch (err) {
+      console.error("Failed to load my banner submissions:", err);
+    } finally {
+      setLoadingMySubmissions(false);
+      setRefreshingMySubmissions(false);
+    }
+  }
+
+  async function openMySubmissionDetail(sub: BannerSubmissionListItem) {
+    setSelectedMySubmission(sub);
+    setLoadingSubmissionDetail(true);
+    try {
+      const detail = await bannerTemplateApi.getBannerSubmissionById(sub.id);
+      setMySubmissionDetail(detail);
+    } catch (err) {
+      console.error("Failed to load submission detail:", err);
+      setMySubmissionDetail(null);
+    } finally {
+      setLoadingSubmissionDetail(false);
+    }
+  }
+
+  function getSubmissionStatusBadge(status: string) {
+    const norm = (status || "Pending").toLowerCase();
+    switch (norm) {
+      case "approved":
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs">
+            <CheckCircle size={12} className="text-emerald-500" />
+            Approved
+          </span>
+        );
+      case "in review":
+      case "in_review":
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs">
+            <Clock size={12} className="text-blue-500" />
+            In Review
+          </span>
+        );
+      case "rejected":
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-red-50 text-red-700 border border-red-200 shadow-2xs">
+            <XCircle size={12} className="text-red-500" />
+            Rejected
+          </span>
+        );
+      case "completed":
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200 shadow-2xs">
+            <CheckCircle2 size={12} className="text-purple-500" />
+            Completed
+          </span>
+        );
+      case "pending":
+      default:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 shadow-2xs">
+            <Clock size={12} className="text-amber-500" />
+            Pending Review
+          </span>
+        );
+    }
+  }
+
   // Load existing customization when a banner template is opened
   useEffect(() => {
     if (!viewingTemplate) {
@@ -218,17 +301,30 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
     setCustomizationNotice(null);
 
     try {
-      await bannerTemplateApi.saveBannerCustomization({
+      const currentImage = viewingTemplate.images?.[activeImageIndex];
+      const variantTitle =
+        viewingTemplate.images && viewingTemplate.images.length > 1
+          ? `${viewingTemplate.name} (#${activeImageIndex + 1})`
+          : viewingTemplate.name;
+
+      const res = await bannerTemplateApi.submitBannerCustomization({
         templateId: viewingTemplate.id,
         franchiseId: userFranchiseId ? Number(userFranchiseId) : undefined,
-        values: customFieldValues,
+        values: {
+          ...customFieldValues,
+          _selectedImageIndex: activeImageIndex,
+          _selectedImageUrl: currentImage?.imageUrl || "",
+          _bannerTitle: variantTitle,
+        },
         files: customFieldFiles,
       });
 
+      const subIdMsg = res?.submissionId ? ` (Submission #${res.submissionId})` : "";
       setCustomizationNotice({
         type: "success",
-        message: "Customization details submitted successfully!",
+        message: `Banner customization submitted successfully!${subIdMsg} You can track the status under 'My Banner Submissions'.`,
       });
+      loadMySubmissions(true);
     } catch (err: any) {
       console.error("Failed to save customization:", err);
       setCustomizationNotice({
@@ -299,6 +395,12 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
       icon: LayoutTemplate,
       badge: totalBannerImages,
     },
+    {
+      id: "my-banner-submissions",
+      label: "My Banner Submissions",
+      icon: Inbox,
+      badge: mySubmissions.length > 0 ? mySubmissions.length : undefined,
+    },
   ];
 
   async function loadClientProjects() {
@@ -339,8 +441,15 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
   useEffect(() => {
     loadClientProjects();
     loadFranchiseBanners(clientUser?.franchiseId);
+    loadMySubmissions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectSearch]);
+
+  useEffect(() => {
+    if (activeTab === "my-banner-submissions") {
+      loadMySubmissions();
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -437,7 +546,8 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
   }, [filteredBanners]);
 
   // Download banner image
-  async function handleDownloadBanner(imgUrl: string, fileName?: string) {
+  async function handleDownloadBanner(imgUrl?: string | null, fileName?: string) {
+    if (!imgUrl) return;
     try {
       const fullUrl = resolveImageUrl(imgUrl);
       const response = await fetch(fullUrl);
@@ -1152,6 +1262,149 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
         </div>
       )}
 
+      {/* TAB 4: MY BANNER SUBMISSIONS */}
+      {activeTab === "my-banner-submissions" && (
+        <div className="space-y-6">
+          {/* Header Card */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs">
+            <div>
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+                  My Banner Submissions
+                </h2>
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200/60">
+                  {mySubmissions.length} Total
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Track the status and review progress of all banner customizations you submitted.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={refreshingMySubmissions || loadingMySubmissions}
+                onClick={() => loadMySubmissions(true)}
+                className="text-xs font-medium gap-1.5 h-8.5"
+              >
+                <RefreshCw
+                  size={13}
+                  className={refreshingMySubmissions ? "animate-spin text-indigo-600" : "text-slate-500"}
+                />
+                <span>Refresh Status</span>
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => setActiveTab("banner-templates")}
+                className="text-xs font-semibold gap-1.5 h-8.5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs"
+              >
+                <LayoutTemplate size={13} />
+                <span>Browse Templates</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Submissions List / Grid */}
+          {loadingMySubmissions ? (
+            <Card className="p-16 text-center space-y-3">
+              <Loader2 size={24} className="animate-spin mx-auto text-indigo-600" />
+              <p className="text-xs font-semibold text-slate-600">Loading your submitted banner requests...</p>
+            </Card>
+          ) : mySubmissions.length === 0 ? (
+            <Card className="p-16 text-center space-y-3 bg-white border border-slate-200">
+              <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-500 mx-auto flex items-center justify-center border border-indigo-100 shadow-inner">
+                <Inbox size={28} />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-bold text-slate-800">No Banner Submissions Found</p>
+                <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                  You haven't submitted any banner customization requests yet. Click "Browse Templates", open a banner, fill the form, and click Submit.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setActiveTab("banner-templates")}
+                className="text-xs mt-2 font-semibold"
+              >
+                Browse Franchise Templates
+              </Button>
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {mySubmissions.map((sub) => {
+                return (
+                  <Card
+                    key={sub.id}
+                    className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs hover:shadow-lg transition p-0 flex flex-col justify-between"
+                  >
+                    <div>
+                      {/* Banner Image Preview */}
+                      <div className="relative aspect-video bg-slate-900 border-b border-slate-100 flex items-center justify-center overflow-hidden p-2">
+                        {sub.previewImageUrl ? (
+                          <img
+                            src={resolveImageUrl(sub.previewImageUrl)}
+                            alt={sub.templateName}
+                            className="w-full h-full object-contain rounded-lg"
+                          />
+                        ) : (
+                          <ImageIcon size={32} className="text-slate-600" />
+                        )}
+                        <div className="absolute top-2.5 right-2.5">
+                          {getSubmissionStatusBadge(sub.status)}
+                        </div>
+                      </div>
+
+                      {/* Content */}
+                      <div className="p-4 space-y-2">
+                        <div className="flex items-start justify-between gap-2">
+                          <h3 className="font-bold text-slate-900 text-sm truncate" title={sub.templateName}>
+                            {sub.templateName}
+                          </h3>
+                        </div>
+                        <p className="text-[11px] text-slate-400 font-mono">
+                          {sub.widthPx} × {sub.heightPx} px
+                        </p>
+                        <p className="text-xs text-slate-500 flex items-center gap-1 pt-1 border-t border-slate-100">
+                          <Clock size={12} className="text-slate-400" />
+                          <span>Submitted: {new Date(sub.createdAt).toLocaleDateString()}</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Card Actions */}
+                    <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => openMySubmissionDetail(sub)}
+                        className="text-xs h-7.5 px-3 gap-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex-1 shadow-2xs"
+                      >
+                        <Eye size={12} />
+                        <span>View Details</span>
+                      </Button>
+                      {sub.previewImageUrl && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDownloadBanner(sub.previewImageUrl, `${sub.templateName}.png`)}
+                          title="Download Banner Image"
+                          className="text-xs h-7.5 px-2.5 text-slate-600"
+                        >
+                          <Download size={12} />
+                        </Button>
+                      )}
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* DETAIL / PREVIEW MODAL */}
       {viewingTemplate && (
         <div
@@ -1675,6 +1928,167 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                     </Button>
                   )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* USER SUBMISSION DETAIL MODAL */}
+      {selectedMySubmission && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setSelectedMySubmission(null);
+              setMySubmissionDetail(null);
+            }
+          }}
+        >
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-xl max-h-[90vh] my-auto flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+            {/* Modal Header */}
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 flex-shrink-0">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-extrabold text-base text-slate-900 truncate">
+                    {selectedMySubmission.templateName}
+                  </h3>
+                  {getSubmissionStatusBadge(selectedMySubmission.status)}
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  {selectedMySubmission.widthPx} × {selectedMySubmission.heightPx} px · Submitted {new Date(selectedMySubmission.createdAt).toLocaleDateString()}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedMySubmission(null);
+                  setMySubmissionDetail(null);
+                }}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 overflow-y-auto space-y-4 flex-1">
+              {/* Banner Image Preview */}
+              <div className="rounded-xl border border-slate-200 overflow-hidden bg-slate-950 flex items-center justify-center p-2 min-h-[180px] max-h-[260px]">
+                {selectedMySubmission.previewImageUrl ? (
+                  <img
+                    src={resolveImageUrl(selectedMySubmission.previewImageUrl)}
+                    alt={selectedMySubmission.templateName}
+                    className="max-h-[240px] w-auto max-w-full object-contain rounded-lg shadow-sm"
+                  />
+                ) : (
+                  <div className="py-8 text-center text-slate-400">
+                    <ImageIcon size={28} className="mx-auto mb-1 text-slate-600" />
+                    <p className="text-xs">No image preview available</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Submitted Custom Fields */}
+              <div className="space-y-2 pt-2 border-t border-slate-100">
+                <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Your Submitted Custom Fields
+                </h4>
+
+                {loadingSubmissionDetail ? (
+                  <div className="py-6 text-center space-y-2">
+                    <Loader2 size={18} className="animate-spin mx-auto text-indigo-600" />
+                    <p className="text-xs text-slate-500">Loading details...</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {mySubmissionDetail?.submittedFields && mySubmissionDetail.submittedFields.length > 0 ? (
+                      mySubmissionDetail.submittedFields.map((f: any, idx: number) => {
+                        const isFile =
+                          f.fieldType === "file" ||
+                          (typeof f.value === "string" &&
+                            (f.value.startsWith("/uploads/") || f.value.match(/\.(png|jpg|jpeg|svg|webp|pdf)$/i)));
+
+                        return (
+                          <div key={f.id || idx} className={`p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1 ${f.fieldType === "textarea" ? "sm:col-span-2" : ""}`}>
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                              {f.label}
+                            </label>
+                            {isFile ? (
+                              <a
+                                href={resolveImageUrl(String(f.value))}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800"
+                              >
+                                <ExternalLink size={12} /> View Uploaded File
+                              </a>
+                            ) : (
+                              <p className="text-xs font-semibold text-slate-800 break-words">
+                                {f.value !== undefined && f.value !== null && String(f.value).trim() !== "" ? String(f.value) : "-"}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })
+                    ) : (
+                      Object.entries(selectedMySubmission.customizationValues || {})
+                        .filter(([key]) => !key.startsWith("_") && key !== "templateId" && key !== "franchiseId")
+                        .map(([key, val], idx) => {
+                          const isFile =
+                            typeof val === "string" &&
+                            (val.startsWith("/uploads/") || val.match(/\.(png|jpg|jpeg|svg|webp|pdf)$/i));
+
+                          return (
+                            <div key={idx} className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1">
+                              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                                Field #{idx + 1}
+                              </label>
+                              {isFile ? (
+                                <a
+                                  href={resolveImageUrl(String(val))}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800"
+                                >
+                                  <ExternalLink size={12} /> View Uploaded File
+                                </a>
+                              ) : (
+                                <p className="text-xs font-semibold text-slate-800 break-words">
+                                  {String(val)}
+                                </p>
+                              )}
+                            </div>
+                          );
+                        })
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-5 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between flex-shrink-0">
+              {selectedMySubmission.previewImageUrl ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleDownloadBanner(selectedMySubmission.previewImageUrl, `${selectedMySubmission.templateName}.png`)}
+                  className="text-xs font-semibold gap-1.5 h-8 text-slate-700"
+                >
+                  <Download size={13} />
+                  <span>Download Banner</span>
+                </Button>
+              ) : <div />}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSelectedMySubmission(null);
+                  setMySubmissionDetail(null);
+                }}
+                className="text-xs font-semibold h-8 px-4"
+              >
+                Close
+              </Button>
             </div>
           </div>
         </div>

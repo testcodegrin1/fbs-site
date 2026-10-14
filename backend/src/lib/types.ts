@@ -109,6 +109,41 @@ export type BannerCustomizationModel = {
   userId: number;
   franchiseId?: number | null;
   customizationValues: Record<string, any>;
+  status?: string;
   createdAt: string;
   updatedAt: string;
 };
+
+export type BannerSubmissionStatus =
+  | "Pending"
+  | "In Review"
+  | "Approved"
+  | "Rejected"
+  | "Completed";
+
+export type BannerSubmissionDetailModel = {
+  id: number;
+  templateId: number;
+  templateName: string;
+  widthPx: number;
+  heightPx: number;
+  dimensionsLabel?: string;
+  previewImageUrl?: string | null;
+  images?: BannerTemplateImageModel[];
+  userId: number;
+  userName: string;
+  userEmail: string;
+  franchiseId?: number | null;
+  franchiseName?: string | null;
+  status: BannerSubmissionStatus | string;
+  customizationValues: Record<string, any>;
+  submittedFields: Array<{
+    id: number | string;
+    label: string;
+    fieldType: string;
+    value: any;
+  }>;
+  createdAt: string;
+  updatedAt: string;
+};
+

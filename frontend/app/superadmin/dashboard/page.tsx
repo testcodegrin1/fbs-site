@@ -17,6 +17,7 @@ import { UserManagement } from "@/app/super-admin/dashboard/UserManagement";
 import { RolePermissionManagement } from "@/app/super-admin/dashboard/RolePermissionManagement";
 import { FranchiseManagement } from "@/app/super-admin/Franchise";
 import { BannerTemplateManagement } from "@/app/super-admin/dashboard/BannerTemplateManagement";
+import { BannerSubmissionsManagement } from "@/app/super-admin/dashboard/BannerSubmissionsManagement";
 import {
   canvasApi,
   type ProjectModel,
@@ -46,6 +47,7 @@ import {
   FileImage,
   Building2,
   LayoutTemplate,
+  Inbox,
 } from "lucide-react";
 
 export default function SuperAdminDashboardPage() {
@@ -143,6 +145,7 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
     { id: "diagrams", label: "Diagram Templates", icon: Layers, badge: diagrams.length },
     { id: "franchises", label: "Franchises", icon: Building2 },
     { id: "banner-templates", label: "Banner Templates", icon: LayoutTemplate },
+    { id: "banner-submissions", label: "Banner Submissions", icon: Inbox },
   ];
 
   async function loadData(opts?: { refreshDetails?: boolean }) {
@@ -843,6 +846,9 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
 
       {/* TAB 6: BANNER TEMPLATES */}
       {activeTab === "banner-templates" && <BannerTemplateManagement />}
+
+      {/* TAB 7: BANNER SUBMISSIONS */}
+      {activeTab === "banner-submissions" && <BannerSubmissionsManagement />}
 
       {/* MODAL: CREATE / EDIT DIAGRAM TEMPLATE */}
       {showDiagramModal && (

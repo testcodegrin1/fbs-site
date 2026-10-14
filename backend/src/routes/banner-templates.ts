@@ -17,6 +17,9 @@ import {
   getBannerTemplateFields,
   saveBannerCustomization,
   getBannerCustomization,
+  listBannerSubmissions,
+  getBannerSubmissionById,
+  updateBannerSubmissionStatus,
 } from "../lib/banner-templates.js";
 
 export const bannerTemplatesRouter = Router();
@@ -453,3 +456,246 @@ bannerTemplatesRouter.get(
     }
   },
 );
+
+// POST /api/submitBannerCustomization - Alias for submitting customization
+bannerTemplatesRouter.post(
+  "/submitBannerCustomization",
+  upload.any(),
+  requireAuth(),
+  async (req, res) => {
+    try {
+      const user = await getCurrentUser(req);
+      if (!user) {
+        res.status(401).json({ message: "Authentication required." });
+        return;
+      }
+
+      const templateId = Number(req.body.templateId ?? req.body.template_id);
+      if (!templateId || isNaN(templateId)) {
+        res.status(400).json({ message: "Valid templateId is required." });
+        return;
+      }
+
+      let values: Record<string, any> = {};
+      if (req.body.customizationValues) {
+        values =
+          typeof req.body.customizationValues === "string"
+            ? JSON.parse(req.body.customizationValues)
+            : req.body.customizationValues;
+      } else if (req.body.values) {
+        values =
+          typeof req.body.values === "string"
+            ? JSON.parse(req.body.values)
+            : req.body.values;
+      } else {
+        const {
+          templateId: _t,
+          template_id: _t2,
+          franchiseId: _f,
+          franchise_id: _f2,
+          ...rest
+        } = req.body;
+        values = rest;
+      }
+
+      const files = Array.isArray(req.files) ? req.files : [];
+      for (const file of files) {
+        values[file.fieldname] = `/uploads/banners/${file.filename}`;
+      }
+
+      const franchiseId = Number(
+        req.body.franchiseId ?? req.body.franchise_id ?? user.franchiseId,
+      );
+      const result = await saveBannerCustomization(
+        templateId,
+        user.id,
+        values,
+        franchiseId || undefined,
+        true,
+      );
+
+      res.json({
+        message: "Banner customization submitted successfully",
+        submissionId: result.id,
+        submission: result,
+      });
+    } catch (error) {
+      const { message, status } = getErrorResponse(error);
+      res.status(status).json({ message });
+    }
+  },
+);
+
+// GET /api/bannerSubmissions - List submissions for Super Admin & Franchise Managers
+bannerTemplatesRouter.get(
+  "/bannerSubmissions",
+  requireAuth(),
+  async (req, res) => {
+    try {
+      const user = await getCurrentUser(req);
+      if (!user) {
+        res.status(401).json({ message: "Authentication required." });
+        return;
+      }
+
+      const isSuperAdmin = user.roles?.includes("super_admin");
+      let franchiseId: number | undefined = undefined;
+
+      if (!isSuperAdmin && user.franchiseId) {
+        franchiseId = user.franchiseId;
+      } else if (req.query.franchiseId) {
+        franchiseId = Number(req.query.franchiseId);
+      }
+
+      const search = req.query.search ? String(req.query.search) : undefined;
+      const status = req.query.status ? String(req.query.status) : undefined;
+
+      const submissions = await listBannerSubmissions({
+        search,
+        status,
+        franchiseId,
+      });
+
+      res.json({ submissions, total: submissions.length });
+    } catch (error) {
+      const { message, status } = getErrorResponse(error);
+      res.status(status).json({ message });
+    }
+  },
+);
+
+// GET /api/myBannerSubmissions - List submissions for the currently logged-in user
+bannerTemplatesRouter.get(
+  "/myBannerSubmissions",
+  requireAuth(),
+  async (req, res) => {
+    try {
+      const user = await getCurrentUser(req);
+      if (!user) {
+        res.status(401).json({ message: "Authentication required." });
+        return;
+      }
+
+      const search = req.query.search ? String(req.query.search) : undefined;
+      const status = req.query.status ? String(req.query.status) : undefined;
+
+      const submissions = await listBannerSubmissions({
+        userId: user.id,
+        search,
+        status,
+      });
+
+      res.json({ submissions, total: submissions.length });
+    } catch (error) {
+      const { message, status } = getErrorResponse(error);
+      res.status(status).json({ message });
+    }
+  },
+);
+
+// GET /api/bannerSubmissions/:id - Get complete submission detail for Admin modal
+bannerTemplatesRouter.get(
+  "/bannerSubmissions/:id",
+  requireAuth(),
+  async (req, res) => {
+    try {
+      const user = await getCurrentUser(req);
+      if (!user) {
+        res.status(401).json({ message: "Authentication required." });
+        return;
+      }
+
+      const id = Number(req.params.id);
+      if (!id || isNaN(id)) {
+        res.status(400).json({ message: "Valid submission ID is required." });
+        return;
+      }
+
+      const submission = await getBannerSubmissionById(id);
+      if (!submission) {
+        res.status(404).json({ message: "Banner submission not found." });
+        return;
+      }
+
+      // Check authorization if not super_admin
+      const isSuperAdmin = user.roles?.includes("super_admin");
+      if (
+        !isSuperAdmin &&
+        submission.userId !== user.id &&
+        (!user.franchiseId || user.franchiseId !== submission.franchiseId)
+      ) {
+        res.status(403).json({
+          message: "You do not have permission to view this submission.",
+        });
+        return;
+      }
+
+      res.json({ submission });
+    } catch (error) {
+      const { message, status } = getErrorResponse(error);
+      res.status(status).json({ message });
+    }
+  },
+);
+
+// PUT & PATCH /api/bannerSubmissions/:id/status - Update submission status
+bannerTemplatesRouter.put(
+  "/bannerSubmissions/:id/status",
+  requireAuth(),
+  async (req, res) => {
+    try {
+      const user = await requirePermission(req, "banner_templates:manage");
+      const id = Number(req.params.id);
+      const { status } = req.body;
+
+      if (!id || isNaN(id)) {
+        res.status(400).json({ message: "Valid submission ID is required." });
+        return;
+      }
+      if (!status || typeof status !== "string") {
+        res.status(400).json({ message: "Valid status string is required." });
+        return;
+      }
+
+      const result = await updateBannerSubmissionStatus(id, status);
+      res.json({
+        message: "Banner submission status updated successfully",
+        ...result,
+      });
+    } catch (error) {
+      const { message, status } = getErrorResponse(error);
+      res.status(status).json({ message });
+    }
+  },
+);
+
+bannerTemplatesRouter.patch(
+  "/bannerSubmissions/:id/status",
+  requireAuth(),
+  async (req, res) => {
+    try {
+      const user = await requirePermission(req, "banner_templates:manage");
+      const id = Number(req.params.id);
+      const { status } = req.body;
+
+      if (!id || isNaN(id)) {
+        res.status(400).json({ message: "Valid submission ID is required." });
+        return;
+      }
+      if (!status || typeof status !== "string") {
+        res.status(400).json({ message: "Valid status string is required." });
+        return;
+      }
+
+      const result = await updateBannerSubmissionStatus(id, status);
+      res.json({
+        message: "Banner submission status updated successfully",
+        ...result,
+      });
+    } catch (error) {
+      const { message, status } = getErrorResponse(error);
+      res.status(status).json({ message });
+    }
+  },
+);
+

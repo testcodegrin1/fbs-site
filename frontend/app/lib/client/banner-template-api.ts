@@ -644,4 +644,149 @@ export const bannerTemplateApi = {
     });
     return data?.customization ?? null;
   },
+
+  /**
+   * 10. POST /api/submitBannerCustomization
+   */
+  async submitBannerCustomization(options: {
+    templateId: number;
+    values: Record<string, any>;
+    files?: Record<string, File>;
+    franchiseId?: number;
+  }): Promise<{ message: string; submissionId?: number; submission: any }> {
+    const formData = new FormData();
+    formData.append("templateId", String(options.templateId));
+    if (options.franchiseId) {
+      formData.append("franchiseId", String(options.franchiseId));
+    }
+    formData.append("customizationValues", JSON.stringify(options.values));
+
+    if (options.files) {
+      for (const [key, file] of Object.entries(options.files)) {
+        if (file instanceof File) {
+          formData.append(key, file);
+        }
+      }
+    }
+
+    const data = await request<any>("/api/submitBannerCustomization", {
+      method: "POST",
+      body: formData,
+    });
+    return data;
+  },
+
+  /**
+   * 11. GET /api/bannerSubmissions
+   */
+  async getBannerSubmissions(params?: {
+    search?: string;
+    status?: string;
+    franchiseId?: number;
+  }): Promise<{ submissions: BannerSubmissionListItem[]; total: number }> {
+    const queryParts: string[] = [];
+    if (params?.search) queryParts.push(`search=${encodeURIComponent(params.search)}`);
+    if (params?.status && params.status !== "all") queryParts.push(`status=${encodeURIComponent(params.status)}`);
+    if (params?.franchiseId) queryParts.push(`franchiseId=${encodeURIComponent(params.franchiseId)}`);
+
+    const qs = queryParts.length > 0 ? `?${queryParts.join("&")}` : "";
+    const data = await request<any>(`/api/bannerSubmissions${qs}`, {
+      method: "GET",
+    });
+    return {
+      submissions: Array.isArray(data?.submissions) ? data.submissions : [],
+      total: data?.total ?? (data?.submissions?.length || 0),
+    };
+  },
+
+  /**
+   * 12. GET /api/bannerSubmissions/:id
+   */
+  async getBannerSubmissionById(id: number): Promise<BannerSubmissionDetail | null> {
+    const data = await request<any>(`/api/bannerSubmissions/${id}`, {
+      method: "GET",
+    });
+    return data?.submission ?? null;
+  },
+
+  /**
+   * 13. PUT /api/bannerSubmissions/:id/status
+   */
+  async updateBannerSubmissionStatus(
+    id: number,
+    status: string,
+  ): Promise<{ id: number; status: string; message: string }> {
+    const data = await request<any>(`/api/bannerSubmissions/${id}/status`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status }),
+    });
+    return data;
+  },
+
+  /**
+   * 14. GET /api/myBannerSubmissions
+   */
+  async getMyBannerSubmissions(): Promise<{ submissions: BannerSubmissionListItem[]; total: number }> {
+    const data = await request<any>("/api/myBannerSubmissions", {
+      method: "GET",
+    });
+    return {
+      submissions: Array.isArray(data?.submissions) ? data.submissions : [],
+      total: data?.total ?? (data?.submissions?.length || 0),
+    };
+  },
 };
+
+export type BannerSubmissionStatus =
+  | "Pending"
+  | "In Review"
+  | "Approved"
+  | "Rejected"
+  | "Completed";
+
+export interface BannerSubmissionListItem {
+  id: number;
+  templateId: number;
+  templateName: string;
+  widthPx: number;
+  heightPx: number;
+  orientation: "landscape" | "portrait";
+  previewImageUrl?: string | null;
+  userId: number;
+  userName: string;
+  userEmail: string;
+  franchiseId?: number | null;
+  franchiseName?: string | null;
+  status: BannerSubmissionStatus | string;
+  customizationValues: Record<string, any>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BannerSubmissionDetail {
+  id: number;
+  templateId: number;
+  templateName: string;
+  widthPx: number;
+  heightPx: number;
+  dimensionsLabel?: string;
+  previewImageUrl?: string | null;
+  images?: BannerTemplateImage[];
+  userId: number;
+  userName: string;
+  userEmail: string;
+  franchiseId?: number | null;
+  franchiseName?: string | null;
+  status: BannerSubmissionStatus | string;
+  customizationValues: Record<string, any>;
+  submittedFields: Array<{
+    id: number | string;
+    label: string;
+    fieldType: string;
+    value: any;
+  }>;
+  createdAt: string;
+  updatedAt: string;
+}
+
