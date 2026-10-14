@@ -347,10 +347,13 @@ export const bannerTemplateApi = {
 
   /**
    * 1. GET /api/getBannerTemplates
-   * Fetches all banner templates
+   * Fetches all banner templates or filtered by franchiseId
    */
-  async getBannerTemplates(): Promise<BannerTemplateModel[]> {
-    const data = await request<any>("/api/getBannerTemplates", {
+  async getBannerTemplates(franchiseId?: number): Promise<BannerTemplateModel[]> {
+    const url = franchiseId
+      ? `/api/getBannerTemplates?franchiseId=${encodeURIComponent(franchiseId)}`
+      : "/api/getBannerTemplates";
+    const data = await request<any>(url, {
       method: "GET",
     });
 
