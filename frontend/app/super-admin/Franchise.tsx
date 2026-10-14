@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, ChangeEvent, FormEvent, DragEvent } from "react";
+import { useState, useEffect, useMemo, ChangeEvent, FormEvent } from "react";
 import {
   franchiseApi,
   resolveImageUrl,
@@ -67,7 +67,6 @@ export function FranchiseManagement() {
   const [formData, setFormData] = useState<FormDataState>(emptyFormData);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -145,7 +144,6 @@ export function FranchiseManagement() {
     setLogoPreviewUrl(null);
     setEditingId(null);
     setFormError(null);
-    setIsDragging(false);
     setFormMode("create");
   }
 
@@ -169,7 +167,6 @@ export function FranchiseManagement() {
     );
     setEditingId(franchise.id);
     setFormError(null);
-    setIsDragging(false);
     setFormMode("edit");
   }
 
@@ -184,26 +181,30 @@ export function FranchiseManagement() {
     setLogoPreviewUrl(null);
     setFormErrors({});
     setFormError(null);
-    setIsDragging(false);
   }
 
-  // Process and validate selected or dropped logo file
-  function processLogoFile(file: File): boolean {
+  // Handle Logo File Selection
+  function handleLogoChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate type
     const validTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
     if (!validTypes.includes(file.type)) {
       setFormErrors((prev) => ({
         ...prev,
         logo: "Please upload a PNG, JPG, JPEG, or WebP image.",
       }));
-      return false;
+      return;
     }
 
+    // Validate size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       setFormErrors((prev) => ({
         ...prev,
         logo: "Logo file size must be less than 5MB.",
       }));
-      return false;
+      return;
     }
 
     if (logoPreviewUrl && logoPreviewUrl.startsWith("blob:")) {
@@ -218,46 +219,6 @@ export function FranchiseManagement() {
       delete next.logo;
       return next;
     });
-    return true;
-  }
-
-  // Handle Logo File Selection
-  function handleLogoChange(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    processLogoFile(file);
-    e.target.value = "";
-  }
-
-  // Drag and drop handlers
-  function handleDragOver(e: DragEvent<HTMLElement>) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!isDragging) setIsDragging(true);
-  }
-
-  function handleDragEnter(e: DragEvent<HTMLElement>) {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  }
-
-  function handleDragLeave(e: DragEvent<HTMLElement>) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
-    setIsDragging(false);
-  }
-
-  function handleDrop(e: DragEvent<HTMLElement>) {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-
-    const files = e.dataTransfer.files;
-    if (files && files.length > 0) {
-      processLogoFile(files[0]);
-    }
   }
 
   function handleRemoveSelectedLogo() {
@@ -785,23 +746,7 @@ export function FranchiseManagement() {
                 </Label>
 
                 {logoPreviewUrl ? (
-                  <div
-                    onDragOver={handleDragOver}
-                    onDragEnter={handleDragEnter}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    className={`relative p-3 bg-slate-50 border rounded-xl flex items-center justify-between gap-3 transition-all ${
-                      isDragging
-                        ? "border-indigo-500 bg-indigo-50/70 ring-2 ring-indigo-400/40"
-                        : "border-slate-200"
-                    }`}
-                  >
-                    {isDragging && (
-                      <div className="absolute inset-0 z-10 bg-indigo-600/90 text-white rounded-xl flex items-center justify-center gap-2 font-bold text-xs shadow-lg animate-in fade-in duration-150">
-                        <Upload size={18} className="animate-bounce" />
-                        Drop new image to replace logo
-                      </div>
-                    )}
+                  <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-14 h-14 rounded-lg bg-white border border-slate-200 p-1 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-sm">
                         <img
@@ -855,44 +800,17 @@ export function FranchiseManagement() {
                 ) : (
                   <label
                     htmlFor="logo-file-input"
-                    onDragOver={handleDragOver}
-                    onDragEnter={handleDragEnter}
-                    onDragLeave={handleDragLeave}
-                    onDrop={handleDrop}
-                    className={`relative border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all duration-200 text-center ${
-                      isDragging
-                        ? "border-indigo-600 bg-indigo-50/70 scale-[1.01] shadow-md shadow-indigo-100 ring-2 ring-indigo-400/40"
-                        : formErrors.logo
-                        ? "border-rose-300 bg-rose-50/50 hover:bg-rose-50"
-                        : "border-slate-300 hover:border-indigo-400 hover:bg-indigo-50/20 bg-slate-50/40"
-                    }`}
-                  >
-                    <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-200 ${
-                        isDragging
-                          ? "bg-indigo-600 text-white scale-110 shadow-md shadow-indigo-200"
-                          : "bg-slate-100 text-slate-500"
+                    className={`border-2 border-dashed rounded-xl p-5 flex flex-col items-center justify-center gap-2 cursor-pointer transition text-center ${formErrors.logo
+                      ? "border-rose-300 bg-rose-50/50 hover:bg-rose-50"
+                      : "border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/20"
                       }`}
-                    >
-                      <Upload
-                        size={20}
-                        className={isDragging ? "animate-bounce" : ""}
-                      />
+                  >
+                    <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center">
+                      <Upload size={18} />
                     </div>
                     <div>
                       <p className="text-xs font-bold text-slate-800">
-                        {isDragging ? (
-                          <span className="text-indigo-600">
-                            Drop logo image here
-                          </span>
-                        ) : (
-                          <>
-                            <span className="text-indigo-600 underline decoration-indigo-300 underline-offset-2">
-                              Click to upload logo
-                            </span>{" "}
-                            or drag and drop
-                          </>
-                        )}
+                        Click to upload logo or drag and drop
                       </p>
                       <p className="text-[10px] text-slate-400 mt-0.5">
                         PNG, JPG, JPEG, or WebP (max 5MB)

@@ -837,6 +837,9 @@ export function BannerTemplateManagement() {
                 <Layers size={15} className="text-emerald-600" />
                 Main Image ({formData.images.length})
               </Label>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Attached angles, side proofs, or variations with sort ordering.
+              </p>
             </div>
 
             <div className="flex items-center gap-2">
