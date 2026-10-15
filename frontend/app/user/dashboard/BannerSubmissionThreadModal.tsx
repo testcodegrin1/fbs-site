@@ -191,8 +191,9 @@ export function BannerSubmissionThreadModal({
 
   if (!isOpen || !submissionId) return null;
 
+  const normStatus = (submission?.status || "").toLowerCase().replace(/_/g, " ");
   const isReadOnly =
-    submission?.status === "Approved" || submission?.status === "Completed";
+    normStatus === "approved" || normStatus === "completed";
 
   const isStaff =
     role === "admin" || role === "designer" || role === "super_admin";
@@ -203,6 +204,7 @@ export function BannerSubmissionThreadModal({
     statusAction?: "approved" | "changes_requested",
   ) {
     if (!submissionId) return;
+    if (isReadOnly) return;
     let text =
       imageId !== null
         ? (tileReplies[imageId] || "").trim()
@@ -1280,13 +1282,17 @@ export function BannerSubmissionThreadModal({
                 {submission.userName || currentUserName || "Client User"}
               </strong>
             </span>
-            <span className="text-slate-300">·</span>
-            <span>
-              Designer:{" "}
-              <strong className="text-slate-800 font-semibold">
-                {submission.franchiseName || "FBS designer - 1"}
-              </strong>
-            </span>
+            {submission.franchiseName && (
+              <>
+                <span className="text-slate-300">·</span>
+                <span>
+                  Franchise:{" "}
+                  <strong className="text-slate-800 font-semibold">
+                    {submission.franchiseName}
+                  </strong>
+                </span>
+              </>
+            )}
             {submission.dimensionsLabel && (
               <>
                 <span className="text-slate-300">·</span>
@@ -1446,14 +1452,19 @@ export function BannerSubmissionThreadModal({
                         setOverallNote(e.target.value);
                       }
                     }}
-                    placeholder={`Feedback or change requests for "${submission.templateName}"...`}
-                    className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition resize-none bg-white"
+                    disabled={isReadOnly || sendingReplyKey !== null || sendingOverallNote}
+                    placeholder={
+                      isReadOnly
+                        ? `This banner proof has already been ${normStatus === "completed" ? "completed" : "approved"}.`
+                        : `Feedback or change requests for "${submission.templateName}"...`
+                    }
+                    className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition resize-none bg-white disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
                   />
 
                   <div className="grid grid-cols-2 gap-2">
                     <Button
                       type="button"
-                      disabled={sendingReplyKey !== null || sendingOverallNote}
+                      disabled={isReadOnly || sendingReplyKey !== null || sendingOverallNote}
                       variant="outline"
                       onClick={() =>
                         handleSendMessage(
@@ -1461,7 +1472,7 @@ export function BannerSubmissionThreadModal({
                           "changes_requested",
                         )
                       }
-                      className="h-9 px-2 text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="h-9 px-2 text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-amber-50"
                     >
                       <AlertCircle size={13} className="text-amber-600" />
                       <span className="truncate">Request Changes</span>
@@ -1469,21 +1480,23 @@ export function BannerSubmissionThreadModal({
 
                     <Button
                       type="button"
-                      disabled={sendingReplyKey !== null || sendingOverallNote}
+                      disabled={isReadOnly || sendingReplyKey !== null || sendingOverallNote}
                       onClick={() =>
                         handleSendMessage(
                           activeFile ? activeFile.id : null,
                           "approved",
                         )
                       }
-                      className="h-9 px-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="h-9 px-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-emerald-600"
                     >
                       {sendingReplyKey !== null || sendingOverallNote ? (
                         <Loader2 size={13} className="animate-spin" />
                       ) : (
                         <CheckCircle2 size={13} />
                       )}
-                      <span className="truncate">Approve Banner</span>
+                      <span className="truncate">
+                        {isReadOnly ? "Approved" : "Approve Banner"}
+                      </span>
                     </Button>
                   </div>
 
@@ -1666,7 +1679,7 @@ export function BannerSubmissionThreadModal({
                       const titleText = isChanges
                         ? "Changes Requested"
                         : isDesigner
-                          ? "Designer Review"
+                          ? "Admin Review"
                           : "Client Feedback";
 
                       return (
@@ -1704,7 +1717,7 @@ export function BannerSubmissionThreadModal({
                     </div>
                     <span className="text-[10px] text-slate-400 block">
                       {new Date(submission.createdAt).toLocaleDateString()},
-                      Designer
+                      FBS Admin
                     </span>
                   </div>
                 )}
