@@ -1,8 +1,27 @@
 import type { AuthRole, AuthUser } from "./types";
 import { ROLE_DASHBOARD_PATHS } from "./roles";
 
-const TOKEN_KEY = "fbs_token";
-const USER_KEY = "fbs_user";
+const LEGACY_TOKEN_KEY = "fbs_token";
+const LEGACY_USER_KEY = "fbs_user";
+const ACTIVE_ROLE_KEY = "fbs_auth_active_role";
+
+const AUTH_STORAGE_KEYS: Record<
+  AuthRole,
+  { token: string; user: string }
+> = {
+  super_admin: {
+    token: "fbs_auth_super_admin_token",
+    user: "fbs_auth_super_admin_profile",
+  },
+  designer: {
+    token: "fbs_auth_designer_token",
+    user: "fbs_auth_designer_profile",
+  },
+  user: {
+    token: "fbs_auth_user_token",
+    user: "fbs_auth_user_profile",
+  },
+};
 
 function getSessionAuthStorage(): Storage | null {
   if (typeof window === "undefined") return null;
@@ -11,33 +30,70 @@ function getSessionAuthStorage(): Storage | null {
 
 function clearLegacyLocalAuthStorage() {
   if (typeof window === "undefined") return;
-  window.localStorage.removeItem(TOKEN_KEY);
-  window.localStorage.removeItem(USER_KEY);
+  window.localStorage.removeItem(LEGACY_TOKEN_KEY);
+  window.localStorage.removeItem(LEGACY_USER_KEY);
+  window.sessionStorage.removeItem(LEGACY_TOKEN_KEY);
+  window.sessionStorage.removeItem(LEGACY_USER_KEY);
 }
 
-export function getStoredToken(): string | null {
+function getRoleFromPathname(): AuthRole | null {
+  if (typeof window === "undefined") return null;
+  const pathname = window.location.pathname;
+  if (pathname.startsWith("/superadmin")) return "super_admin";
+  if (pathname.startsWith("/designer")) return "designer";
+  if (pathname.startsWith("/user")) return "user";
+  return null;
+}
+
+function getActiveRole(role?: AuthRole): AuthRole | null {
+  if (role) return role;
+
+  const pathRole = getRoleFromPathname();
+  if (pathRole) return pathRole;
+
+  const storedRole = getSessionAuthStorage()?.getItem(ACTIVE_ROLE_KEY);
+  if (storedRole && storedRole in AUTH_STORAGE_KEYS) {
+    return storedRole as AuthRole;
+  }
+
+  return null;
+}
+
+export function getStoredToken(role?: AuthRole): string | null {
   if (typeof window === "undefined") return null;
   clearLegacyLocalAuthStorage();
-  return getSessionAuthStorage()?.getItem(TOKEN_KEY) ?? null;
+  const activeRole = getActiveRole(role);
+  if (!activeRole) return null;
+  return getSessionAuthStorage()?.getItem(AUTH_STORAGE_KEYS[activeRole].token) ?? null;
 }
 
-export function setStoredToken(token: string) {
+export function setStoredToken(token: string, role: AuthRole) {
   clearLegacyLocalAuthStorage();
-  getSessionAuthStorage()?.setItem(TOKEN_KEY, token);
+  const storage = getSessionAuthStorage();
+  storage?.setItem(AUTH_STORAGE_KEYS[role].token, token);
+  storage?.setItem(ACTIVE_ROLE_KEY, role);
 }
 
-export function removeStoredToken() {
+export function removeStoredToken(role?: AuthRole) {
   if (typeof window !== "undefined") {
     clearLegacyLocalAuthStorage();
-    window.sessionStorage.removeItem(TOKEN_KEY);
-    window.sessionStorage.removeItem(USER_KEY);
+    const activeRole = getActiveRole(role);
+    if (!activeRole) return;
+
+    window.sessionStorage.removeItem(AUTH_STORAGE_KEYS[activeRole].token);
+    window.sessionStorage.removeItem(AUTH_STORAGE_KEYS[activeRole].user);
+    if (window.sessionStorage.getItem(ACTIVE_ROLE_KEY) === activeRole) {
+      window.sessionStorage.removeItem(ACTIVE_ROLE_KEY);
+    }
   }
 }
 
-export function getStoredUser(): AuthUser | null {
+export function getStoredUser(role?: AuthRole): AuthUser | null {
   if (typeof window === "undefined") return null;
   clearLegacyLocalAuthStorage();
-  const data = getSessionAuthStorage()?.getItem(USER_KEY);
+  const activeRole = getActiveRole(role);
+  if (!activeRole) return null;
+  const data = getSessionAuthStorage()?.getItem(AUTH_STORAGE_KEYS[activeRole].user);
   if (!data) return null;
   try {
     return JSON.parse(data);
@@ -46,9 +102,11 @@ export function getStoredUser(): AuthUser | null {
   }
 }
 
-export function setStoredUser(user: AuthUser) {
+export function setStoredUser(user: AuthUser, role: AuthRole) {
   clearLegacyLocalAuthStorage();
-  getSessionAuthStorage()?.setItem(USER_KEY, JSON.stringify(user));
+  const storage = getSessionAuthStorage();
+  storage?.setItem(AUTH_STORAGE_KEYS[role].user, JSON.stringify(user));
+  storage?.setItem(ACTIVE_ROLE_KEY, role);
 }
 
 export function decodeJwtPayload(

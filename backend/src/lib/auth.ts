@@ -147,22 +147,9 @@ export function getAuthCookieOptions() {
 export async function getCurrentUser(req: Request): Promise<AuthUser | null> {
   let token: string | undefined;
 
-  // 1. Check cookies (cookie-parser)
-  const cookies = (req as any).cookies;
-  if (cookies) {
-    token = cookies[AUTH_COOKIE_NAME] || cookies[JWT_COOKIE_NAME] || cookies.auth_token;
-  }
-
-  // 2. Check jwt / x-access-token header
-  if (!token) {
-    const rawJwtHeader = req.headers["jwt"] || req.headers["x-access-token"];
-    if (typeof rawJwtHeader === "string") {
-      token = rawJwtHeader.trim();
-    }
-  }
-
-  // 3. Check Authorization header (supports Bearer <token>, JWT <token>, or raw <token>)
-  if (!token && typeof req.headers.authorization === "string") {
+  // Prefer the explicit token sent by the current portal. The shared auth cookie
+  // may belong to another role that was signed in from the same browser.
+  if (typeof req.headers.authorization === "string") {
     const authHeader = req.headers.authorization.trim();
     if (authHeader.startsWith("Bearer ")) {
       token = authHeader.substring(7).trim();
@@ -170,6 +157,22 @@ export async function getCurrentUser(req: Request): Promise<AuthUser | null> {
       token = authHeader.substring(4).trim();
     } else if (!authHeader.includes(" ")) {
       token = authHeader;
+    }
+  }
+
+  // Check jwt / x-access-token header.
+  if (!token) {
+    const rawJwtHeader = req.headers["jwt"] || req.headers["x-access-token"];
+    if (typeof rawJwtHeader === "string") {
+      token = rawJwtHeader.trim();
+    }
+  }
+
+  // Fall back to cookies for clients that do not send an authentication header.
+  if (!token) {
+    const cookies = (req as any).cookies;
+    if (cookies) {
+      token = cookies[AUTH_COOKIE_NAME] || cookies[JWT_COOKIE_NAME] || cookies.auth_token;
     }
   }
 

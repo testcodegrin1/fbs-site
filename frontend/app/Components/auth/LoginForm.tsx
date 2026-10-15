@@ -25,14 +25,14 @@ export function LoginForm({ role, title }: LoginFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    const token = getStoredToken();
+    const token = getStoredToken(role);
     if (token) {
       const userRole = getRoleFromToken(token);
       if (userRole) {
         router.push(getDashboardPathFromRole(userRole));
       }
     }
-  }, [router]);
+  }, [role, router]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

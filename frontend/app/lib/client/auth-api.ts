@@ -45,8 +45,12 @@ function apiUrl(path: string) {
   return `${base}${path}`;
 }
 
-async function request<T>(url: string, init?: RequestInit): Promise<T> {
-  const token = getStoredToken();
+async function request<T>(
+  url: string,
+  init?: RequestInit,
+  role?: AuthRole,
+): Promise<T> {
+  const token = getStoredToken(role);
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(init?.headers as Record<string, string>),
@@ -87,10 +91,10 @@ export const authApi = {
     });
 
     if (res.token) {
-      setStoredToken(res.token);
+      setStoredToken(res.token, role);
     }
     if (res.user) {
-      setStoredUser(res.user);
+      setStoredUser(res.user, role);
     }
 
     return res;
@@ -121,22 +125,29 @@ export const authApi = {
     });
 
     if (res.token) {
-      setStoredToken(res.token);
+      setStoredToken(res.token, "user");
     }
     if (res.user) {
-      setStoredUser(res.user);
+      setStoredUser(res.user, "user");
     }
 
     return res;
   },
 
-  async logout() {
-    removeStoredToken();
-    return request<{ ok: boolean }>("/api/auth/logout", { method: "POST" });
+  async logout(role?: AuthRole) {
+    try {
+      return await request<{ ok: boolean }>(
+        "/api/auth/logout",
+        { method: "POST" },
+        role,
+      );
+    } finally {
+      removeStoredToken(role);
+    }
   },
 
-  me() {
-    return request<{ user: AuthUser }>("/api/auth/me");
+  me(role?: AuthRole) {
+    return request<{ user: AuthUser }>("/api/auth/me", undefined, role);
   },
 
   listUsers() {

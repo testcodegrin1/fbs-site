@@ -26,7 +26,7 @@ export function AuthGuard({ requiredRole, children }: AuthGuardProps) {
     let isMounted = true;
 
     async function checkAuth() {
-      const token = getStoredToken();
+      const token = getStoredToken(requiredRole);
       if (!token) {
         if (isMounted) {
           router.push(ROLE_LOGIN_PATHS[requiredRole]);
@@ -45,7 +45,7 @@ export function AuthGuard({ requiredRole, children }: AuthGuardProps) {
 
       try {
         // Validate token with backend using Authorization: Bearer header
-        const res = await authApi.me();
+        const res = await authApi.me(requiredRole);
         if (!res.user) {
           throw new Error("Unauthenticated");
         }
@@ -63,7 +63,7 @@ export function AuthGuard({ requiredRole, children }: AuthGuardProps) {
           setLoading(false);
         }
       } catch {
-        removeStoredToken();
+        removeStoredToken(requiredRole);
         if (isMounted) {
           router.push(ROLE_LOGIN_PATHS[requiredRole]);
         }
