@@ -1,4 +1,5 @@
 "use client";
+import { DetailRow } from "@/app/Components/ui/detail-row";
 
 import {
   useState,
@@ -1627,8 +1628,9 @@ export function BannerTemplateManagement() {
               <tbody className="divide-y divide-slate-100 text-slate-700">
                 {filteredTemplates.map((template) => {
                   return (
-                    <tr
+                    <DetailRow
                       key={template.id}
+                      aria-label={`View ${template.name} details`}
                       onClick={() => setViewingTemplate(template)}
                       className="hover:bg-slate-50/90 transition-colors group cursor-pointer"
                     >
@@ -1762,7 +1764,7 @@ export function BannerTemplateManagement() {
                           </Button>
                         </div>
                       </td>
-                    </tr>
+                    </DetailRow>
                   );
                 })}
               </tbody>

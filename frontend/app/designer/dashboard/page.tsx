@@ -1,4 +1,6 @@
 "use client";
+import { BlueprintLibrary } from "@/app/Components/auth/BlueprintLibrary";
+import { DetailRow } from "@/app/Components/ui/detail-row";
 
 import { useEffect, useState } from "react";
 import { AuthGuard } from "@/app/Components/auth/AuthGuard";
@@ -62,6 +64,7 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
 
   // Clients State
   const [clients, setClients] = useState<ClientModel[]>([]);
+  const [viewingClient, setViewingClient] = useState<ClientModel | null>(null);
   const [clientSearch, setClientSearch] = useState("");
   const [clientPage, setClientPage] = useState(1);
   const [showClientModal, setShowClientModal] = useState(false);
@@ -72,7 +75,7 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
   // Projects State
   const [projects, setProjects] = useState<ProjectModel[]>([]);
   const [projectSearch, setProjectSearch] = useState("");
-  const [projectListViewMode, setProjectListViewMode] = useState<"card" | "list">("card");
+  const [projectListViewMode, setProjectListViewMode] = useState<"card" | "list">("list");
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [editingProject, setEditingProject] = useState<ProjectModel | null>(null);
   const [projectForm, setProjectForm] = useState({ clientId: "", name: "", description: "" });
@@ -946,16 +949,17 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
                             <Trash2 size={13} />
                           </Button>
                           <Button
-                            variant="link"
-                            size="sm"
-                            className="px-1"
+                            variant="outline"
+                            size="icon-sm"
+                            className="portal-action"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleOpenShare(p);
                             }}
                             title="Share Link"
+                            aria-label="Share"
                           >
-                            <Share2 size={12} /> Share
+                            <Share2 size={15} aria-hidden="true" />
                           </Button>
                         </div>
                       </div>
@@ -1014,16 +1018,16 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
                             <Trash2 size={14} />
                           </Button>
                           <Button
-                            variant="link"
-                            size="sm"
-                            className="px-1"
+                            variant="outline"
+                            size="icon-sm"
+                            className="portal-action"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleOpenShare(p);
                             }}
-                          >
-                            <Share2 size={13} /> Share
-                          </Button>
+                           title="Share" aria-label="Share">
+                      <Share2 size={15} aria-hidden="true" />
+                    </Button>
                         </div>
                       </div>
                     </Card>
@@ -1249,16 +1253,16 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
                                     : "Edit Canvas / Revisions"}
                                 </span>
                                 <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  className="h-auto py-1 px-1.5"
+                                  variant="outline"
+                                  size="icon-sm"
+                                  className="portal-action portal-action-danger"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     promptDeleteCanvas(c.id, c.name);
                                   }}
-                                >
-                                  <Trash2 size={14} /> Delete
-                                </Button>
+                                 title="Delete" aria-label="Delete">
+                      <Trash2 size={15} aria-hidden="true" />
+                    </Button>
                               </div>
                             </Card>
                           );
@@ -1281,9 +1285,12 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
 
       {/* CLIENTS DIRECTORY TAB */}
       {activeTab === "clients" && (
-        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5">
-          <div className="flex items-center justify-between">
-            <h2 className="text-lg font-extrabold text-slate-900">Clients Directory</h2>
+        <div className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 px-6 py-6">
+            <div>
+              <h2 className="text-base font-semibold text-slate-900">Clients Directory</h2>
+              <p className="mt-1 text-xs text-slate-500">Manage client profiles and contact details.</p>
+            </div>
             <Button
               onClick={handleOpenAddClient}
               className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-xl flex items-center gap-1.5 shadow-sm transition cursor-pointer"
@@ -1292,7 +1299,8 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
             </Button>
           </div>
 
-          <table className="w-full text-left text-xs">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left text-xs">
             <thead>
               <tr className="bg-slate-50 border-b text-slate-500 font-bold uppercase">
                 <th className="py-3 px-4">Client Name</th>
@@ -1303,101 +1311,60 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
             </thead>
             <tbody className="divide-y">
               {clients.map((c) => (
-                <tr key={c.id} className="hover:bg-slate-50/60">
+                <DetailRow key={c.id} aria-label={`View ${c.name} details`} onClick={() => setViewingClient(c)} className="hover:bg-slate-50/60">
                   <td className="py-3 px-4 font-bold text-slate-900">{c.name}</td>
                   <td className="py-3 px-4 text-slate-600">{c.email}</td>
                   <td className="py-3 px-4 text-slate-600">{c.phone}</td>
                   <td className="py-3 px-4 text-right space-x-2">
-                    <Button onClick={() => handleOpenEditClient(c)} className="text-indigo-600 font-bold hover:underline cursor-pointer">
-                      Edit
+                    <Button onClick={() => handleOpenEditClient(c)} className="portal-action" title="Edit" aria-label="Edit" variant="outline" size="icon-sm">
+                      <Edit size={15} aria-hidden="true" />
                     </Button>
-                    <Button onClick={() => promptDeleteClient(c)} className="text-rose-600 font-bold hover:underline cursor-pointer">
-                      Delete
+                    <Button onClick={() => promptDeleteClient(c)} className="portal-action portal-action-danger" title="Delete" aria-label="Delete" variant="outline" size="icon-sm">
+                      <Trash2 size={15} aria-hidden="true" />
                     </Button>
                   </td>
-                </tr>
+                </DetailRow>
               ))}
             </tbody>
           </table>
+          </div>
         </div>
+      )}
+
+      {viewingClient && (
+        <dialog
+          ref={(dialog) => { if (dialog && !dialog.open) dialog.showModal(); }}
+          aria-labelledby="client-detail-title"
+          className="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-lg max-h-[90dvh] overflow-y-auto rounded-lg border border-slate-200 bg-white p-6 text-slate-900 shadow-xl backdrop:bg-slate-950/40"
+          onCancel={() => setViewingClient(null)}
+        >
+          <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-4">
+            <h2 id="client-detail-title" className="text-lg font-semibold">Client Details</h2>
+            <Button variant="ghost" size="icon-sm" title="Close details" aria-label="Close client details" onClick={() => setViewingClient(null)}><X size={18} /></Button>
+          </div>
+          <dl className="grid grid-cols-[90px_minmax(0,1fr)] gap-4 py-5 text-sm [&>dt]:text-slate-500 [&>dd]:break-words">
+            <dt>Name</dt><dd>{viewingClient.name}</dd>
+            <dt>Email</dt><dd>{viewingClient.email || "—"}</dd>
+            <dt>Phone</dt><dd>{viewingClient.phone || "—"}</dd>
+            <dt>Company</dt><dd>{viewingClient.companyName || "—"}</dd>
+            <dt>Created</dt><dd>{new Date(viewingClient.createdAt).toLocaleString()}</dd>
+          </dl>
+          <div className="flex justify-end border-t border-slate-100 pt-4">
+            <Button variant="outline" onClick={() => { handleOpenEditClient(viewingClient); setViewingClient(null); }}><Edit size={15} /> Edit Client</Button>
+          </div>
+        </dialog>
       )}
 
       {/* DIAGRAMS TAB */}
       {activeTab === "diagrams" && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <div>
-              <h2 className="text-base font-extrabold text-slate-900">Diagram Blueprints</h2>
-              <p className="text-xs text-slate-500 mt-0.5">Manage technical blueprint templates and diagram layouts with photos.</p>
-            </div>
-            <Button
-              onClick={() => {
-                setDiagramForm({ name: "", description: "" });
-                setDiagramImageFile(null);
-                setShowDiagramModal(true);
-              }}
-              className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 shadow-sm cursor-pointer"
-            >
-              <Plus size={16} /> Add Diagram Blueprint
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {diagramTemplates.map((d) => {
-              const photoUrl = d.previewUrl ? `${backendHost}${d.previewUrl}` : null;
-              return (
-                <div key={d.id} className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm space-y-4 flex flex-col justify-between">
-                  <div className="space-y-3">
-                    {photoUrl ? (
-                      <div
-                        onClick={() => setFullscreenCanvas({ url: photoUrl, name: d.name, version: 1 })}
-                        className="w-full aspect-[16/9] bg-slate-100 rounded-xl overflow-hidden relative group border cursor-pointer"
-                      >
-                        <img src={photoUrl} alt={d.name} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-bold gap-1.5 backdrop-blur-[1px]">
-                          <Eye size={16} /> View Fullscreen
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="w-full h-32 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center border border-purple-100">
-                        <Layers size={36} />
-                      </div>
-                    )}
-
-                    <div>
-                      <h3 className="font-extrabold text-slate-900 text-sm">{d.name}</h3>
-                      {d.description && <p className="text-xs text-slate-500 mt-1">{d.description}</p>}
-                    </div>
-                  </div>
-
-                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <Button
-                      onClick={() => handleOpenEditDiagramBlueprint(d)}
-                      className="text-indigo-600 hover:text-indigo-800 text-xs font-bold flex items-center gap-1.5 cursor-pointer transition"
-                    >
-                      <Edit size={13} /> Edit Blueprint
-                    </Button>
-                    <Button
-                      disabled={deletingDiagramId === d.id}
-                      onClick={() => promptDeleteDiagramBlueprint(d)}
-                      className="text-rose-600 hover:text-rose-700 text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50 transition"
-                    >
-                      {deletingDiagramId === d.id ? (
-                        <>
-                          <Loader2 size={13} className="animate-spin text-rose-600" /> Deleting...
-                        </>
-                      ) : (
-                        <>
-                          <Trash2 size={13} /> Delete
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <BlueprintLibrary
+          diagrams={diagramTemplates}
+          deletingId={deletingDiagramId}
+          onCreate={() => { setDiagramForm({ name: "", description: "" }); setDiagramImageFile(null); setShowDiagramModal(true); }}
+          onEdit={handleOpenEditDiagramBlueprint}
+          onDelete={promptDeleteDiagramBlueprint}
+          onPreview={setFullscreenCanvas}
+        />
       )}
 
       {/* MODAL 1: CLIENT MODAL WITH SCROLLING & INLINE BUTTON LOADER */}
@@ -1408,7 +1375,7 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
               <h3 className="font-extrabold text-lg text-slate-900">
                 {editingClient ? "Edit Client Profile" : "Add New Client"}
               </h3>
-              <Button onClick={() => setShowClientModal(false)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
+              <Button onClick={() => setShowClientModal(false)} className="text-slate-400 hover:text-slate-700 cursor-pointer" variant="ghost" size="icon-sm" title="Close">
                 <X size={18} />
               </Button>
             </div>
@@ -1474,7 +1441,7 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
               <h3 className="font-extrabold text-lg text-slate-900">
                 {editingProject ? "Edit Project" : "Create Client Project"}
               </h3>
-              <Button onClick={() => setShowProjectModal(false)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
+              <Button onClick={() => setShowProjectModal(false)} className="text-slate-400 hover:text-slate-700 cursor-pointer" variant="ghost" size="icon-sm" title="Close">
                 <X size={18} />
               </Button>
             </div>
@@ -1535,7 +1502,7 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl animate-in fade-in zoom-in duration-200 my-auto max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between border-b pb-3 flex-shrink-0">
               <h3 className="font-extrabold text-lg text-slate-900">Upload Design Canvases</h3>
-              <Button onClick={() => setShowUploadModal(false)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
+              <Button onClick={() => setShowUploadModal(false)} className="text-slate-400 hover:text-slate-700 cursor-pointer" variant="ghost" size="icon-sm" title="Close">
                 <X size={18} />
               </Button>
             </div>
@@ -1668,7 +1635,7 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
                                 onClick={() => setFullscreenCanvas({ url: fileUrl, name: file.name, version: 1 })}
                                 className="p-1.5 bg-white/90 text-slate-800 rounded-lg hover:bg-white hover:text-indigo-600 transition shadow cursor-pointer"
                                 title="View Fullscreen Preview"
-                              >
+                               variant="outline" size="icon-sm">
                                 <Eye size={14} />
                               </Button>
                               <Button
@@ -1676,7 +1643,7 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
                                 onClick={() => setSelectedFiles((prev) => prev.filter((_, i) => i !== idx))}
                                 className="p-1.5 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition shadow cursor-pointer"
                                 title="Remove File"
-                              >
+                               variant="outline" size="icon-sm">
                                 <Trash2 size={14} />
                               </Button>
                             </div>
@@ -1741,7 +1708,7 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
                   setDesignerReplyDrafts({});
                 }}
                 className="text-slate-400 hover:text-slate-700 rounded-full flex-shrink-0"
-              >
+               title="Close">
                 <X size={18} />
               </Button>
             </div>
@@ -1848,7 +1815,7 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
                                 className="bg-rose-600 hover:bg-rose-700 text-white shadow"
                                 onClick={() => promptDeleteSubImageTile(img.id)}
                                 title="Remove Photo Tile"
-                              >
+                               variant="outline">
                                 <Trash2 size={14} />
                               </Button>
                             </div>
@@ -2123,7 +2090,7 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
               <h3 className="font-extrabold text-lg text-slate-900">
                 {editingDiagram ? "Edit Diagram Blueprint" : "Add Diagram Blueprint"}
               </h3>
-              <Button onClick={() => setShowDiagramModal(false)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
+              <Button onClick={() => setShowDiagramModal(false)} className="text-slate-400 hover:text-slate-700 cursor-pointer" variant="ghost" size="icon-sm" title="Close">
                 <X size={18} />
               </Button>
             </div>
@@ -2374,7 +2341,7 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
                   setCopiedLink(false);
                 }}
                 className="text-slate-400 hover:text-slate-700 cursor-pointer p-1 rounded-xl hover:bg-slate-100 transition"
-              >
+               variant="ghost" size="icon-sm" title="Close">
                 <X size={20} />
               </Button>
             </div>

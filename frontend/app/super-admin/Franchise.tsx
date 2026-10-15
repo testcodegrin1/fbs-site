@@ -1,4 +1,5 @@
 "use client";
+import { DetailRow } from "@/app/Components/ui/detail-row";
 
 import { useState, useEffect, useMemo, ChangeEvent, FormEvent } from "react";
 import {
@@ -348,7 +349,7 @@ export function FranchiseManagement() {
             size="icon-sm"
             onClick={() => setNotice(null)}
             className="text-slate-400 hover:text-slate-700 h-6 w-6"
-          >
+           title="Close">
             <X size={14} />
           </Button>
         </div>
@@ -417,7 +418,7 @@ export function FranchiseManagement() {
               size="icon-sm"
               onClick={() => setSearchQuery("")}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-400 hover:text-slate-600"
-            >
+             title="Close">
               <X size={13} />
             </Button>
           )}
@@ -522,8 +523,10 @@ export function FranchiseManagement() {
                     : null;
 
                   return (
-                    <tr
+                    <DetailRow
                       key={f.id}
+                      aria-label={`View ${f.name} details`}
+                      onClick={() => setViewingFranchise(f)}
                       className="hover:bg-slate-50/70 transition-colors group"
                     >
                       {/* Logo Column */}
@@ -602,40 +605,39 @@ export function FranchiseManagement() {
                           <Button
                             type="button"
                             variant="outline"
-                            size="sm"
+                            size="icon-sm"
                             onClick={() => setViewingFranchise(f)}
                             title="View franchise details"
-                            className="text-xs font-medium"
+                            className="portal-action"
+                            aria-label="View"
                           >
-                            <Eye size={14} />
-                            View
+                            <Eye size={15} aria-hidden="true" />
                           </Button>
 
                           <Button
                             type="button"
                             variant="outline"
-                            size="sm"
+                            size="icon-sm"
                             onClick={() => openEditModal(f)}
                             title="Edit franchise details"
-                            className="text-xs font-medium"
+                            className="portal-action"
+                            aria-label="Edit"
                           >
-                            <Edit size={14} />
-                            Edit
+                            <Edit size={15} aria-hidden="true" />
                           </Button>
 
                           <Button
                             type="button"
-                            size="sm"
+                            size="icon-sm"
                             onClick={() => setDeleteTarget(f)}
                             title="Delete franchise"
-                            className="bg-transparent hover:bg-rose-50 text-rose-600 border border-rose-200 text-xs font-medium"
-                          >
-                            <Trash2 size={14} />
-                            Delete
-                          </Button>
+                            className="portal-action portal-action-danger"
+                           aria-label="Delete" variant="outline">
+                      <Trash2 size={15} aria-hidden="true" />
+                    </Button>
                         </div>
                       </td>
-                    </tr>
+                    </DetailRow>
                   );
                 })}
               </tbody>
@@ -675,7 +677,7 @@ export function FranchiseManagement() {
                 size="icon-sm"
                 onClick={closeFormModal}
                 className="text-slate-400 hover:text-slate-700"
-              >
+               title="Close">
                 <X size={18} />
               </Button>
             </div>
@@ -933,7 +935,7 @@ export function FranchiseManagement() {
                 size="icon-sm"
                 onClick={() => setViewingFranchise(null)}
                 className="text-slate-400 hover:text-slate-700"
-              >
+               title="Close">
                 <X size={18} />
               </Button>
             </div>

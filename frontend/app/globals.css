@@ -38,153 +38,68 @@ body {
   overflow-x: hidden;
 }
 
-/* Portal dashboards (designer / user / superadmin) - larger base type */
+/* Shared presentation for super admin, user and designer portals. */
 .portal-dashboard {
-  font-size: 15px;
+  --color-primary: #0f172a;
+  --color-primary-dark: #0f172a;
+  --color-primary-light: #f1f5f9;
+  background: #f5f7fb;
+  color: #0f172a;
+  font-size: 14px;
   line-height: 1.5;
 }
-
-/* Bump common small Tailwind text utilities inside portals */
-.portal-dashboard .text-\[9px\] {
-  font-size: 11px !important;
-}
-.portal-dashboard .text-\[10px\] {
-  font-size: 12px !important;
-}
-.portal-dashboard .text-\[10\.5px\] {
-  font-size: 12.5px !important;
-}
-.portal-dashboard .text-\[11px\] {
-  font-size: 13px !important;
-}
-.portal-dashboard .text-\[12px\] {
-  font-size: 14px !important;
-}
-.portal-dashboard .text-\[13px\] {
-  font-size: 15px !important;
-}
-.portal-dashboard .text-xs {
-  font-size: 0.875rem !important; /* 14px */
-  line-height: 1.35rem !important;
-}
-.portal-dashboard .text-sm {
-  font-size: 1rem !important; /* 16px */
-  line-height: 1.5rem !important;
-}
-.portal-dashboard .text-base {
-  font-size: 1.125rem !important; /* 18px */
-}
-.portal-dashboard .text-lg {
-  font-size: 1.25rem !important; /* 20px */
-}
-.portal-dashboard .text-xl {
-  font-size: 1.4rem !important;
-}
-.portal-dashboard .text-2xl {
-  font-size: 1.65rem !important;
-}
-
-/* Portal dashboard theme polish - UI only */
-.portal-dashboard {
-  background:
-    linear-gradient(180deg, #ffffff 0%, #f8fafc 38%, #f3f6fb 100%);
-}
-
-.portal-dashboard main {
-  color: var(--color-primary-dark);
-}
-
+.portal-dashboard main { color: #0f172a; }
+.portal-dashboard main :is(h1, h2) { font-size: 16px; font-weight: 600; line-height: 1.5; }
 .portal-dashboard .rounded-xl,
 .portal-dashboard .rounded-2xl,
-.portal-dashboard .rounded-3xl {
-  border-radius: 0.75rem !important;
+.portal-dashboard .rounded-3xl { border-radius: 8px; }
+.portal-dashboard .text-xs { font-size: 12px; line-height: 1.5; }
+.portal-dashboard .text-sm { font-size: 14px; line-height: 1.5; }
+.portal-dashboard .font-extrabold { font-weight: 600; }
+.portal-dashboard :is(.shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl) {
+  box-shadow: 0 4px 18px -8px rgb(15 23 42 / 18%);
 }
-
-.portal-dashboard .shadow-md,
-.portal-dashboard .shadow-lg,
-.portal-dashboard .shadow-xl,
-.portal-dashboard .shadow-2xl {
-  box-shadow: 0 12px 32px -24px rgba(15, 27, 51, 0.45) !important;
+.portal-dashboard table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.portal-dashboard thead { background: #f8fafc; }
+.portal-dashboard th { color: #475569; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: .035em; }
+.portal-dashboard :is(th, td) { padding: 16px 24px; }
+.portal-dashboard tbody > tr { border-bottom: 1px solid #eef2f7; transition: background-color 150ms; }
+.portal-dashboard tbody > tr:last-child { border-bottom: 0; }
+.portal-dashboard tbody > tr:hover { background-color: #f8fafc; }
+.portal-dashboard :is(.portal-detail-row, [role="button"]):focus-visible { outline: 2px solid #64748b; outline-offset: -2px; }
+.portal-dashboard button { font-weight: 500; }
+.portal-dashboard main button[data-icon-button="true"] {
+  width: 32px; height: 32px; padding: 0; flex-shrink: 0;
+  border: 1px solid #e2e8f0; border-radius: 6px; box-shadow: none;
 }
-
-.portal-dashboard .text-indigo-600,
-.portal-dashboard .text-indigo-700,
-.portal-dashboard .text-indigo-800,
-.portal-dashboard .text-indigo-900,
-.portal-dashboard .text-violet-500,
-.portal-dashboard .text-violet-600,
-.portal-dashboard .text-violet-700,
-.portal-dashboard .text-violet-800,
-.portal-dashboard .text-purple-600 {
-  color: var(--color-primary) !important;
+/* Existing list views share the continuous rows used by the directory tables. */
+.portal-dashboard main .space-y-2:has(> [role="button"]) {
+  overflow: hidden; border: 1px solid #e2e8f0; border-radius: 8px;
+  background: #fff; box-shadow: 0 1px 3px rgb(15 23 42 / 6%);
 }
-
-.portal-dashboard .bg-indigo-600,
-.portal-dashboard .bg-violet-600 {
-  background-color: var(--color-primary) !important;
+.portal-dashboard main .space-y-2 > [role="button"] {
+  margin-block: 0; border: 0; border-bottom: 1px solid #eef2f7;
+  border-radius: 0; box-shadow: none;
 }
-
-.portal-dashboard .hover\:bg-indigo-600:hover,
-.portal-dashboard .hover\:bg-indigo-700:hover,
-.portal-dashboard .hover\:bg-violet-700:hover {
-  background-color: #d60f6d !important;
+.portal-dashboard main .space-y-2 > [role="button"]:last-child { border-bottom: 0; }
+.portal-dashboard main .space-y-2 > [role="button"]:hover { background-color: #f8fafc; }
+.portal-dashboard button:focus-visible { outline: 2px solid #64748b; outline-offset: 3px; }
+.portal-dashboard .portal-action {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; padding: 0; border: 1px solid #e2e8f0;
+  border-radius: 6px; background: #fff; color: #475569; box-shadow: none; flex-shrink: 0;
 }
-
-.portal-dashboard .bg-indigo-50,
-.portal-dashboard .bg-indigo-50\/30,
-.portal-dashboard .bg-violet-50,
-.portal-dashboard .bg-violet-50\/40,
-.portal-dashboard .bg-violet-100,
-.portal-dashboard .bg-purple-50 {
-  background-color: var(--color-primary-light) !important;
+.portal-dashboard .portal-action:hover { background: #f1f5f9; color: #0f172a; }
+.portal-dashboard .portal-action.portal-action-danger { border-color: #fecaca; background: #fff7f7; color: #dc2626; }
+.portal-dashboard .portal-action.portal-action-danger:hover { background: #fef2f2; color: #b91c1c; }
+.portal-dashboard input[type="file"]::file-selector-button {
+  border: 0; border-radius: 6px; margin-right: 12px; padding: 8px 12px;
+  background: #f1f5f9; color: #334155; font-weight: 500;
 }
-
-.portal-dashboard .hover\:bg-indigo-100:hover,
-.portal-dashboard .hover\:bg-violet-100:hover,
-.portal-dashboard .hover\:bg-violet-200:hover {
-  background-color: #fce7f3 !important;
+@media (max-width: 640px) {
+  .portal-dashboard :is(th, td) { padding: 12px 16px; }
+  .portal-dashboard main { padding: 16px; }
 }
-
-.portal-dashboard .border-indigo-100,
-.portal-dashboard .border-indigo-200,
-.portal-dashboard .border-indigo-300,
-.portal-dashboard .border-indigo-400,
-.portal-dashboard .border-indigo-500,
-.portal-dashboard .border-violet-100,
-.portal-dashboard .border-violet-200,
-.portal-dashboard .border-violet-400,
-.portal-dashboard .border-purple-100 {
-  border-color: rgba(236, 18, 121, 0.28) !important;
-}
-
-.portal-dashboard .hover\:border-indigo-300:hover,
-.portal-dashboard .hover\:border-violet-400:hover {
-  border-color: rgba(236, 18, 121, 0.5) !important;
-}
-
-.portal-dashboard .ring-indigo-500\/15 {
-  --tw-ring-color: rgba(236, 18, 121, 0.16) !important;
-}
-
-.portal-dashboard .focus\:ring-indigo-500\/20:focus,
-.portal-dashboard .focus-visible\:ring-indigo-500\/20:focus-visible,
-.portal-dashboard .focus-visible\:ring-violet-500\/20:focus-visible {
-  --tw-ring-color: rgba(236, 18, 121, 0.2) !important;
-}
-
-.portal-dashboard .focus-visible\:border-indigo-400:focus-visible,
-.portal-dashboard .focus-visible\:border-violet-400:focus-visible,
-.portal-dashboard .focus\:border-indigo-400:focus {
-  border-color: rgba(236, 18, 121, 0.6) !important;
-}
-
-/* Portal grayscale mode - black, white, and gray only */
-.portal-dashboard .text-primary,
-.portal-dashboard .text-primary-dark,
-.portal-dashboard .text-primary-dark\/60,
-.portal-dashboard .text-primary-dark\/70,
-.portal-dashboard .text-primary-dark\/75,
-.portal-dashboard .text-primary-light,
 .portal-dashboard .text-indigo-600,
 .portal-dashboard .text-indigo-700,
 .portal-dashboard .text-indigo-800,
@@ -194,90 +109,53 @@ body {
 .portal-dashboard .text-violet-700,
 .portal-dashboard .text-violet-800,
 .portal-dashboard .text-purple-600,
-.portal-dashboard .text-rose-400,
-.portal-dashboard .text-rose-500,
-.portal-dashboard .text-rose-600,
-.portal-dashboard .text-rose-700,
-.portal-dashboard .text-red-600,
-.portal-dashboard .text-red-700,
-.portal-dashboard .text-emerald-500,
-.portal-dashboard .text-emerald-600,
-.portal-dashboard .text-emerald-700,
-.portal-dashboard .text-emerald-900,
+.portal-dashboard .text-primary,
+.portal-dashboard .text-primary-dark,
+.portal-dashboard .text-primary-light,
 .portal-dashboard .text-blue-600,
 .portal-dashboard .text-blue-700,
 .portal-dashboard .text-blue-900,
-.portal-dashboard .text-amber-600,
-.portal-dashboard .text-amber-700,
-.portal-dashboard .text-amber-900,
-.portal-dashboard .text-amber-950 {
-  color: #111827 !important;
+.portal-dashboard .hover\:text-indigo-800:hover,
+.portal-dashboard .hover\:text-blue-900:hover {
+  color: #334155 !important;
 }
 
-.portal-dashboard .text-slate-400,
-.portal-dashboard .text-slate-500,
-.portal-dashboard .text-primary-dark\/60,
-.portal-dashboard .text-primary-dark\/70,
-.portal-dashboard .text-primary-dark\/75 {
-  color: #64748b !important;
-}
-
-.portal-dashboard .bg-primary,
 .portal-dashboard .bg-indigo-600,
+.portal-dashboard .hover\:bg-indigo-600:hover,
+.portal-dashboard .hover\:bg-indigo-700:hover,
+.portal-dashboard .bg-primary,
 .portal-dashboard .bg-violet-600,
-.portal-dashboard .bg-rose-600,
-.portal-dashboard .bg-red-600,
 .portal-dashboard .bg-emerald-500,
 .portal-dashboard .bg-emerald-600,
 .portal-dashboard .bg-amber-500,
-.portal-dashboard .bg-slate-800 {
-  background-color: #111827 !important;
-  color: #ffffff !important;
-}
-
-.portal-dashboard .hover\:bg-primary\/90:hover,
-.portal-dashboard .hover\:bg-indigo-600:hover,
-.portal-dashboard .hover\:bg-indigo-700:hover,
 .portal-dashboard .hover\:bg-violet-700:hover,
-.portal-dashboard .hover\:bg-rose-700:hover,
-.portal-dashboard .hover\:bg-red-700:hover,
-.portal-dashboard .hover\:bg-emerald-100:hover,
-.portal-dashboard .hover\:bg-blue-100:hover,
+.portal-dashboard .bg-amber-400,
+.portal-dashboard .bg-slate-800,
+.portal-dashboard .hover\:bg-primary\/90:hover,
 .portal-dashboard .hover\:bg-slate-900:hover {
-  background-color: #000000 !important;
-  color: #ffffff !important;
+  background-color: #0f172a !important; color: #fff !important;
 }
 
-.portal-dashboard .bg-primary-light,
-.portal-dashboard .bg-primary\/15,
-.portal-dashboard .bg-primary\/20,
 .portal-dashboard .bg-indigo-50,
 .portal-dashboard .bg-indigo-50\/30,
 .portal-dashboard .bg-violet-50,
 .portal-dashboard .bg-violet-50\/40,
 .portal-dashboard .bg-violet-100,
 .portal-dashboard .bg-purple-50,
-.portal-dashboard .bg-rose-50,
-.portal-dashboard .bg-rose-100,
-.portal-dashboard .bg-red-50,
-.portal-dashboard .bg-green-50,
-.portal-dashboard .bg-emerald-50,
-.portal-dashboard .bg-blue-50,
-.portal-dashboard .bg-amber-50,
-.portal-dashboard .bg-amber-50\/20,
-.portal-dashboard .bg-amber-100,
-.portal-dashboard .bg-amber-100\/80,
-.portal-dashboard .bg-amber-400 {
+.portal-dashboard .bg-primary-light,
+.portal-dashboard .bg-primary\/15,
+.portal-dashboard .bg-primary\/20,
+.portal-dashboard .bg-blue-50 {
   background-color: #f1f5f9 !important;
-  color: #111827 !important;
 }
 
-.portal-dashboard .border-primary\/10,
-.portal-dashboard .border-primary\/20,
-.portal-dashboard .border-primary\/25,
-.portal-dashboard .border-primary\/30,
-.portal-dashboard .border-primary\/35,
-.portal-dashboard .border-primary\/40,
+.portal-dashboard .hover\:bg-indigo-100:hover,
+.portal-dashboard .hover\:bg-violet-100:hover,
+.portal-dashboard .hover\:bg-violet-200:hover,
+.portal-dashboard .hover\:bg-blue-100:hover {
+  background-color: #e2e8f0 !important;
+}
+
 .portal-dashboard .border-indigo-100,
 .portal-dashboard .border-indigo-200,
 .portal-dashboard .border-indigo-300,
@@ -287,133 +165,54 @@ body {
 .portal-dashboard .border-violet-200,
 .portal-dashboard .border-violet-400,
 .portal-dashboard .border-purple-100,
-.portal-dashboard .border-rose-100,
-.portal-dashboard .border-rose-200,
-.portal-dashboard .border-red-100,
-.portal-dashboard .border-red-200,
-.portal-dashboard .border-green-100,
-.portal-dashboard .border-emerald-200,
-.portal-dashboard .border-blue-200,
-.portal-dashboard .border-amber-200,
-.portal-dashboard .border-amber-300,
-.portal-dashboard .border-amber-400 {
-  border-color: #cbd5e1 !important;
-}
-
 .portal-dashboard .hover\:border-indigo-300:hover,
-.portal-dashboard .hover\:border-violet-400:hover {
-  border-color: #94a3b8 !important;
+.portal-dashboard .hover\:border-violet-400:hover,
+.portal-dashboard .border-primary\/10,
+.portal-dashboard .border-primary\/20,
+.portal-dashboard .border-primary\/25,
+.portal-dashboard .border-primary\/30,
+.portal-dashboard .border-primary\/35,
+.portal-dashboard .border-primary\/40,
+.portal-dashboard .border-blue-200 {
+  border-color: #e2e8f0 !important;
 }
 
 .portal-dashboard .ring-indigo-500\/15,
-.portal-dashboard .ring-amber-400\/15,
-.portal-dashboard .ring-amber-400\/20 {
-  --tw-ring-color: rgba(15, 23, 42, 0.16) !important;
-}
-
 .portal-dashboard .focus\:ring-indigo-500\/20:focus,
 .portal-dashboard .focus-visible\:ring-indigo-500\/20:focus-visible,
-.portal-dashboard .focus-visible\:ring-violet-500\/20:focus-visible {
-  --tw-ring-color: rgba(15, 23, 42, 0.2) !important;
+.portal-dashboard .focus-visible\:ring-violet-500\/20:focus-visible,
+.portal-dashboard .ring-amber-400\/15,
+.portal-dashboard .ring-amber-400\/20 {
+  --tw-ring-color: rgb(100 116 139 / 20%) !important;
 }
 
 .portal-dashboard .focus-visible\:border-indigo-400:focus-visible,
 .portal-dashboard .focus-visible\:border-violet-400:focus-visible,
 .portal-dashboard .focus\:border-indigo-400:focus {
-  border-color: #475569 !important;
+  border-color: #94a3b8 !important;
 }
 
-.portal-dashboard .accent-primary,
-.portal-dashboard .accent-indigo-600 {
-  accent-color: #111827 !important;
+.portal-dashboard .text-primary-dark\/60,
+.portal-dashboard .text-primary-dark\/70,
+.portal-dashboard .text-primary-dark\/75 {
+  color: #64748b !important;
 }
 
-.portal-dashboard button[style] {
-  background-color: #111827 !important;
-  color: #ffffff !important;
-}
-
-.portal-dashboard input[type="file"]::file-selector-button {
-  border: 0 !important;
-  border-radius: 0.75rem !important;
-  margin-right: 1rem !important;
-  padding: 0.55rem 1.15rem !important;
-  background: #f1f5f9 !important;
-  color: #111827 !important;
-  font-weight: 700 !important;
-  line-height: 1.2 !important;
-}
-
-/* Keep universal semantic action colors */
-.portal-dashboard .text-indigo-600,
-.portal-dashboard .text-blue-600 {
-  color: #2563eb !important;
-}
-
-.portal-dashboard .text-indigo-700,
-.portal-dashboard .text-blue-700 {
-  color: #1d4ed8 !important;
-}
-
-.portal-dashboard .text-indigo-800,
-.portal-dashboard .text-blue-900 {
-  color: #1e3a8a !important;
-}
-
-.portal-dashboard .text-indigo-900 {
-  color: #172554 !important;
-}
-
-.portal-dashboard .hover\:text-indigo-800:hover,
-.portal-dashboard .hover\:text-blue-900:hover {
-  color: #1e40af !important;
-}
-
-.portal-dashboard .bg-indigo-50,
-.portal-dashboard .bg-blue-50 {
-  background-color: #eff6ff !important;
-}
-
-.portal-dashboard .hover\:bg-indigo-100:hover,
-.portal-dashboard .hover\:bg-blue-100:hover {
-  background-color: #dbeafe !important;
-}
-
-.portal-dashboard .border-indigo-100,
-.portal-dashboard .border-indigo-200,
-.portal-dashboard .border-blue-200 {
-  border-color: #bfdbfe !important;
+.portal-dashboard .text-rose-400,
+.portal-dashboard .text-rose-500,
+.portal-dashboard .text-rose-600,
+.portal-dashboard .text-rose-700,
+.portal-dashboard .text-red-600,
+.portal-dashboard .text-red-700 {
+  color: #b91c1c !important;
 }
 
 .portal-dashboard .text-emerald-500,
 .portal-dashboard .text-emerald-600,
 .portal-dashboard .text-emerald-700,
+.portal-dashboard .text-emerald-900,
 .portal-dashboard .text-green-700 {
   color: #047857 !important;
-}
-
-.portal-dashboard .text-emerald-900 {
-  color: #064e3b !important;
-}
-
-.portal-dashboard .bg-emerald-50,
-.portal-dashboard .bg-green-50 {
-  background-color: #ecfdf5 !important;
-}
-
-.portal-dashboard .bg-emerald-500,
-.portal-dashboard .bg-emerald-600 {
-  background-color: #059669 !important;
-  color: #ffffff !important;
-}
-
-.portal-dashboard .hover\:bg-emerald-100:hover {
-  background-color: #d1fae5 !important;
-}
-
-.portal-dashboard .border-emerald-200,
-.portal-dashboard .border-green-100 {
-  border-color: #a7f3d0 !important;
 }
 
 .portal-dashboard .text-amber-600,
@@ -423,32 +222,17 @@ body {
   color: #92400e !important;
 }
 
-.portal-dashboard .bg-amber-50,
-.portal-dashboard .bg-amber-50\/20,
-.portal-dashboard .bg-amber-100,
-.portal-dashboard .bg-amber-100\/80 {
-  background-color: #fffbeb !important;
+.portal-dashboard .bg-rose-600,
+.portal-dashboard .bg-red-600,
+.portal-dashboard .hover\:bg-rose-700:hover,
+.portal-dashboard .hover\:bg-red-700:hover {
+  background-color: #b91c1c !important; color: #fff !important;
 }
 
-.portal-dashboard .bg-amber-400,
-.portal-dashboard .bg-amber-500 {
-  background-color: #f59e0b !important;
-  color: #111827 !important;
-}
-
-.portal-dashboard .border-amber-200,
-.portal-dashboard .border-amber-300,
-.portal-dashboard .border-amber-400 {
-  border-color: #fcd34d !important;
-}
-
-.portal-dashboard .text-rose-400,
-.portal-dashboard .text-rose-500,
-.portal-dashboard .text-rose-600,
-.portal-dashboard .text-rose-700,
-.portal-dashboard .text-red-600,
-.portal-dashboard .text-red-700 {
-  color: #dc2626 !important;
+.portal-dashboard .hover\:bg-emerald-100:hover,
+.portal-dashboard .bg-green-50,
+.portal-dashboard .bg-emerald-50 {
+  background-color: #ecfdf5 !important;
 }
 
 .portal-dashboard .bg-rose-50,
@@ -457,17 +241,11 @@ body {
   background-color: #fef2f2 !important;
 }
 
-.portal-dashboard .bg-rose-600,
-.portal-dashboard .bg-red-600,
-.portal-dashboard button[style] {
-  background-color: #dc2626 !important;
-  color: #ffffff !important;
-}
-
-.portal-dashboard .hover\:bg-rose-700:hover,
-.portal-dashboard .hover\:bg-red-700:hover {
-  background-color: #b91c1c !important;
-  color: #ffffff !important;
+.portal-dashboard .bg-amber-50,
+.portal-dashboard .bg-amber-50\/20,
+.portal-dashboard .bg-amber-100,
+.portal-dashboard .bg-amber-100\/80 {
+  background-color: #fffbeb !important;
 }
 
 .portal-dashboard .border-rose-100,
@@ -476,6 +254,23 @@ body {
 .portal-dashboard .border-red-200 {
   border-color: #fecaca !important;
 }
+
+.portal-dashboard .border-green-100,
+.portal-dashboard .border-emerald-200 {
+  border-color: #a7f3d0 !important;
+}
+
+.portal-dashboard .border-amber-200,
+.portal-dashboard .border-amber-300,
+.portal-dashboard .border-amber-400 {
+  border-color: #fde68a !important;
+}
+
+.portal-dashboard .accent-primary,
+.portal-dashboard .accent-indigo-600 {
+  accent-color: #0f172a !important;
+}
+
 
 @keyframes floatSoft {
   0%,

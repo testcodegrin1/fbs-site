@@ -211,7 +211,7 @@ export function SidebarLayout({
     <div className="portal-dashboard h-screen max-h-screen overflow-hidden bg-white text-black flex font-sans antialiased">
       {/* Desktop sidebar */}
       <aside
-        className={`hidden lg:flex h-screen bg-gray-600 text-slate-100 border-r border-white/10 flex-col justify-between transition-all duration-300 z-40 shadow-sm flex-shrink-0 ${
+        className={`hidden lg:flex h-screen bg-slate-900 text-slate-100 border-r border-white/10 flex-col justify-between transition-all duration-300 z-40 shadow-sm flex-shrink-0 ${
           collapsed ? "w-20" : "w-72"
         }`}
       >
@@ -230,7 +230,7 @@ export function SidebarLayout({
             className="absolute inset-0 bg-slate-950/55 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="absolute left-0 top-0 bottom-0 w-[min(18rem,85vw)] bg-gray-600 text-slate-100 border-r border-white/10 flex flex-col justify-between shadow-2xl animate-in slide-in-from-left duration-200">
+          <aside className="absolute left-0 top-0 bottom-0 w-[min(18rem,85vw)] bg-slate-900 text-slate-100 border-r border-white/10 flex flex-col justify-between shadow-2xl animate-in slide-in-from-left duration-200">
             {sidebarContent}
           </aside>
         </div>

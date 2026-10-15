@@ -118,7 +118,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
   const [projectSearch, setProjectSearch] = useState("");
   const [projectListViewMode, setProjectListViewMode] = useState<
     "card" | "list"
-  >("card");
+  >("list");
 
   // Banner Templates state for the user's selected franchise
   const [bannerTemplates, setBannerTemplates] = useState<BannerTemplateModel[]>(
@@ -130,7 +130,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
   const [bannerOrientationFilter, setBannerOrientationFilter] = useState<
     "all" | "landscape" | "portrait"
   >("all");
-  const [bannerViewMode, setBannerViewMode] = useState<"grid" | "list">("grid");
+  const [bannerViewMode, setBannerViewMode] = useState<"grid" | "list">("list");
   const [viewingTemplate, setViewingTemplate] =
     useState<BannerTemplateModel | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -166,7 +166,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
   const [submissionSearch, setSubmissionSearch] = useState("");
   const [submissionListViewMode, setSubmissionListViewMode] = useState<
     "card" | "list"
-  >("card");
+  >("list");
 
   async function loadMySubmissions(isSilent = false) {
     if (!isSilent) setLoadingMySubmissions(true);
@@ -744,9 +744,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                       </p>
                     </div>
                     {p.shareToken && (
-                      <span className="text-indigo-600 font-bold text-xs flex items-center gap-1 flex-shrink-0">
-                        <Eye size={13} /> Open Proof
-                      </span>
+                      <span className="portal-action" title="Open Proof"><Eye size={15} aria-hidden="true" /><span className="sr-only">Open Proof</span></span>
                     )}
                   </div>
                 </Card>
@@ -810,9 +808,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                           Updated {new Date(p.updatedAt).toLocaleDateString()}
                         </span>
                         {p.shareToken && (
-                          <span className="text-indigo-600 font-bold flex items-center gap-1">
-                            <Eye size={13} /> Open Proof
-                          </span>
+                          <span className="portal-action" title="Open Proof"><Eye size={15} aria-hidden="true" /><span className="sr-only">Open Proof</span></span>
                         )}
                       </div>
                     </div>
@@ -1615,9 +1611,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                           ).toLocaleDateString()}
                         </p>
                       </div>
-                      <span className="text-indigo-600 font-bold text-xs flex items-center gap-1 flex-shrink-0">
-                        <Eye size={13} /> Customize Banner
-                      </span>
+                      <span className="portal-action" title="Customize Banner"><Eye size={15} aria-hidden="true" /><span className="sr-only">Customize Banner</span></span>
                     </div>
                   </Card>
                 ))}
@@ -1693,9 +1687,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                                 Date.now(),
                             ).toLocaleDateString()}
                           </span>
-                          <span className="text-indigo-600 font-bold flex items-center gap-1">
-                            <Eye size={13} /> Customize Banner
-                          </span>
+                          <span className="portal-action" title="Customize Banner"><Eye size={15} aria-hidden="true" /><span className="sr-only">Customize Banner</span></span>
                         </div>
                       </div>
                     </Card>
@@ -1856,9 +1848,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                             ).toLocaleDateString()}
                           </p>
                         </div>
-                        <span className="text-indigo-600 font-bold text-xs flex items-center gap-1 flex-shrink-0">
-                          <Eye size={13} /> Open Proof
-                        </span>
+                        <span className="portal-action" title="Open Proof"><Eye size={15} aria-hidden="true" /><span className="sr-only">Open Proof</span></span>
                       </div>
                     </Card>
                   ))}
@@ -1917,9 +1907,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                                 sub.updatedAt || sub.createdAt,
                               ).toLocaleDateString()}
                             </span>
-                            <span className="text-indigo-600 font-bold flex items-center gap-1">
-                              <Eye size={13} /> Open Proof
-                            </span>
+                            <span className="portal-action" title="Open Proof"><Eye size={15} aria-hidden="true" /><span className="sr-only">Open Proof</span></span>
                           </div>
                         </div>
                       </Card>

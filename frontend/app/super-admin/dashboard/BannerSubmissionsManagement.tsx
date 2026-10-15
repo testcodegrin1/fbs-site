@@ -1,4 +1,5 @@
 "use client";
+import { DetailRow } from "@/app/Components/ui/detail-row";
 
 import { useEffect, useState, useMemo, Fragment } from "react";
 import {
@@ -125,7 +126,7 @@ export function BannerSubmissionsManagement() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [franchiseFilter, setFranchiseFilter] = useState("all");
-  const [viewMode, setViewMode] = useState<"canvas" | "table">("canvas");
+  const [viewMode, setViewMode] = useState<"canvas" | "table">("table");
   const [expandedClients, setExpandedClients] = useState<Record<number, boolean>>({});
 
   function toggleClientExpand(userId: number) {
@@ -627,17 +628,17 @@ export function BannerSubmissionsManagement() {
                       {selectedSubmission.previewImageUrl && (
                         <Button
                           variant="outline"
-                          size="sm"
-                          className="h-9 gap-1.5 text-xs font-semibold rounded-xl"
+                          size="icon-sm"
+                          className="portal-action"
                           onClick={() =>
                             handleDownloadBanner(
                               selectedSubmission.previewImageUrl,
                               `${selectedSubmission.templateName}.png`,
                             )
                           }
-                        >
-                          <Download size={13} /> Download
-                        </Button>
+                         title="Download" aria-label="Download">
+                      <Download size={15} aria-hidden="true" />
+                    </Button>
                       )}
 
                       <Button
@@ -897,8 +898,10 @@ export function BannerSubmissionsManagement() {
 
                       {/* Orders for this client */}
                       {group.orders.map((sub) => (
-                        <tr
+                        <DetailRow
                           key={sub.id}
+                          aria-label={`View ${sub.templateName} submission ${sub.id}`}
+                          onClick={() => { openSubmissionDetail(sub.id); setViewMode("canvas"); }}
                           className="hover:bg-slate-50/50 transition duration-150 group"
                         >
                           <td className="py-3.5 px-4 font-mono font-bold text-slate-700">
@@ -957,27 +960,25 @@ export function BannerSubmissionsManagement() {
                           <td className="py-3.5 px-4 text-right whitespace-nowrap">
                             <div className="flex items-center justify-end gap-1.5">
                               <Button
-                                variant="default"
-                                size="sm"
+                                variant="outline"
+                                size="icon-sm"
                                 onClick={() => {
                                   openSubmissionDetail(sub.id);
                                   setViewMode("canvas");
                                 }}
-                                className="text-xs h-7.5 px-2.5 gap-1 bg-slate-900 hover:bg-slate-800 text-white shadow-2xs font-semibold cursor-pointer"
-                              >
-                                <Eye size={12} />
-                                <span>Canvas View</span>
-                              </Button>
+                                className="portal-action"
+                               title="Canvas View" aria-label="Canvas View">
+                      <Eye size={15} aria-hidden="true" />
+                    </Button>
 
                               <Button
                                 variant="outline"
-                                size="sm"
+                                size="icon-sm"
                                 onClick={() => setThreadSubmissionId(sub.id)}
-                                className="text-xs h-7.5 px-2.5 gap-1 text-indigo-700 border-indigo-200 hover:bg-indigo-50 font-semibold cursor-pointer"
-                              >
-                                <Edit3 size={12} />
-                                <span>Revisions</span>
-                              </Button>
+                                className="portal-action"
+                               title="Revisions" aria-label="Revisions">
+                      <Edit3 size={15} aria-hidden="true" />
+                    </Button>
 
                               {sub.previewImageUrl && (
                                 <Button
@@ -997,7 +998,7 @@ export function BannerSubmissionsManagement() {
                               )}
                             </div>
                           </td>
-                        </tr>
+                        </DetailRow>
                       ))}
                     </Fragment>
                   );

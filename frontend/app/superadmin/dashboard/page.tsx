@@ -1,4 +1,5 @@
 "use client";
+import { BlueprintLibrary } from "@/app/Components/auth/BlueprintLibrary";
 
 import { useEffect, useState } from "react";
 import { AuthGuard } from "@/app/Components/auth/AuthGuard";
@@ -29,7 +30,6 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   Layers,
-  Plus,
   Trash2,
   Share2,
   Search,
@@ -64,7 +64,7 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
   const [diagrams, setDiagrams] = useState<DiagramTemplateModel[]>([]);
   const [search, setSearch] = useState("");
   const [selectedProject, setSelectedProject] = useState<ProjectModel | null>(null);
-  const [projectListViewMode, setProjectListViewMode] = useState<"card" | "list">("card");
+  const [projectListViewMode, setProjectListViewMode] = useState<"card" | "list">("list");
   const [refreshingProjects, setRefreshingProjects] = useState(false);
 
   // Diagram Template Modal State
@@ -490,16 +490,16 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
                         </div>
                         {p.shareToken && (
                           <Button
-                            variant="link"
-                            size="sm"
-                            className="px-1 flex-shrink-0"
+                            variant="outline"
+                            size="icon-sm"
+                            className="portal-action"
                             onClick={(e) => {
                               e.stopPropagation();
                               window.open(`/review/${p.shareToken}`, "_blank");
                             }}
-                          >
-                            <Share2 size={12} /> Share
-                          </Button>
+                           title="Share" aria-label="Share">
+                      <Share2 size={15} aria-hidden="true" />
+                    </Button>
                         )}
                       </div>
                     </Card>
@@ -536,16 +536,16 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
                         </span>
                         {p.shareToken && (
                           <Button
-                            variant="link"
-                            size="sm"
-                            className="px-1"
+                            variant="outline"
+                            size="icon-sm"
+                            className="portal-action"
                             onClick={(e) => {
                               e.stopPropagation();
                               window.open(`/review/${p.shareToken}`, "_blank");
                             }}
-                          >
-                            <Share2 size={13} /> Share
-                          </Button>
+                           title="Share" aria-label="Share">
+                      <Share2 size={15} aria-hidden="true" />
+                    </Button>
                         )}
                       </div>
                     </Card>
@@ -718,16 +718,16 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
                                     : "Edit Canvas / Revisions"}
                                 </span>
                                 <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  className="h-auto py-1 px-1.5"
+                                  variant="outline"
+                                  size="icon-sm"
+                                  className="portal-action portal-action-danger"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     promptDeleteCanvas(c.id, c.name);
                                   }}
-                                >
-                                  <Trash2 size={14} /> Delete
-                                </Button>
+                                 title="Delete" aria-label="Delete">
+                      <Trash2 size={15} aria-hidden="true" />
+                    </Button>
                               </div>
                             </Card>
                           );
@@ -761,84 +761,14 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
 
       {/* TAB 4: DIAGRAM BLUEPRINTS */}
       {activeTab === "diagrams" && (
-        <div className="space-y-5">
-          <Card className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-base font-extrabold text-slate-900">Diagram Layout Blueprints</h2>
-              <p className="text-xs text-slate-500 mt-0.5">
-                Manage system-wide technical blueprint templates and diagram layouts with photos.
-              </p>
-            </div>
-            <Button
-              onClick={() => {
-                setEditingDiagram(null);
-                setDiagramForm({ name: "", description: "" });
-                setDiagramImageFile(null);
-                setShowDiagramModal(true);
-              }}
-            >
-              <Plus size={16} /> Add Diagram Blueprint
-            </Button>
-          </Card>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {diagrams.map((d) => {
-              const photoUrl = d.previewUrl ? `${backendHost}${d.previewUrl}` : null;
-              return (
-                <Card key={d.id} className="p-5 space-y-4 flex flex-col justify-between">
-                  <div className="space-y-3">
-                    {photoUrl ? (
-                      <div
-                        onClick={() =>
-                          setFullscreenCanvas({ url: photoUrl, name: d.name, version: 1 })
-                        }
-                        className="w-full aspect-[16/9] bg-slate-100 rounded-xl overflow-hidden relative group border cursor-pointer"
-                      >
-                        <img src={photoUrl} alt={d.name} className="w-full h-full object-cover" />
-                        <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-xs font-bold gap-1.5 backdrop-blur-[1px]">
-                          <Eye size={16} /> View Fullscreen
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="w-full h-32 bg-violet-50 text-violet-600 rounded-xl flex items-center justify-center border border-violet-100">
-                        <Layers size={36} />
-                      </div>
-                    )}
-
-                    <div>
-                      <h3 className="font-extrabold text-slate-900 text-sm">{d.name}</h3>
-                      {d.description && (
-                        <p className="text-xs text-slate-500 mt-1">{d.description}</p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <Button variant="link" size="sm" className="px-0" onClick={() => handleOpenEditDiagram(d)}>
-                      <Edit size={13} /> Edit Blueprint
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      disabled={deletingDiagramId === d.id}
-                      onClick={() => promptDeleteDiagram(d)}
-                    >
-                      {deletingDiagramId === d.id ? (
-                        <>
-                          <Loader2 size={13} className="animate-spin" /> Deleting...
-                        </>
-                      ) : (
-                        <>
-                          <Trash2 size={13} /> Delete
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
+        <BlueprintLibrary
+          diagrams={diagrams}
+          deletingId={deletingDiagramId}
+          onCreate={() => { setEditingDiagram(null); setDiagramForm({ name: "", description: "" }); setDiagramImageFile(null); setShowDiagramModal(true); }}
+          onEdit={handleOpenEditDiagram}
+          onDelete={promptDeleteDiagram}
+          onPreview={setFullscreenCanvas}
+        />
       )}
 
       {/* TAB 5: FRANCHISES */}
@@ -858,7 +788,7 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
               <h3 className="font-extrabold text-lg text-slate-900">
                 {editingDiagram ? "Edit Diagram Blueprint" : "Add Diagram Blueprint"}
               </h3>
-              <Button onClick={() => setShowDiagramModal(false)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
+              <Button onClick={() => setShowDiagramModal(false)} className="text-slate-400 hover:text-slate-700 cursor-pointer" variant="ghost" size="icon-sm" title="Close">
                 <X size={18} />
               </Button>
             </div>
@@ -914,7 +844,7 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl animate-in fade-in zoom-in duration-200 my-auto max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between border-b pb-3 flex-shrink-0">
               <h3 className="font-extrabold text-lg text-slate-900">Upload Design Canvases</h3>
-              <Button onClick={() => setShowUploadModal(false)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
+              <Button onClick={() => setShowUploadModal(false)} className="text-slate-400 hover:text-slate-700 cursor-pointer" variant="ghost" size="icon-sm" title="Close">
                 <X size={18} />
               </Button>
             </div>
@@ -1005,7 +935,7 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
                                 onClick={() => setFullscreenCanvas({ url: fileUrl, name: file.name, version: 1 })}
                                 className="p-1.5 bg-white/90 text-slate-800 rounded-lg hover:bg-white hover:text-indigo-600 transition shadow cursor-pointer"
                                 title="View Fullscreen Preview"
-                              >
+                               variant="outline" size="icon-sm">
                                 <Eye size={14} />
                               </Button>
                               <Button
@@ -1013,7 +943,7 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
                                 onClick={() => setSelectedFiles((prev) => prev.filter((_, i) => i !== idx))}
                                 className="p-1.5 bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition shadow cursor-pointer"
                                 title="Remove File"
-                              >
+                               variant="outline" size="icon-sm">
                                 <Trash2 size={14} />
                               </Button>
                             </div>
@@ -1052,7 +982,7 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
           <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl animate-in fade-in zoom-in duration-200 my-auto max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between border-b pb-3 flex-shrink-0">
               <h3 className="font-extrabold text-lg text-slate-900">Manage Canvas: {targetCanvas.name}</h3>
-              <Button onClick={() => setShowEditCanvasModal(false)} className="text-slate-400 hover:text-slate-700 cursor-pointer">
+              <Button onClick={() => setShowEditCanvasModal(false)} className="text-slate-400 hover:text-slate-700 cursor-pointer" variant="ghost" size="icon-sm" title="Close">
                 <X size={18} />
               </Button>
             </div>
@@ -1099,7 +1029,7 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
           onClick={() => setFullscreenCanvas(null)}
           className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4 cursor-pointer"
         >
-          <Button onClick={() => setFullscreenCanvas(null)} className="absolute top-5 right-5 text-white bg-slate-800 p-3 rounded-full cursor-pointer z-50">
+          <Button onClick={() => setFullscreenCanvas(null)} className="absolute top-5 right-5 text-white bg-slate-800 p-3 rounded-full cursor-pointer z-50" variant="ghost" size="icon-sm" title="Close">
             <X size={24} />
           </Button>
           <img src={fullscreenCanvas.url} alt={fullscreenCanvas.name} className="max-h-[92vh] max-w-[94vw] object-contain rounded-xl shadow-2xl" />

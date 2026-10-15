@@ -43,6 +43,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         type={type}
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
+        aria-label={props["aria-label"] ?? props.title}
+        data-icon-button={size === "icon" || size === "icon-sm" ? "true" : undefined}
         {...props}
       />
     );
