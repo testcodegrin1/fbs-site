@@ -20,6 +20,10 @@ import {
   listBannerSubmissions,
   getBannerSubmissionById,
   updateBannerSubmissionStatus,
+  getBannerSubmissionThread,
+  addBannerSubmissionMessage,
+  addBannerSubmissionFile,
+  replaceBannerSubmissionFile,
 } from "../lib/banner-templates.js";
 
 export const bannerTemplatesRouter = Router();
@@ -644,7 +648,11 @@ bannerTemplatesRouter.put(
   requireAuth(),
   async (req, res) => {
     try {
-      const user = await requirePermission(req, "banner_templates:manage");
+      const user = await getCurrentUser(req);
+      if (!user) {
+        res.status(401).json({ message: "Authentication required." });
+        return;
+      }
       const id = Number(req.params.id);
       const { status } = req.body;
 
@@ -654,6 +662,19 @@ bannerTemplatesRouter.put(
       }
       if (!status || typeof status !== "string") {
         res.status(400).json({ message: "Valid status string is required." });
+        return;
+      }
+
+      const submission = await getBannerSubmissionById(id);
+      if (!submission) {
+        res.status(404).json({ message: "Banner submission not found." });
+        return;
+      }
+
+      const isStaff = user.roles?.includes("super_admin") || user.roles?.includes("designer");
+      const isOwner = submission.userId === user.id;
+      if (!isStaff && !isOwner) {
+        res.status(403).json({ message: "You do not have permission to update this submission status." });
         return;
       }
 
@@ -674,7 +695,11 @@ bannerTemplatesRouter.patch(
   requireAuth(),
   async (req, res) => {
     try {
-      const user = await requirePermission(req, "banner_templates:manage");
+      const user = await getCurrentUser(req);
+      if (!user) {
+        res.status(401).json({ message: "Authentication required." });
+        return;
+      }
       const id = Number(req.params.id);
       const { status } = req.body;
 
@@ -687,10 +712,298 @@ bannerTemplatesRouter.patch(
         return;
       }
 
+      const submission = await getBannerSubmissionById(id);
+      if (!submission) {
+        res.status(404).json({ message: "Banner submission not found." });
+        return;
+      }
+
+      const isStaff = user.roles?.includes("super_admin") || user.roles?.includes("designer");
+      const isOwner = submission.userId === user.id;
+      if (!isStaff && !isOwner) {
+        res.status(403).json({ message: "You do not have permission to update this submission status." });
+        return;
+      }
+
       const result = await updateBannerSubmissionStatus(id, status);
       res.json({
         message: "Banner submission status updated successfully",
         ...result,
+      });
+    } catch (error) {
+      const { message, status } = getErrorResponse(error);
+      res.status(status).json({ message });
+    }
+  },
+);
+
+// =============================================================================
+// BANNER SUBMISSION THREAD ENDPOINTS
+// =============================================================================
+
+// GET /api/bannerSubmissions/:id/thread - Get files and conversation messages together
+bannerTemplatesRouter.get(
+  "/bannerSubmissions/:id/thread",
+  requireAuth(),
+  async (req, res) => {
+    try {
+      const user = await getCurrentUser(req);
+      if (!user) {
+        res.status(401).json({ message: "Authentication required." });
+        return;
+      }
+
+      const id = Number(req.params.id);
+      if (!id || isNaN(id)) {
+        res.status(400).json({ message: "Valid submission ID is required." });
+        return;
+      }
+
+      const submission = await getBannerSubmissionById(id);
+      if (!submission) {
+        res.status(404).json({ message: "Banner submission not found." });
+        return;
+      }
+
+      const isSuperAdmin = user.roles?.includes("super_admin");
+      const isDesigner = user.roles?.includes("designer");
+      const isStaff = isSuperAdmin || isDesigner;
+
+      // Role check: If regular user, submission.userId MUST match user.id
+      if (!isStaff && submission.userId !== user.id) {
+        res.status(403).json({
+          message: "You do not have permission to access this banner submission.",
+        });
+        return;
+      }
+
+      const viewerRole = isSuperAdmin
+        ? "super_admin"
+        : isDesigner
+          ? "designer"
+          : "user";
+
+      const thread = await getBannerSubmissionThread(id, viewerRole);
+      if (!thread) {
+        res.status(404).json({ message: "Banner submission thread not found." });
+        return;
+      }
+
+      res.json(thread);
+    } catch (error) {
+      const { message, status } = getErrorResponse(error);
+      res.status(status).json({ message });
+    }
+  },
+);
+
+// POST /api/bannerSubmissions/:id/messages - Post thread reply (overall or per-image)
+bannerTemplatesRouter.post(
+  "/bannerSubmissions/:id/messages",
+  requireAuth(),
+  async (req, res) => {
+    try {
+      const user = await getCurrentUser(req);
+      if (!user) {
+        res.status(401).json({ message: "Authentication required." });
+        return;
+      }
+
+      const id = Number(req.params.id);
+      if (!id || isNaN(id)) {
+        res.status(400).json({ message: "Valid submission ID is required." });
+        return;
+      }
+
+      const submission = await getBannerSubmissionById(id);
+      if (!submission) {
+        res.status(404).json({ message: "Banner submission not found." });
+        return;
+      }
+
+      const isSuperAdmin = user.roles?.includes("super_admin");
+      const isDesigner = user.roles?.includes("designer");
+      const isStaff = isSuperAdmin || isDesigner;
+
+      // Role check: If regular user, submission.userId MUST match user.id
+      if (!isStaff && submission.userId !== user.id) {
+        res.status(403).json({
+          message: "You do not have permission to post messages on this banner submission.",
+        });
+        return;
+      }
+
+      const { message, imageId, statusAction } = req.body;
+      if (!message || typeof message !== "string" || !message.trim()) {
+        res.status(400).json({ message: "Message text is required." });
+        return;
+      }
+
+      const senderRole = isSuperAdmin
+        ? "super_admin"
+        : isDesigner
+          ? "designer"
+          : "user";
+
+      const senderName = isSuperAdmin || isDesigner
+        ? "FBS Admin"
+        : user.name || "Vendor";
+
+      const createdMessage = await addBannerSubmissionMessage({
+        submissionId: id,
+        senderUserId: user.id,
+        senderRole,
+        senderName,
+        message,
+        imageId: imageId ? Number(imageId) : null,
+        statusAction: typeof statusAction === "string" ? statusAction : undefined,
+      });
+
+      res.status(201).json({
+        message: "Message posted successfully.",
+        data: createdMessage,
+      });
+    } catch (error) {
+      const { message, status } = getErrorResponse(error);
+      res.status(status).json({ message });
+    }
+  },
+);
+
+// POST /api/bannerSubmissions/:id/files - Upload and append a new photo
+bannerTemplatesRouter.post(
+  "/bannerSubmissions/:id/files",
+  requireAuth(),
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      const user = await getCurrentUser(req);
+      if (!user) {
+        res.status(401).json({ message: "Authentication required." });
+        return;
+      }
+
+      const id = Number(req.params.id);
+      if (!id || isNaN(id)) {
+        res.status(400).json({ message: "Valid submission ID is required." });
+        return;
+      }
+
+      const submission = await getBannerSubmissionById(id);
+      if (!submission) {
+        res.status(404).json({ message: "Banner submission not found." });
+        return;
+      }
+
+      const isSuperAdmin = user.roles?.includes("super_admin");
+      const isDesigner = user.roles?.includes("designer");
+      const isStaff = isSuperAdmin || isDesigner;
+
+      // Role check: If regular user, submission.userId MUST match user.id
+      if (!isStaff && submission.userId !== user.id) {
+        res.status(403).json({
+          message: "You do not have permission to add files to this banner submission.",
+        });
+        return;
+      }
+
+      if (!req.file) {
+        res.status(400).json({ message: "No photo file provided." });
+        return;
+      }
+
+      const fileUrl = `/uploads/banners/${req.file.filename}`;
+      const fileName = req.body.fileName || req.file.originalname;
+      const uploadedByRole = isSuperAdmin
+        ? "super_admin"
+        : isDesigner
+          ? "designer"
+          : "user";
+
+      const newFile = await addBannerSubmissionFile({
+        submissionId: id,
+        uploadedBy: user.id,
+        uploadedByRole,
+        fileUrl,
+        fileName,
+      });
+
+      res.status(201).json({
+        message: "Photo added successfully.",
+        file: newFile,
+      });
+    } catch (error) {
+      const { message, status } = getErrorResponse(error);
+      res.status(status).json({ message });
+    }
+  },
+);
+
+// PUT /api/bannerSubmissions/:id/files/:fileId - Replace an existing photo tile
+bannerTemplatesRouter.put(
+  "/bannerSubmissions/:id/files/:fileId",
+  requireAuth(),
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      const user = await getCurrentUser(req);
+      if (!user) {
+        res.status(401).json({ message: "Authentication required." });
+        return;
+      }
+
+      const id = Number(req.params.id);
+      const fileId = Number(req.params.fileId);
+      if (!id || isNaN(id) || !fileId || isNaN(fileId)) {
+        res.status(400).json({
+          message: "Valid submission ID and file ID are required.",
+        });
+        return;
+      }
+
+      const submission = await getBannerSubmissionById(id);
+      if (!submission) {
+        res.status(404).json({ message: "Banner submission not found." });
+        return;
+      }
+
+      const isSuperAdmin = user.roles?.includes("super_admin");
+      const isDesigner = user.roles?.includes("designer");
+      const isStaff = isSuperAdmin || isDesigner;
+
+      // Role check: If regular user, submission.userId MUST match user.id
+      if (!isStaff && submission.userId !== user.id) {
+        res.status(403).json({
+          message: "You do not have permission to replace photos on this banner submission.",
+        });
+        return;
+      }
+
+      if (!req.file) {
+        res.status(400).json({ message: "No replacement file provided." });
+        return;
+      }
+
+      const fileUrl = `/uploads/banners/${req.file.filename}`;
+      const fileName = req.body.fileName || req.file.originalname;
+      const uploadedByRole = isSuperAdmin
+        ? "super_admin"
+        : isDesigner
+          ? "designer"
+          : "user";
+
+      const replaced = await replaceBannerSubmissionFile({
+        submissionId: id,
+        fileId,
+        uploadedBy: user.id,
+        uploadedByRole,
+        fileUrl,
+        fileName,
+      });
+
+      res.json({
+        message: "Photo replaced successfully.",
+        file: replaced,
       });
     } catch (error) {
       const { message, status } = getErrorResponse(error);

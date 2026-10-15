@@ -9,6 +9,9 @@ import type {
   BannerTemplateImageModel,
   BannerTemplateModel,
   BannerSubmissionDetailModel,
+  BannerSubmissionFileModel,
+  BannerSubmissionMessageModel,
+  BannerSubmissionThreadModel,
 } from "./types.js";
 
 function mapBannerTemplateImage(
@@ -1088,7 +1091,14 @@ export async function updateBannerSubmissionStatus(
   submissionId: number,
   status: string,
 ): Promise<{ id: number; status: string }> {
-  const allowed = ["Pending", "In Review", "Approved", "Rejected", "Completed"];
+  const allowed = [
+    "Pending",
+    "In Review",
+    "Changes Requested",
+    "Approved",
+    "Rejected",
+    "Completed",
+  ];
   const normalized =
     allowed.find((s) => s.toLowerCase() === status.trim().toLowerCase()) ||
     status.trim();
@@ -1107,5 +1117,398 @@ export async function updateBannerSubmissionStatus(
   }
 
   return { id: submissionId, status: normalized };
+}
+
+/**
+ * Get banner submission thread: combines submission metadata, uploaded files (with versioning & history), and thread messages.
+ */
+export async function getBannerSubmissionThread(
+  submissionId: number,
+  viewerRole?: string,
+): Promise<BannerSubmissionThreadModel | null> {
+  const submission = await getBannerSubmissionById(submissionId);
+  if (!submission) return null;
+
+  // Status Flow: Admin/designer views a pending submission -> automatically mark as "In Review"
+  if (
+    (viewerRole === "super_admin" || viewerRole === "designer") &&
+    submission.status === "Pending"
+  ) {
+    try {
+      await updateBannerSubmissionStatus(submissionId, "In Review");
+      submission.status = "In Review";
+    } catch {
+      // Ignore if status column is not ready yet
+    }
+  }
+
+  // 1. Fetch files from banner_submission_files
+  let rawFiles: any[] = [];
+  try {
+    const [fileRows] = await query<RowDataPacket[]>(
+      `SELECT 
+        bsf.*,
+        u.name AS uploaded_by_name
+       FROM banner_submission_files bsf
+       LEFT JOIN users u ON bsf.uploaded_by = u.id
+       WHERE bsf.submission_id = ?
+       ORDER BY bsf.sort_order ASC, bsf.id ASC`,
+      [submissionId],
+    );
+    rawFiles = fileRows;
+  } catch (err: any) {
+    if (err.code !== "ER_NO_SUCH_TABLE" && !String(err.message).includes("doesn't exist")) {
+      console.error("Error fetching banner_submission_files:", err);
+    }
+  }
+
+  // If banner_submission_files has no rows yet, auto-populate from submission's uploaded photos or preview
+  if (rawFiles.length === 0) {
+    const initialFiles: Array<{ url: string; name: string }> = [];
+
+    for (const f of submission.submittedFields || []) {
+      const val = String(f.value || "");
+      if (
+        val.startsWith("/uploads/") &&
+        val.match(/\.(png|jpg|jpeg|webp|gif|svg)$/i)
+      ) {
+        initialFiles.push({ url: val, name: f.label || "Submitted Photo" });
+      }
+    }
+
+    if (initialFiles.length === 0 && submission.previewImageUrl) {
+      initialFiles.push({
+        url: submission.previewImageUrl,
+        name: submission.templateName || "Banner Preview",
+      });
+    }
+
+    if (initialFiles.length > 0) {
+      try {
+        for (let i = 0; i < initialFiles.length; i++) {
+          await execute<ResultSetHeader>(
+            `INSERT INTO banner_submission_files (submission_id, version, file_url, file_name, uploaded_by, sort_order, replaced_file_id) VALUES (?, 1, ?, ?, ?, ?, NULL)`,
+            [
+              submissionId,
+              initialFiles[i].url,
+              initialFiles[i].name,
+              submission.userId || 1,
+              i,
+            ],
+          );
+        }
+
+        const [refetched] = await query<RowDataPacket[]>(
+          `SELECT 
+            bsf.*,
+            u.name AS uploaded_by_name
+           FROM banner_submission_files bsf
+           LEFT JOIN users u ON bsf.uploaded_by = u.id
+           WHERE bsf.submission_id = ?
+           ORDER BY bsf.sort_order ASC, bsf.id ASC`,
+          [submissionId],
+        );
+        rawFiles = refetched;
+      } catch {
+        // Fallback in-memory representation if DB table is not yet created
+        rawFiles = initialFiles.map((f, idx) => ({
+          id: idx + 1,
+          submission_id: submissionId,
+          version: 1,
+          file_url: f.url,
+          file_name: f.name,
+          uploaded_by: submission.userId,
+          uploaded_by_name: submission.userName,
+          sort_order: idx,
+          replaced_file_id: null,
+          created_at: submission.createdAt,
+        }));
+      }
+    }
+  }
+
+  // Identify which files have been replaced
+  const replacedIds = new Set<number>();
+  for (const r of rawFiles) {
+    if (r.replaced_file_id) {
+      replacedIds.add(Number(r.replaced_file_id));
+    }
+  }
+
+  const allFilesMap = new Map<number, BannerSubmissionFileModel>();
+  for (const r of rawFiles) {
+    const fId = Number(r.id);
+    allFilesMap.set(fId, {
+      id: fId,
+      submissionId: Number(r.submission_id),
+      version: Number(r.version || 1),
+      fileUrl: r.file_url,
+      fileName: r.file_name || null,
+      uploadedBy: Number(r.uploaded_by),
+      uploadedByName: r.uploaded_by_name || null,
+      sortOrder: Number(r.sort_order || 0),
+      replacedFileId: r.replaced_file_id ? Number(r.replaced_file_id) : null,
+      createdAt: r.created_at
+        ? new Date(r.created_at).toISOString()
+        : new Date().toISOString(),
+      isReplaced: replacedIds.has(fId),
+      history: [],
+    });
+  }
+
+  // Active files are those not replaced by newer versions. Attach their replacement history chain.
+  const activeFiles: BannerSubmissionFileModel[] = [];
+  for (const file of allFilesMap.values()) {
+    if (!file.isReplaced) {
+      const history: BannerSubmissionFileModel[] = [];
+      let curReplacedId = file.replacedFileId;
+      while (curReplacedId && allFilesMap.has(curReplacedId)) {
+        const past = allFilesMap.get(curReplacedId)!;
+        history.push(past);
+        curReplacedId = past.replacedFileId;
+      }
+      file.history = history;
+      activeFiles.push(file);
+    }
+  }
+
+  // 2. Fetch messages from banner_submission_messages
+  let messages: BannerSubmissionMessageModel[] = [];
+  try {
+    const [msgRows] = await query<RowDataPacket[]>(
+      `SELECT 
+        bsm.*,
+        u.name AS sender_name,
+        u.email AS sender_email
+       FROM banner_submission_messages bsm
+       LEFT JOIN users u ON bsm.sender_user_id = u.id
+       WHERE bsm.submission_id = ?
+       ORDER BY bsm.id ASC`,
+      [submissionId],
+    );
+
+    messages = msgRows.map((m) => ({
+      id: Number(m.id),
+      submissionId: Number(m.submission_id),
+      imageId: m.image_id ? Number(m.image_id) : null,
+      senderUserId: Number(m.sender_user_id),
+      senderRole: m.sender_role,
+      senderName:
+        m.sender_name || (m.sender_role === "user" ? "Client" : "FBS Admin"),
+      message: m.message,
+      createdAt: m.created_at
+        ? new Date(m.created_at).toISOString()
+        : new Date().toISOString(),
+    }));
+  } catch (err: any) {
+    if (err.code !== "ER_NO_SUCH_TABLE" && !String(err.message).includes("doesn't exist")) {
+      console.error("Error fetching banner_submission_messages:", err);
+    }
+  }
+
+  return {
+    submission,
+    files: activeFiles,
+    messages,
+  };
+}
+
+/**
+ * Add a thread message (overall or photo-tile specific).
+ */
+export async function addBannerSubmissionMessage(params: {
+  submissionId: number;
+  senderUserId: number;
+  senderRole: string;
+  senderName?: string;
+  message: string;
+  imageId?: number | null;
+  statusAction?: string;
+}): Promise<BannerSubmissionMessageModel> {
+  const submission = await getBannerSubmissionById(params.submissionId);
+  if (!submission) {
+    throw new AuthError("Banner submission not found.", 404);
+  }
+  if (submission.status === "Approved" || submission.status === "Completed") {
+    throw new AuthError(
+      "This submission is already approved/completed and is read-only.",
+      400,
+    );
+  }
+
+  const [res] = await execute<ResultSetHeader>(
+    `INSERT INTO banner_submission_messages (submission_id, image_id, sender_user_id, sender_role, message) VALUES (?, ?, ?, ?, ?)`,
+    [
+      params.submissionId,
+      params.imageId || null,
+      params.senderUserId,
+      params.senderRole,
+      params.message.trim(),
+    ],
+  );
+
+  // Status Flow (User review action sets status: approved or changes_requested, matching Canvas flow)
+  const normAction = (params.statusAction || "").toLowerCase();
+  if (normAction === "approved") {
+    await execute(
+      `UPDATE banner_customizations SET status = 'Approved', updated_at = NOW() WHERE id = ?`,
+      [params.submissionId],
+    ).catch(() => {});
+  } else if (normAction === "changes_requested" || normAction.includes("change")) {
+    await execute(
+      `UPDATE banner_customizations SET status = 'Changes Requested', updated_at = NOW() WHERE id = ?`,
+      [params.submissionId],
+    ).catch(() => {});
+  } else if (params.senderRole === "user") {
+    await execute(
+      `UPDATE banner_customizations SET status = 'In Review', updated_at = NOW() WHERE id = ?`,
+      [params.submissionId],
+    ).catch(() => {});
+  }
+
+  return {
+    id: res.insertId,
+    submissionId: params.submissionId,
+    imageId: params.imageId || null,
+    senderUserId: params.senderUserId,
+    senderRole: params.senderRole,
+    senderName: params.senderName || (params.senderRole === "user" ? "Client" : "FBS Admin"),
+    message: params.message.trim(),
+    createdAt: new Date().toISOString(),
+  };
+}
+
+/**
+ * Add a new photo file to the banner submission collage.
+ */
+export async function addBannerSubmissionFile(params: {
+  submissionId: number;
+  uploadedBy: number;
+  uploadedByRole: string;
+  fileUrl: string;
+  fileName?: string;
+}): Promise<BannerSubmissionFileModel> {
+  const submission = await getBannerSubmissionById(params.submissionId);
+  if (!submission) {
+    throw new AuthError("Banner submission not found.", 404);
+  }
+  if (submission.status === "Approved" || submission.status === "Completed") {
+    throw new AuthError(
+      "This submission is already approved/completed and is read-only.",
+      400,
+    );
+  }
+
+  let nextOrder = 0;
+  try {
+    const [orderRows] = await query<RowDataPacket[]>(
+      `SELECT COALESCE(MAX(sort_order), -1) AS max_order FROM banner_submission_files WHERE submission_id = ?`,
+      [params.submissionId],
+    );
+    nextOrder = Number(orderRows[0]?.max_order ?? -1) + 1;
+  } catch {
+    nextOrder = 0;
+  }
+
+  const [res] = await execute<ResultSetHeader>(
+    `INSERT INTO banner_submission_files (submission_id, version, file_url, file_name, uploaded_by, sort_order, replaced_file_id) VALUES (?, 1, ?, ?, ?, ?, NULL)`,
+    [
+      params.submissionId,
+      params.fileUrl,
+      params.fileName || "Uploaded Photo",
+      params.uploadedBy,
+      nextOrder,
+    ],
+  );
+
+  // Status Flow: User upload or staff uploading moves submission back to "In Review"
+  if (params.uploadedByRole === "user" || submission.status === "Changes Requested") {
+    await execute(
+      `UPDATE banner_customizations SET status = 'In Review', updated_at = NOW() WHERE id = ?`,
+      [params.submissionId],
+    ).catch(() => {});
+  }
+
+  return {
+    id: res.insertId,
+    submissionId: params.submissionId,
+    version: 1,
+    fileUrl: params.fileUrl,
+    fileName: params.fileName || "Uploaded Photo",
+    uploadedBy: params.uploadedBy,
+    sortOrder: nextOrder,
+    replacedFileId: null,
+    createdAt: new Date().toISOString(),
+    isReplaced: false,
+    history: [],
+  };
+}
+
+/**
+ * Replace an existing photo tile: creates a new row with incremented version and replaced_file_id to preserve history.
+ */
+export async function replaceBannerSubmissionFile(params: {
+  submissionId: number;
+  fileId: number;
+  uploadedBy: number;
+  uploadedByRole: string;
+  fileUrl: string;
+  fileName?: string;
+}): Promise<BannerSubmissionFileModel> {
+  const submission = await getBannerSubmissionById(params.submissionId);
+  if (!submission) {
+    throw new AuthError("Banner submission not found.", 404);
+  }
+  if (submission.status === "Approved" || submission.status === "Completed") {
+    throw new AuthError(
+      "This submission is already approved/completed and is read-only.",
+      400,
+    );
+  }
+
+  const [existingRows] = await query<RowDataPacket[]>(
+    `SELECT * FROM banner_submission_files WHERE id = ? AND submission_id = ?`,
+    [params.fileId, params.submissionId],
+  );
+  if (existingRows.length === 0) {
+    throw new AuthError("Target photo file to replace not found.", 404);
+  }
+
+  const existing = existingRows[0];
+  const nextVersion = Number(existing.version || 1) + 1;
+
+  const [res] = await execute<ResultSetHeader>(
+    `INSERT INTO banner_submission_files (submission_id, version, file_url, file_name, uploaded_by, sort_order, replaced_file_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [
+      params.submissionId,
+      nextVersion,
+      params.fileUrl,
+      params.fileName || existing.file_name || "Updated Photo",
+      params.uploadedBy,
+      existing.sort_order,
+      existing.id,
+    ],
+  );
+
+  // Status Flow: User upload or staff replacing requested changes moves submission back to "In Review"
+  if (params.uploadedByRole === "user" || submission.status === "Changes Requested") {
+    await execute(
+      `UPDATE banner_customizations SET status = 'In Review', updated_at = NOW() WHERE id = ?`,
+      [params.submissionId],
+    ).catch(() => {});
+  }
+
+  return {
+    id: res.insertId,
+    submissionId: params.submissionId,
+    version: nextVersion,
+    fileUrl: params.fileUrl,
+    fileName: params.fileName || existing.file_name || "Updated Photo",
+    uploadedBy: params.uploadedBy,
+    sortOrder: Number(existing.sort_order || 0),
+    replacedFileId: Number(existing.id),
+    createdAt: new Date().toISOString(),
+    isReplaced: false,
+  };
 }
 

@@ -117,9 +117,42 @@ export type BannerCustomizationModel = {
 export type BannerSubmissionStatus =
   | "Pending"
   | "In Review"
+  | "Changes Requested"
   | "Approved"
   | "Rejected"
   | "Completed";
+
+export type BannerSubmissionFileModel = {
+  id: number;
+  submissionId: number;
+  version: number;
+  fileUrl: string;
+  fileName?: string | null;
+  uploadedBy: number;
+  uploadedByName?: string | null;
+  sortOrder: number;
+  replacedFileId?: number | null;
+  createdAt: string;
+  isReplaced?: boolean;
+  history?: BannerSubmissionFileModel[];
+};
+
+export type BannerSubmissionMessageModel = {
+  id: number;
+  submissionId: number;
+  imageId?: number | null;
+  senderUserId: number;
+  senderRole: string;
+  senderName?: string | null;
+  message: string;
+  createdAt: string;
+};
+
+export type BannerSubmissionThreadModel = {
+  submission: BannerSubmissionDetailModel;
+  files: BannerSubmissionFileModel[];
+  messages: BannerSubmissionMessageModel[];
+};
 
 export type BannerSubmissionDetailModel = {
   id: number;

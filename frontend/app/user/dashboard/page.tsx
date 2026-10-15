@@ -39,7 +39,10 @@ import {
   Inbox,
   Clock,
   CheckCircle,
+  AlertCircle,
   Send,
+  ArrowLeft,
+  History,
 } from "lucide-react";
 import {
   bannerTemplateApi,
@@ -47,10 +50,8 @@ import {
   type BannerTemplateModel,
   type BannerSubmissionListItem,
 } from "@/app/lib/client/banner-template-api";
-import {
-  franchiseApi,
-  type FranchiseModel,
-} from "@/app/lib/client/franchise";
+import { franchiseApi, type FranchiseModel } from "@/app/lib/client/franchise";
+import { BannerSubmissionThreadModal } from "./BannerSubmissionThreadModal";
 
 export default function ClientDashboardPage() {
   return (
@@ -150,12 +151,22 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
   } | null>(null);
 
   // User's Submitted Banners state
-  const [mySubmissions, setMySubmissions] = useState<BannerSubmissionListItem[]>([]);
+  const [mySubmissions, setMySubmissions] = useState<
+    BannerSubmissionListItem[]
+  >([]);
   const [loadingMySubmissions, setLoadingMySubmissions] = useState(false);
   const [refreshingMySubmissions, setRefreshingMySubmissions] = useState(false);
-  const [selectedMySubmission, setSelectedMySubmission] = useState<BannerSubmissionListItem | null>(null);
+  const [selectedMySubmission, setSelectedMySubmission] =
+    useState<BannerSubmissionListItem | null>(null);
   const [loadingSubmissionDetail, setLoadingSubmissionDetail] = useState(false);
   const [mySubmissionDetail, setMySubmissionDetail] = useState<any>(null);
+  const [threadSubmissionId, setThreadSubmissionId] = useState<number | null>(
+    null,
+  );
+  const [submissionSearch, setSubmissionSearch] = useState("");
+  const [submissionListViewMode, setSubmissionListViewMode] = useState<
+    "card" | "list"
+  >("card");
 
   async function loadMySubmissions(isSilent = false) {
     if (!isSilent) setLoadingMySubmissions(true);
@@ -186,7 +197,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
   }
 
   function getSubmissionStatusBadge(status: string) {
-    const norm = (status || "Pending").toLowerCase();
+    const norm = (status || "Pending").toLowerCase().replace(/_/g, " ");
     switch (norm) {
       case "approved":
         return (
@@ -195,8 +206,14 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
             Approved
           </span>
         );
+      case "changes requested":
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-300 shadow-2xs">
+            <AlertCircle size={12} className="text-amber-500" />
+            Changes Requested
+          </span>
+        );
       case "in review":
-      case "in_review":
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 shadow-2xs">
             <Clock size={12} className="text-blue-500" />
@@ -320,7 +337,9 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
         files: customFieldFiles,
       });
 
-      const subIdMsg = res?.submissionId ? ` (Submission #${res.submissionId})` : "";
+      const subIdMsg = res?.submissionId
+        ? ` (Submission #${res.submissionId})`
+        : "";
       setCustomizationNotice({
         type: "success",
         message: `Banner customization submitted successfully!${subIdMsg} You can track the status under 'My Banner Submissions'.`,
@@ -345,7 +364,9 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
   const activeFranchiseName = clientUser?.franchiseName || "Assigned Franchise";
 
   // Franchise detail state for user
-  const [franchiseDetail, setFranchiseDetail] = useState<FranchiseModel | null>(null);
+  const [franchiseDetail, setFranchiseDetail] = useState<FranchiseModel | null>(
+    null,
+  );
   const [loadingFranchise, setLoadingFranchise] = useState(false);
 
   useEffect(() => {
@@ -354,7 +375,9 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
       if (!userFranchiseId) return;
       setLoadingFranchise(true);
       try {
-        const data = await franchiseApi.getFranchiseById(Number(userFranchiseId));
+        const data = await franchiseApi.getFranchiseById(
+          Number(userFranchiseId),
+        );
         if (isMounted && data) {
           setFranchiseDetail(data);
         }
@@ -547,7 +570,10 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
   }, [filteredBanners]);
 
   // Download banner image
-  async function handleDownloadBanner(imgUrl?: string | null, fileName?: string) {
+  async function handleDownloadBanner(
+    imgUrl?: string | null,
+    fileName?: string,
+  ) {
     if (!imgUrl) return;
     try {
       const fullUrl = resolveImageUrl(imgUrl);
@@ -573,6 +599,19 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2000);
   }
+
+  const filteredMySubmissions = useMemo(() => {
+    if (!submissionSearch.trim()) return mySubmissions;
+    const q = submissionSearch.toLowerCase().trim();
+    return mySubmissions.filter((sub) => {
+      const matchName = sub.templateName.toLowerCase().includes(q);
+      const matchFranchise = (sub.franchiseName || "")
+        .toLowerCase()
+        .includes(q);
+      const matchStatus = sub.status.toLowerCase().includes(q);
+      return matchName || matchFranchise || matchStatus;
+    });
+  }, [mySubmissions, submissionSearch]);
 
   return (
     <SidebarLayout
@@ -785,7 +824,8 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                 </span>
               </div>
               <p className="text-xs text-slate-500 mt-1">
-                Your assigned franchise association, branding overview, and specifications
+                Your assigned franchise association, branding overview, and
+                specifications
               </p>
             </div>
 
@@ -802,8 +842,13 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
 
           {loadingFranchise ? (
             <Card className="p-12 text-center text-xs text-slate-500 space-y-2">
-              <Loader2 size={24} className="animate-spin mx-auto text-indigo-600" />
-              <p className="font-semibold text-slate-700">Loading franchise information...</p>
+              <Loader2
+                size={24}
+                className="animate-spin mx-auto text-indigo-600"
+              />
+              <p className="font-semibold text-slate-700">
+                Loading franchise information...
+              </p>
             </Card>
           ) : !userFranchiseId && !franchiseDetail ? (
             <Card className="p-12 text-center text-slate-400 space-y-3 bg-white border border-slate-200">
@@ -811,9 +856,12 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                 <Building2 size={28} />
               </div>
               <div className="space-y-1">
-                <p className="text-sm font-bold text-slate-800">No Franchise Assigned</p>
+                <p className="text-sm font-bold text-slate-800">
+                  No Franchise Assigned
+                </p>
                 <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  You are not currently linked to an official franchise partner. Please contact your administrator.
+                  You are not currently linked to an official franchise partner.
+                  Please contact your administrator.
                 </p>
               </div>
             </Card>
@@ -831,11 +879,20 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                         className="w-full h-full object-contain p-2"
                         onError={(e) => {
                           (e.target as HTMLElement).style.display = "none";
-                          const parent = (e.target as HTMLElement).parentElement;
-                          if (parent && !parent.querySelector(".fallback-building-icon")) {
+                          const parent = (e.target as HTMLElement)
+                            .parentElement;
+                          if (
+                            parent &&
+                            !parent.querySelector(".fallback-building-icon")
+                          ) {
                             const iconWrap = document.createElement("div");
-                            iconWrap.className = "fallback-building-icon text-indigo-500 font-bold text-sm";
-                            iconWrap.textContent = (franchiseDetail?.name || activeFranchiseName).slice(0, 2).toUpperCase();
+                            iconWrap.className =
+                              "fallback-building-icon text-indigo-500 font-bold text-sm";
+                            iconWrap.textContent = (
+                              franchiseDetail?.name || activeFranchiseName
+                            )
+                              .slice(0, 2)
+                              .toUpperCase();
                             parent.appendChild(iconWrap);
                           }
                         }}
@@ -895,676 +952,274 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
       )}
 
       {/* TAB 3: BANNER TEMPLATES FOR USER'S FRANCHISE */}
-      {activeTab === "banner-templates" && (
-        <div className="space-y-6 max-w-6xl animate-in fade-in duration-200">
-          {/* Header & Subtitle */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h2 className="text-xl font-black text-slate-900 tracking-tight">
-                  Franchise Banner Templates
-                </h2>
-                <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-xs">
-                  <Building2 size={13} className="text-indigo-600" />
-                  {activeFranchiseName}
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 mt-1">
-                Official banners, marketing blueprints, and dimension
-                specifications for {activeFranchiseName}
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={loadingBanners || refreshingBanners}
-                onClick={() =>
-                  loadFranchiseBanners(
-                    userFranchiseId ? Number(userFranchiseId) : undefined,
-                    true,
-                  )
-                }
-                className="text-xs h-9 font-medium"
-              >
-                <RefreshCw
-                  size={13}
-                  className={
-                    refreshingBanners ? "animate-spin text-indigo-600" : ""
-                  }
-                />
-                {refreshingBanners ? "Refreshing..." : "Refresh"}
-              </Button>
-            </div>
-          </div>
-
-          {/* Filters & Search Toolbar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-200/90 shadow-xs">
-            <div className="relative flex-1 min-w-0">
-              <Search
-                size={15}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-              />
-              <Input
-                type="text"
-                placeholder="Search templates by name, dimensions..."
-                value={bannerSearch}
-                onChange={(e) => setBannerSearch(e.target.value)}
-                className="pl-9 h-9 text-xs bg-slate-50/60 border-slate-200"
-              />
-            </div>
-
-            <div className="flex items-center gap-2 flex-wrap">
-              {/* Orientation Pills */}
-              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs">
-                {(["all", "landscape", "portrait"] as const).map((ori) => (
-                  <button
-                    key={ori}
-                    type="button"
-                    onClick={() => setBannerOrientationFilter(ori)}
-                    className={`px-3 py-1 text-xs font-semibold rounded-lg capitalize transition ${
-                      bannerOrientationFilter === ori
-                        ? "bg-white text-indigo-700 shadow-xs"
-                        : "text-slate-600 hover:text-slate-900"
-                    }`}
-                  >
-                    {ori}
-                  </button>
-                ))}
-              </div>
-
-              {/* View mode toggle */}
-              <div className="flex items-center gap-0.5 bg-slate-100 p-1 rounded-xl">
+      {activeTab === "banner-templates" &&
+        (viewingTemplate !== null ? (
+          /* IN-PAGE EMBEDDED BANNER REVIEW & CUSTOMIZATION (MATCHING SCREENSHOT 2) */
+          <div className="space-y-5 animate-in fade-in duration-200">
+            {/* Top Navigation Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200/90">
+              <div className="flex items-center gap-2 flex-wrap min-w-0">
                 <Button
-                  variant={bannerViewMode === "grid" ? "default" : "ghost"}
-                  size="icon-sm"
-                  onClick={() => setBannerViewMode("grid")}
-                  title="Grid View"
-                  className={`h-7 w-7 ${bannerViewMode === "grid" ? "shadow-xs" : ""}`}
-                >
-                  <LayoutGrid size={13} />
-                </Button>
-                <Button
-                  variant={bannerViewMode === "list" ? "default" : "ghost"}
-                  size="icon-sm"
-                  onClick={() => setBannerViewMode("list")}
-                  title="List View"
-                  className={`h-7 w-7 ${bannerViewMode === "list" ? "shadow-xs" : ""}`}
-                >
-                  <List size={13} />
-                </Button>
-              </div>
-            </div>
-          </div>
-
-          {/* Banner Content Grid / List */}
-          {loadingBanners ? (
-            <Card className="p-12 text-center text-xs text-slate-500 space-y-2">
-              <Loader2
-                size={24}
-                className="animate-spin mx-auto text-indigo-600"
-              />
-              <p className="font-semibold text-slate-700">
-                Loading banner templates...
-              </p>
-              <p className="text-[11px] text-slate-400">
-                Fetching graphics for {activeFranchiseName}
-              </p>
-            </Card>
-          ) : bannerDisplayItems.length === 0 ? (
-            <Card className="p-12 text-center text-slate-400 space-y-3 bg-white border border-slate-200">
-              <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-500 mx-auto flex items-center justify-center border border-indigo-100 shadow-inner">
-                <LayoutTemplate size={28} />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-bold text-slate-800">
-                  No banner templates found
-                </p>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  {bannerSearch || bannerOrientationFilter !== "all"
-                    ? "No templates match your search criteria. Try resetting the filters."
-                    : `No marketing banners have been assigned to ${activeFranchiseName} yet.`}
-                </p>
-              </div>
-              {(bannerSearch || bannerOrientationFilter !== "all") && (
-                <Button
+                  type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => {
-                    setBannerSearch("");
-                    setBannerOrientationFilter("all");
-                  }}
-                  className="text-xs mt-2"
+                  onClick={() => setViewingTemplate(null)}
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 h-8 px-2.5 rounded-xl border-slate-200 cursor-pointer flex-shrink-0 bg-white shadow-2xs"
                 >
-                  Clear Filters
+                  <ArrowLeft size={14} /> Back to Projects
                 </Button>
-              )}
-            </Card>
-          ) : bannerViewMode === "grid" ? (
-            /* Grid View */
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {bannerDisplayItems.map((item) => {
-                const effectiveImage = item.imageUrl
-                  ? resolveImageUrl(item.imageUrl)
-                  : "";
-
-                return (
-                  <Card
-                    key={item.key}
-                    className="group overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs hover:shadow-xl hover:border-indigo-300 hover:-translate-y-0.5 transition-all duration-200 p-0 flex flex-col"
-                  >
-                    {/* Top Image Preview Banner */}
-                    <div
-                      onClick={() => {
-                        setViewingTemplate(item.template);
-                        setActiveImageIndex(item.imageIndex);
-                      }}
-                      className="cursor-pointer relative aspect-[16/10] bg-slate-900/5 border-b border-slate-100 overflow-hidden flex items-center justify-center"
-                    >
-                      <BannerImageThumbnail
-                        src={effectiveImage}
-                        alt={item.imageName || item.template.name}
-                        containerClassName="w-full h-full flex items-center justify-center bg-slate-50"
-                        className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
-                      />
-
-                      {/* Hover Overlay with Quick Preview */}
-                      <div className="absolute inset-0 bg-slate-950/25 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center pointer-events-none z-10">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/95 text-slate-800 text-xs font-bold shadow-md transform translate-y-1 group-hover:translate-y-0 transition-transform duration-200">
-                          <Eye size={13} className="text-indigo-600" />
-                          View Preview
-                        </span>
-                      </div>
-
-                      {/* Overlay Badges */}
-                      <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 z-20 pointer-events-none">
-                        <span className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-white/95 backdrop-blur-md text-slate-800 shadow-xs capitalize border border-slate-200/90">
-                          {item.template.orientation}
-                        </span>
-                        {item.totalImages > 1 && (
-                          <span className="px-2 py-1 rounded-md text-[10px] font-bold bg-slate-900/80 text-white shadow-xs backdrop-blur-xs font-mono">
-                            #{item.imageIndex + 1}
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="absolute top-2.5 right-2.5 z-20 pointer-events-none">
-                        <span className="px-2.5 py-1 rounded-md text-[10px] font-bold bg-slate-900/80 text-white shadow-xs font-mono backdrop-blur-xs">
-                          {item.template.widthPx} × {item.template.heightPx}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Card Body */}
-                    <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
-                      <div>
-                        <div className="flex items-start justify-between gap-2">
-                          <h3
-                            className="font-bold text-slate-900 text-sm group-hover:text-indigo-600 transition truncate cursor-pointer"
-                            title={item.template.name}
-                            onClick={() => {
-                              setViewingTemplate(item.template);
-                              setActiveImageIndex(item.imageIndex);
-                            }}
-                          >
-                            {item.template.name}
-                            {item.totalImages > 1 && (
-                              <span className="text-xs text-slate-400 font-normal ml-1.5">
-                                (#{item.imageIndex + 1})
-                              </span>
-                            )}
-                          </h3>
-                        </div>
-
-                        {item.template.description ? (
-                          <p className="text-xs text-slate-500 mt-1 line-clamp-2 leading-relaxed min-h-[2rem]">
-                            {item.template.description}
-                          </p>
-                        ) : (
-                          <p className="text-xs text-slate-400 mt-1 italic min-h-[2rem]">
-                            No description provided
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Card Footer Actions */}
-                      <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                        <span className="inline-flex items-center text-[11px] font-mono font-medium text-slate-500 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200/70 whitespace-nowrap shrink-0">
-                          {item.template.widthPx} × {item.template.heightPx} px
-                        </span>
-
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          {effectiveImage && (
-                            <Button
-                              variant="ghost"
-                              size="icon-sm"
-                              title="Download Banner"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDownloadBanner(
-                                  item.imageUrl,
-                                  item.imageName ||
-                                    `${item.template.name}-banner-${item.imageIndex + 1}.png`,
-                                );
-                              }}
-                              className="h-8 w-8 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50"
-                            >
-                              <Download size={14} />
-                            </Button>
-                          )}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setViewingTemplate(item.template);
-                              setActiveImageIndex(item.imageIndex);
-                            }}
-                            className="h-8 px-3 text-xs font-semibold gap-1.5 border-slate-200 text-slate-700 hover:text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50/50 whitespace-nowrap shrink-0 shadow-2xs"
-                          >
-                            <Eye size={13} /> View Banner
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-          ) : (
-            /* List View */
-            <div className="space-y-2.5">
-              {bannerDisplayItems.map((item) => {
-                const effectiveImage = item.imageUrl
-                  ? resolveImageUrl(item.imageUrl)
-                  : "";
-
-                return (
-                  <Card
-                    key={item.key}
-                    className="p-3.5 bg-white border border-slate-200 hover:border-indigo-300 hover:shadow-sm transition rounded-xl flex items-center justify-between gap-4"
-                  >
-                    <div
-                      onClick={() => {
-                        setViewingTemplate(item.template);
-                        setActiveImageIndex(item.imageIndex);
-                      }}
-                      className="flex items-center gap-3.5 min-w-0 flex-1 cursor-pointer"
-                    >
-                      <div className="w-16 h-12 rounded-lg bg-slate-50 border border-slate-200 overflow-hidden flex-shrink-0 flex items-center justify-center">
-                        <BannerImageThumbnail
-                          src={effectiveImage}
-                          alt={item.imageName || item.template.name}
-                          containerClassName="w-full h-full"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <h4 className="font-bold text-slate-900 text-sm truncate">
-                            {item.template.name}
-                            {item.totalImages > 1 && (
-                              <span className="text-xs text-slate-400 font-normal ml-1">
-                                (#{item.imageIndex + 1})
-                              </span>
-                            )}
-                          </h4>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 border border-indigo-200 font-mono">
-                            {item.template.widthPx} × {item.template.heightPx}{" "}
-                            px
-                          </span>
-                          <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600 capitalize">
-                            {item.template.orientation}
-                          </span>
-                        </div>
-                        <p className="text-xs text-slate-500 truncate mt-0.5">
-                          {item.template.description ||
-                            `${item.template.widthPx}x${item.template.heightPx} px blueprint`}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      {effectiveImage && (
-                        <Button
-                          variant="ghost"
-                          size="icon-sm"
-                          onClick={() =>
-                            handleDownloadBanner(
-                              item.imageUrl,
-                              item.imageName ||
-                                `${item.template.name}-banner-${item.imageIndex + 1}.png`,
-                            )
-                          }
-                          title="Download Image"
-                          className="h-8 w-8 text-slate-500 hover:text-indigo-600"
-                        >
-                          <Download size={14} />
-                        </Button>
-                      )}
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setViewingTemplate(item.template);
-                          setActiveImageIndex(item.imageIndex);
-                        }}
-                        className="h-8 text-xs font-semibold gap-1.5"
-                      >
-                        <Eye size={13} /> View
-                      </Button>
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* TAB 4: MY BANNER SUBMISSIONS */}
-      {activeTab === "my-banner-submissions" && (
-        <div className="space-y-6">
-          {/* Header Card */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200/90 shadow-xs">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h2 className="text-lg font-bold text-slate-900 tracking-tight">
-                  My Banner Submissions
-                </h2>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200/60">
-                  {mySubmissions.length} Total
+                <span className="text-slate-300">|</span>
+                <span className="inline-flex items-center rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-1 text-[11px] font-bold whitespace-nowrap">
+                  Banner Details &amp; Approval
+                </span>
+                <span className="hidden sm:inline-flex items-center rounded-xl bg-slate-50 text-slate-500 border border-slate-200 px-2.5 py-1 text-[11px] font-medium whitespace-nowrap">
+                  Anyone with this link can review
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-1">
-                Track the status and review progress of all banner customizations you submitted.
+
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <CheckCircle2 size={12} className="text-emerald-600" />
+                  Approved
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={loadingBanners || refreshingBanners}
+                  onClick={() =>
+                    loadFranchiseBanners(
+                      userFranchiseId ? Number(userFranchiseId) : undefined,
+                      true,
+                    )
+                  }
+                  className="h-8 px-3 rounded-xl bg-white text-xs font-semibold flex-shrink-0"
+                  title="Refresh Proof Data"
+                >
+                  <RefreshCw
+                    size={13}
+                    className={
+                      refreshingBanners ? "animate-spin text-indigo-600" : ""
+                    }
+                  />
+                  Refresh
+                </Button>
+              </div>
+            </div>
+
+            {/* Template / Project Title & Subtitle */}
+            <div className="min-w-0 space-y-1">
+              <h1 className="text-2xl sm:text-[1.75rem] font-extrabold text-slate-900 tracking-tight">
+                {viewingTemplate.name}
+              </h1>
+              <p className="text-xs sm:text-[13px] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                <span>
+                  Client:{" "}
+                  <strong className="text-slate-800 font-semibold">
+                    {clientUser?.name || "Client User"}
+                  </strong>
+                </span>
+                <span className="text-slate-300">·</span>
+                <span>
+                  Designer:{" "}
+                  <strong className="text-slate-800 font-semibold">
+                    {viewingTemplate.franchiseName ||
+                      activeFranchiseName ||
+                      "FBS designer - 1"}
+                  </strong>
+                </span>
+                <span className="text-slate-300">·</span>
+                <span>
+                  Size:{" "}
+                  <strong className="text-slate-800 font-semibold font-mono">
+                    {viewingTemplate.widthPx} × {viewingTemplate.heightPx} px
+                  </strong>
+                </span>
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                disabled={refreshingMySubmissions || loadingMySubmissions}
-                onClick={() => loadMySubmissions(true)}
-                className="text-xs font-medium gap-1.5 h-8.5"
-              >
-                <RefreshCw
-                  size={13}
-                  className={refreshingMySubmissions ? "animate-spin text-indigo-600" : "text-slate-500"}
-                />
-                <span>Refresh Status</span>
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => setActiveTab("banner-templates")}
-                className="text-xs font-semibold gap-1.5 h-8.5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs"
-              >
-                <LayoutTemplate size={13} />
-                <span>Browse Templates</span>
-              </Button>
-            </div>
-          </div>
+            {/* Two-Column Review Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+              {/* LEFT COLUMN: Project Banners */}
+              <div className="lg:col-span-8 space-y-4">
+                <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-4">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-[11px] font-bold uppercase tracking-[0.08em] text-indigo-600">
+                      PROJECT BANNERS ({viewingTemplate.images?.length || 1})
+                    </h3>
+                    <p className="text-[11px] text-slate-400 font-medium">
+                      Review &amp; approve on each banner
+                    </p>
+                  </div>
 
-          {/* Submissions List / Grid */}
-          {loadingMySubmissions ? (
-            <Card className="p-16 text-center space-y-3">
-              <Loader2 size={24} className="animate-spin mx-auto text-indigo-600" />
-              <p className="text-xs font-semibold text-slate-600">Loading your submitted banner requests...</p>
-            </Card>
-          ) : mySubmissions.length === 0 ? (
-            <Card className="p-16 text-center space-y-3 bg-white border border-slate-200">
-              <div className="w-14 h-14 rounded-2xl bg-indigo-50 text-indigo-500 mx-auto flex items-center justify-center border border-indigo-100 shadow-inner">
-                <Inbox size={28} />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-bold text-slate-800">No Banner Submissions Found</p>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  You haven't submitted any banner customization requests yet. Click "Browse Templates", open a banner, fill the form, and click Submit.
-                </p>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setActiveTab("banner-templates")}
-                className="text-xs mt-2 font-semibold"
-              >
-                Browse Franchise Templates
-              </Button>
-            </Card>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {mySubmissions.map((sub) => {
-                return (
-                  <Card
-                    key={sub.id}
-                    className="overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs hover:shadow-lg transition p-0 flex flex-col justify-between"
-                  >
-                    <div>
-                      {/* Banner Image Preview */}
-                      <div className="relative aspect-video bg-slate-900 border-b border-slate-100 flex items-center justify-center overflow-hidden p-2">
-                        {sub.previewImageUrl ? (
+                  {/* Banner proof container */}
+                  <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 space-y-4 transition">
+                    {/* Banner sub-header */}
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div className="min-w-0 space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h4 className="font-extrabold text-[15px] text-slate-900 truncate">
+                            {viewingTemplate.name}
+                          </h4>
+                          <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 text-[11px] font-semibold">
+                            <FileImage size={11} /> Individual Banner
+                          </span>
+                          <span className="text-[11px] text-slate-400 font-mono font-semibold">
+                            v{activeImageIndex + 1}
+                          </span>
+                        </div>
+                        <p className="text-[12px] text-slate-500">
+                          {viewingTemplate.description ||
+                            "Individual banner proof"}
+                        </p>
+                      </div>
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <CheckCircle2 size={11} className="text-emerald-600" />{" "}
+                        Approved
+                      </span>
+                    </div>
+
+                    {/* Banner Main Proof Preview */}
+                    <div className="rounded-xl bg-slate-50 border border-slate-200/80 p-2 sm:p-3">
+                      <div className="relative h-[220px] sm:h-[320px] md:h-[400px] bg-white rounded-lg overflow-hidden group border border-slate-200/60 flex items-center justify-center p-2">
+                        {viewingTemplate.images &&
+                        viewingTemplate.images[activeImageIndex] ? (
                           <img
-                            src={resolveImageUrl(sub.previewImageUrl)}
-                            alt={sub.templateName}
-                            className="w-full h-full object-contain rounded-lg"
+                            src={resolveImageUrl(
+                              viewingTemplate.images[activeImageIndex].imageUrl,
+                            )}
+                            alt={`${viewingTemplate.name} preview`}
+                            className="w-full h-full object-contain mx-auto rounded drop-shadow-sm"
                           />
                         ) : (
-                          <ImageIcon size={32} className="text-slate-600" />
+                          <div className="p-8 text-center text-slate-400">
+                            <FileImage
+                              size={40}
+                              className="mx-auto mb-2 text-slate-300"
+                            />
+                            <p className="text-xs">
+                              No preview image available
+                            </p>
+                          </div>
                         )}
-                        <div className="absolute top-2.5 right-2.5">
-                          {getSubmissionStatusBadge(sub.status)}
-                        </div>
-                      </div>
 
-                      {/* Content */}
-                      <div className="p-4 space-y-2">
-                        <div className="flex items-start justify-between gap-2">
-                          <h3 className="font-bold text-slate-900 text-sm truncate" title={sub.templateName}>
-                            {sub.templateName}
-                          </h3>
-                        </div>
-                        <p className="text-[11px] text-slate-400 font-mono">
-                          {sub.widthPx} × {sub.heightPx} px
-                        </p>
-                        <p className="text-xs text-slate-500 flex items-center gap-1 pt-1 border-t border-slate-100">
-                          <Clock size={12} className="text-slate-400" />
-                          <span>Submitted: {new Date(sub.createdAt).toLocaleDateString()}</span>
-                        </p>
+                        {/* Fullscreen Proof Action Button on hover */}
+                        {viewingTemplate.images &&
+                          viewingTemplate.images[activeImageIndex] && (
+                            <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center backdrop-blur-[1px]">
+                              <a
+                                href={resolveImageUrl(
+                                  viewingTemplate.images[activeImageIndex]
+                                    .imageUrl,
+                                )}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  className="bg-white/95 hover:bg-white shadow cursor-pointer font-semibold text-xs gap-1.5"
+                                >
+                                  <Maximize2 size={14} /> Fullscreen Proof
+                                </Button>
+                              </a>
+                            </div>
+                          )}
+
+                        <span className="absolute top-2 right-2 bg-slate-900/85 text-white text-[9.5px] sm:text-[10px] font-mono font-bold px-1.5 sm:px-2 py-0.5 rounded-md shadow">
+                          v{activeImageIndex + 1}
+                        </span>
+
+                        <span className="absolute bottom-2 left-2 inline-flex items-center rounded-full bg-slate-100/90 text-slate-600 border border-slate-200 text-[8.5px] sm:text-[9px] font-bold px-1.5 sm:px-2 py-0.5 uppercase tracking-wide">
+                          WATERMARKED
+                        </span>
                       </div>
                     </div>
 
-                    {/* Card Actions */}
-                    <div className="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-2">
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => openMySubmissionDetail(sub)}
-                        className="text-xs h-7.5 px-3 gap-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex-1 shadow-2xs"
-                      >
-                        <Eye size={12} />
-                        <span>View Details</span>
-                      </Button>
-                      {sub.previewImageUrl && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDownloadBanner(sub.previewImageUrl, `${sub.templateName}.png`)}
-                          title="Download Banner Image"
-                          className="text-xs h-7.5 px-2.5 text-slate-600"
-                        >
-                          <Download size={12} />
-                        </Button>
-                      )}
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* DETAIL / PREVIEW MODAL */}
-      {viewingTemplate && (
-        <div
-          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setViewingTemplate(null);
-          }}
-        >
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-2xl max-h-[90vh] my-auto flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            {/* Modal Header */}
-            <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between flex-shrink-0 bg-white">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">
-                  <LayoutTemplate size={16} />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="font-bold text-slate-900 text-sm sm:text-base truncate">
-                    {viewingTemplate.name}
+                    {/* Multiple images thumbnail row */}
                     {viewingTemplate.images &&
                       viewingTemplate.images.length > 1 && (
-                        <span className="text-xs text-slate-400 font-normal ml-1.5 font-mono">
-                          (#{activeImageIndex + 1})
-                        </span>
+                        <div className="space-y-1.5 pt-1">
+                          <span className="text-[11px] font-bold text-slate-600 block">
+                            Switch Banner Variation:
+                          </span>
+                          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                            {viewingTemplate.images.map((img, idx) => (
+                              <button
+                                key={img.id || idx}
+                                type="button"
+                                onClick={() => setActiveImageIndex(idx)}
+                                className={`relative w-20 h-14 rounded-lg overflow-hidden border-2 flex-shrink-0 transition bg-slate-50 ${
+                                  activeImageIndex === idx
+                                    ? "border-indigo-600 ring-2 ring-indigo-200"
+                                    : "border-slate-200 hover:border-slate-300 opacity-70 hover:opacity-100"
+                                }`}
+                              >
+                                <img
+                                  src={resolveImageUrl(img.imageUrl)}
+                                  alt={`Variation ${idx + 1}`}
+                                  className="w-full h-full object-contain p-0.5"
+                                />
+                                <span className="absolute bottom-0.5 right-1 bg-slate-900/80 text-white text-[9px] px-1 rounded font-mono font-bold">
+                                  #{idx + 1}
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
                       )}
-                  </h3>
-                  <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
-                    <span className="font-medium text-slate-700">
-                      {activeFranchiseName}
-                    </span>
-                    <span>·</span>
-                    <span className="font-mono text-indigo-600 font-semibold">
-                      {viewingTemplate.widthPx} × {viewingTemplate.heightPx} px
-                    </span>
-                    <span>·</span>
-                    <span className="capitalize">
-                      {viewingTemplate.orientation}
-                    </span>
-                  </div>
-                </div>
-              </div>
 
-              <button
-                type="button"
-                onClick={() => setViewingTemplate(null)}
-                className="w-8 h-8 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 flex items-center justify-center transition"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Modal Body (Scrollable) */}
-            <div className="p-5 space-y-4 overflow-y-auto flex-1">
-              {/* Main Banner Image Display */}
-              <div className="rounded-xl border border-slate-200 overflow-hidden bg-slate-950 flex items-center justify-center relative h-56 sm:h-64 w-full shadow-inner">
-                {viewingTemplate.images &&
-                viewingTemplate.images[activeImageIndex] ? (
-                  <img
-                    src={resolveImageUrl(
-                      viewingTemplate.images[activeImageIndex].imageUrl,
-                    )}
-                    alt={`${viewingTemplate.name} preview`}
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <div className="p-8 text-center text-slate-500">
-                    <FileImage
-                      size={32}
-                      className="mx-auto mb-2 text-slate-600"
-                    />
-                    <p className="text-xs">No preview image available</p>
-                  </div>
-                )}
-
-                {/* View Fullscreen / New Tab Action */}
-                {viewingTemplate.images &&
-                  viewingTemplate.images[activeImageIndex] && (
-                    <a
-                      href={resolveImageUrl(
-                        viewingTemplate.images[activeImageIndex].imageUrl,
-                      )}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title="Open full resolution in new tab"
-                      className="absolute top-2.5 right-2.5 z-10 p-1.5 rounded-lg bg-black/60 text-white hover:bg-black/80 backdrop-blur-xs transition"
-                    >
-                      <ExternalLink size={14} />
-                    </a>
-                  )}
-              </div>
-
-              {/* Specifications & Description */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1 text-xs">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                    Template Description
-                  </span>
-                  <p className="text-slate-700 leading-relaxed font-medium">
-                    {viewingTemplate.description ||
-                      "No specific instructions provided with this template."}
-                  </p>
-                </div>
-
-                <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-100 space-y-1.5 text-xs">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                    Technical Specifications
-                  </span>
-                  <div className="space-y-1 text-slate-600">
-                    <p className="flex items-center justify-between">
-                      <span>Franchise:</span>
-                      <strong className="text-slate-900">
-                        {activeFranchiseName}
-                      </strong>
-                    </p>
-                    <p className="flex items-center justify-between">
-                      <span>Resolution:</span>
-                      <strong className="text-slate-900 font-mono">
-                        {viewingTemplate.widthPx} × {viewingTemplate.heightPx}{" "}
-                        px
-                      </strong>
-                    </p>
-                    <p className="flex items-center justify-between">
-                      <span>Orientation:</span>
-                      <strong className="text-slate-900 capitalize">
-                        {viewingTemplate.orientation}
-                      </strong>
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Dynamic Custom Fields Section */}
-              {viewingTemplate.fields && viewingTemplate.fields.length > 0 && (
-                <div className="bg-white p-5 rounded-2xl border border-slate-200/90 shadow-2xs space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 border-b border-slate-100 pb-3">
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                        <span>Banner Customization & Details</span>
-                        <span className="text-[10px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">
-                          {viewingTemplate.fields.length}{" "}
-                          {viewingTemplate.fields.length === 1
-                            ? "Field"
-                            : "Fields"}
+                    {/* Banner Technical Specifications */}
+                    <div className="pt-2 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+                      <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-150">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">
+                          Dimensions
                         </span>
-                      </h4>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
-                        Fill in your custom details and information for this
-                        banner request.
-                      </p>
-                    </div>
-
-                    {loadingCustomization && (
-                      <div className="flex items-center gap-1.5 text-xs text-slate-400">
-                        <Loader2
-                          size={13}
-                          className="animate-spin text-indigo-600"
-                        />
-                        <span>Loading saved values...</span>
+                        <span className="font-mono font-bold text-slate-900 mt-0.5 block">
+                          {viewingTemplate.widthPx} × {viewingTemplate.heightPx}{" "}
+                          px
+                        </span>
                       </div>
-                    )}
+                      <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-150">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">
+                          Orientation
+                        </span>
+                        <span className="capitalize font-bold text-slate-900 mt-0.5 block">
+                          {viewingTemplate.orientation}
+                        </span>
+                      </div>
+                      <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-150">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">
+                          Franchise
+                        </span>
+                        <span className="truncate font-bold text-slate-900 mt-0.5 block">
+                          {viewingTemplate.franchiseName || activeFranchiseName}
+                        </span>
+                      </div>
+                      <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-150">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">
+                          Format
+                        </span>
+                        <span className="font-bold text-slate-900 mt-0.5 block">
+                          High Res Proof
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* RIGHT COLUMN: Overall Feedback & Customization Form + Activity */}
+              <div className="lg:col-span-4 space-y-4">
+                {/* Overall Feedback Card (Matching Screenshot 2) */}
+                <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-4">
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-sm">
+                      Overall Feedback
+                    </h3>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Share feedback or approve this banner proof as a whole.
+                    </p>
                   </div>
 
                   {customizationNotice && (
@@ -1590,295 +1245,656 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                     </div>
                   )}
 
+                  {/* Form fields */}
                   <form
-                    id="banner-customization-form"
+                    id="banner-review-customization-form"
                     onSubmit={handleSaveCustomization}
-                    className="space-y-4"
+                    className="space-y-3.5"
                   >
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {viewingTemplate.fields.map((field, fIdx) => {
-                        const fieldKey = String(field.id || fIdx);
-                        const val = customFieldValues[fieldKey] ?? "";
-                        const isReadOnly = field.isEditable === false;
+                    {viewingTemplate.fields &&
+                    viewingTemplate.fields.length > 0 ? (
+                      <div className="space-y-3">
+                        {viewingTemplate.fields.map((field, fIdx) => {
+                          const fieldKey = String(field.id || fIdx);
+                          const val = customFieldValues[fieldKey] ?? "";
+                          const isReadOnly = field.isEditable === false;
 
-                        return (
-                          <div
-                            key={fieldKey}
-                            className={`space-y-1.5 ${
-                              field.fieldType === "textarea"
-                                ? "sm:col-span-2"
-                                : ""
-                            }`}
-                          >
-                            <div className="flex items-center justify-between">
-                              <label className="text-xs font-bold text-slate-800 flex items-center gap-1">
-                                <span>{field.label}</span>
-                                {field.isRequired && (
-                                  <span className="text-red-500 font-bold">
-                                    *
+                          return (
+                            <div key={fieldKey} className="space-y-1">
+                              <div className="flex items-center justify-between">
+                                <label className="text-[11.5px] font-bold text-slate-700 flex items-center gap-1">
+                                  <span>{field.label}</span>
+                                  {field.isRequired && (
+                                    <span className="text-red-500 font-bold">
+                                      *
+                                    </span>
+                                  )}
+                                </label>
+                                {isReadOnly && (
+                                  <span className="text-[10px] text-slate-400 italic">
+                                    Read-only
                                   </span>
                                 )}
-                              </label>
-                              {isReadOnly && (
-                                <span className="text-[10px] text-slate-400 italic">
-                                  Read-only
-                                </span>
-                              )}
-                            </div>
+                              </div>
 
-                            {/* Render based on fieldType */}
-                            {field.fieldType === "text" && (
-                              <Input
-                                type="text"
-                                placeholder={
-                                  field.placeholder || `Enter ${field.label}...`
-                                }
-                                value={val}
-                                disabled={isReadOnly}
-                                onChange={(e) =>
-                                  setCustomFieldValues((prev) => ({
-                                    ...prev,
-                                    [fieldKey]: e.target.value,
-                                  }))
-                                }
-                                className="h-9 text-xs"
-                                required={field.isRequired}
-                              />
-                            )}
-
-                            {field.fieldType === "email" && (
-                              <Input
-                                type="email"
-                                placeholder={
-                                  field.placeholder || "name@example.com"
-                                }
-                                value={val}
-                                disabled={isReadOnly}
-                                onChange={(e) =>
-                                  setCustomFieldValues((prev) => ({
-                                    ...prev,
-                                    [fieldKey]: e.target.value,
-                                  }))
-                                }
-                                className="h-9 text-xs"
-                                required={field.isRequired}
-                              />
-                            )}
-
-                            {field.fieldType === "phone" && (
-                              <Input
-                                type="tel"
-                                placeholder={
-                                  field.placeholder || "+1 (555) 000-0000"
-                                }
-                                value={val}
-                                disabled={isReadOnly}
-                                onChange={(e) =>
-                                  setCustomFieldValues((prev) => ({
-                                    ...prev,
-                                    [fieldKey]: e.target.value,
-                                  }))
-                                }
-                                className="h-9 text-xs"
-                                required={field.isRequired}
-                              />
-                            )}
-
-                            {field.fieldType === "number" && (
-                              <Input
-                                type="number"
-                                placeholder={field.placeholder || "0"}
-                                value={val}
-                                disabled={isReadOnly}
-                                onChange={(e) =>
-                                  setCustomFieldValues((prev) => ({
-                                    ...prev,
-                                    [fieldKey]: e.target.value,
-                                  }))
-                                }
-                                className="h-9 text-xs"
-                                required={field.isRequired}
-                              />
-                            )}
-
-                            {field.fieldType === "textarea" && (
-                              <Textarea
-                                placeholder={
-                                  field.placeholder || `Enter ${field.label}...`
-                                }
-                                value={val}
-                                disabled={isReadOnly}
-                                onChange={(e) =>
-                                  setCustomFieldValues((prev) => ({
-                                    ...prev,
-                                    [fieldKey]: e.target.value,
-                                  }))
-                                }
-                                rows={3}
-                                className="text-xs resize-y"
-                                required={field.isRequired}
-                              />
-                            )}
-
-                            {field.fieldType === "date" && (
-                              <Input
-                                type="date"
-                                value={val}
-                                disabled={isReadOnly}
-                                onChange={(e) =>
-                                  setCustomFieldValues((prev) => ({
-                                    ...prev,
-                                    [fieldKey]: e.target.value,
-                                  }))
-                                }
-                                className="h-9 text-xs"
-                                required={field.isRequired}
-                              />
-                            )}
-
-                            {field.fieldType === "select" && (
-                              <select
-                                value={val}
-                                disabled={isReadOnly}
-                                onChange={(e) =>
-                                  setCustomFieldValues((prev) => ({
-                                    ...prev,
-                                    [fieldKey]: e.target.value,
-                                  }))
-                                }
-                                className="w-full h-9 px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-800 disabled:bg-slate-100"
-                                required={field.isRequired}
-                              >
-                                <option value="">
-                                  {field.placeholder ||
-                                    "-- Select an option --"}
-                                </option>
-                                {(field.options || []).map((opt, oIdx) => (
-                                  <option key={oIdx} value={opt}>
-                                    {opt}
-                                  </option>
-                                ))}
-                              </select>
-                            )}
-
-                            {field.fieldType === "radio" && (
-                              <div className="space-y-2 pt-1">
-                                {(field.options || []).map((opt, oIdx) => (
-                                  <label
-                                    key={oIdx}
-                                    className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer"
-                                  >
-                                    <input
-                                      type="radio"
-                                      name={`radio-field-${fieldKey}`}
-                                      value={opt}
-                                      checked={val === opt}
-                                      disabled={isReadOnly}
-                                      onChange={() =>
+                              {field.fieldType === "textarea" ? (
+                                <Textarea
+                                  placeholder={
+                                    field.placeholder ||
+                                    `Type feedback or changes for ${field.label}...`
+                                  }
+                                  value={val}
+                                  disabled={isReadOnly}
+                                  onChange={(e) =>
+                                    setCustomFieldValues((prev) => ({
+                                      ...prev,
+                                      [fieldKey]: e.target.value,
+                                    }))
+                                  }
+                                  rows={3}
+                                  className="text-xs resize-none bg-slate-50/50 focus:bg-white"
+                                  required={field.isRequired}
+                                />
+                              ) : field.fieldType === "file" ? (
+                                <div className="space-y-1.5">
+                                  <Input
+                                    type="file"
+                                    disabled={isReadOnly}
+                                    onChange={(e) => {
+                                      const file = e.target.files?.[0];
+                                      if (file) {
+                                        setCustomFieldFiles((prev) => ({
+                                          ...prev,
+                                          [fieldKey]: file,
+                                        }));
                                         setCustomFieldValues((prev) => ({
                                           ...prev,
-                                          [fieldKey]: opt,
-                                        }))
+                                          [fieldKey]: file.name,
+                                        }));
                                       }
-                                      className="w-3.5 h-3.5 text-indigo-600 border-slate-300"
-                                      required={field.isRequired && !val}
-                                    />
-                                    <span>{opt}</span>
-                                  </label>
-                                ))}
-                              </div>
-                            )}
-
-                            {field.fieldType === "checkbox" && (
-                              <div className="pt-1">
-                                <label className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
-                                  <input
-                                    type="checkbox"
-                                    checked={Boolean(val)}
-                                    disabled={isReadOnly}
-                                    onChange={(e) =>
-                                      setCustomFieldValues((prev) => ({
-                                        ...prev,
-                                        [fieldKey]: e.target.checked,
-                                      }))
-                                    }
-                                    className="w-4 h-4 rounded text-indigo-600 border-slate-300"
+                                    }}
+                                    className="h-8 text-xs file:mr-2 file:py-0.5 file:px-2 file:rounded-md file:border-0 file:text-[10.5px] file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200"
                                   />
-                                  <span>
-                                    {field.placeholder ||
-                                      `Check to confirm ${field.label}`}
-                                  </span>
-                                </label>
-                              </div>
-                            )}
-
-                            {field.fieldType === "file" && (
-                              <div className="space-y-2">
+                                  {typeof val === "string" && val && (
+                                    <p className="text-[10.5px] text-slate-500 truncate flex items-center gap-1">
+                                      <FileImage
+                                        size={11}
+                                        className="text-slate-400 flex-shrink-0"
+                                      />
+                                      <span>
+                                        Current: <strong>{val}</strong>
+                                      </span>
+                                    </p>
+                                  )}
+                                </div>
+                              ) : (
                                 <Input
-                                  type="file"
+                                  type={
+                                    field.fieldType === "number"
+                                      ? "number"
+                                      : field.fieldType === "email"
+                                        ? "email"
+                                        : field.fieldType === "phone"
+                                          ? "tel"
+                                          : "text"
+                                  }
+                                  placeholder={
+                                    field.placeholder ||
+                                    `Enter ${field.label}...`
+                                  }
+                                  value={val}
                                   disabled={isReadOnly}
-                                  onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      setCustomFieldFiles((prev) => ({
-                                        ...prev,
-                                        [fieldKey]: file,
-                                      }));
-                                      setCustomFieldValues((prev) => ({
-                                        ...prev,
-                                        [fieldKey]: file.name,
-                                      }));
-                                    }
-                                  }}
-                                  className="h-9 text-xs file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-slate-100 file:text-slate-700 hover:file:bg-slate-200"
+                                  onChange={(e) =>
+                                    setCustomFieldValues((prev) => ({
+                                      ...prev,
+                                      [fieldKey]: e.target.value,
+                                    }))
+                                  }
+                                  className="h-8 text-xs bg-slate-50/50 focus:bg-white"
+                                  required={field.isRequired}
                                 />
-                                {typeof val === "string" && val && (
-                                  <p className="text-[11px] text-slate-500 truncate flex items-center gap-1">
-                                    <FileImage
-                                      size={12}
-                                      className="text-slate-400 flex-shrink-0"
-                                    />
-                                    <span>
-                                      Current file: <strong>{val}</strong>
-                                    </span>
-                                  </p>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5">
+                        <Textarea
+                          placeholder="Type feedback or required changes for this banner..."
+                          rows={4}
+                          className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition resize-none bg-white"
+                        />
+                      </div>
+                    )}
+
+                    {/* Action buttons (matching Screenshot 2: Request Changes & Approve) */}
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <Button
+                        type="button"
+                        disabled={savingCustomization}
+                        variant="outline"
+                        onClick={() => handleSaveCustomization()}
+                        className="h-9 px-2 text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300 rounded-xl flex items-center justify-center gap-1.5"
+                      >
+                        <AlertCircle size={13} className="text-amber-600" />
+                        <span className="truncate">Request Changes</span>
+                      </Button>
+
+                      <Button
+                        type="submit"
+                        disabled={savingCustomization}
+                        onClick={() => handleSaveCustomization()}
+                        className="h-9 px-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm flex items-center justify-center gap-1.5"
+                      >
+                        {savingCustomization ? (
+                          <Loader2 size={13} className="animate-spin" />
+                        ) : (
+                          <CheckCircle2 size={13} />
+                        )}
+                        <span className="truncate">Approve</span>
+                      </Button>
                     </div>
                   </form>
                 </div>
-              )}
-            </div>
 
-            {/* Modal Footer (Sticky at bottom) */}
-            <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-end flex-shrink-0">
-              <Button
-                type="submit"
-                form="banner-customization-form"
-                onClick={() => handleSaveCustomization()}
-                disabled={savingCustomization}
-                className="text-xs h-8 px-5 font-semibold gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs"
-              >
-                {savingCustomization ? (
-                  <>
-                    <Loader2 size={13} className="animate-spin" />
-                    <span>Submitting...</span>
-                  </>
-                ) : (
-                  <>
-                    <Send size={13} />
-                    <span>Submit</span>
-                  </>
-                )}
-              </Button>
+                {/* Activity & Status History Card (Matching Screenshot 2) */}
+                <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-3.5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wide flex items-center gap-1.5">
+                      <History size={13} className="text-slate-400" /> Activity
+                      &amp; Status History
+                    </h3>
+                  </div>
+
+                  <div className="flex items-center justify-between pb-1 border-b border-slate-100">
+                    <span className="text-xs font-bold text-slate-900 truncate">
+                      {viewingTemplate.name}
+                    </span>
+                    <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      <CheckCircle2 size={10} className="text-emerald-600" />{" "}
+                      Approved
+                    </span>
+                  </div>
+
+                  {/* History Timeline */}
+                  <div className="space-y-3 text-xs">
+                    {/* Item 1: Approved */}
+                    <div className="relative pl-5 space-y-1">
+                      <div className="absolute left-0 top-1 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-100" />
+                      <span className="font-bold text-emerald-700 text-xs block">
+                        Approved
+                      </span>
+                      <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-150 text-slate-700 text-[11px] leading-relaxed">
+                        Approved photo.
+                      </div>
+                      <span className="text-[10px] text-slate-400 block">
+                        {new Date(
+                          viewingTemplate.updatedAt || Date.now(),
+                        ).toLocaleDateString()}
+                        , {clientUser?.name || "Client"}
+                      </span>
+                    </div>
+
+                    {/* Item 2: Pending Review */}
+                    <div className="relative pl-5 space-y-1">
+                      <div className="absolute left-0 top-1 w-2.5 h-2.5 rounded-full bg-indigo-500 ring-4 ring-indigo-100" />
+                      <span className="font-bold text-indigo-700 text-xs block">
+                        Pending Review
+                      </span>
+                      <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-150 text-slate-700 text-[11px] leading-relaxed">
+                        Initial banner uploaded
+                      </div>
+                      <span className="text-[10px] text-slate-400 block">
+                        {new Date(
+                          viewingTemplate.createdAt || Date.now(),
+                        ).toLocaleDateString()}
+                        , Designer
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
+        ) : (
+          /* TEMPLATES LIST / GRID VIEW (MATCHING SCREENSHOT 1) */
+          <div className="space-y-5 max-w-3xl animate-in fade-in duration-200">
+            {/* Toolbar */}
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+              <div className="relative flex-1 min-w-0">
+                <Search
+                  size={15}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                />
+                <Input
+                  type="text"
+                  placeholder="Search project..."
+                  value={bannerSearch}
+                  onChange={(e) => setBannerSearch(e.target.value)}
+                  className="pl-9 h-10 bg-white shadow-sm text-xs"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-0.5 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+                  <Button
+                    variant={bannerViewMode === "grid" ? "default" : "ghost"}
+                    size="icon-sm"
+                    onClick={() => setBannerViewMode("grid")}
+                    title="Card View"
+                    className={bannerViewMode === "grid" ? "shadow-sm" : ""}
+                  >
+                    <LayoutGrid size={14} />
+                  </Button>
+                  <Button
+                    variant={bannerViewMode === "list" ? "default" : "ghost"}
+                    size="icon-sm"
+                    onClick={() => setBannerViewMode("list")}
+                    title="List View"
+                    className={bannerViewMode === "list" ? "shadow-sm" : ""}
+                  >
+                    <List size={14} />
+                  </Button>
+                </div>
+
+                <Button
+                  variant="outline"
+                  disabled={loadingBanners || refreshingBanners}
+                  onClick={() =>
+                    loadFranchiseBanners(
+                      userFranchiseId ? Number(userFranchiseId) : undefined,
+                      true,
+                    )
+                  }
+                  title="Refresh Projects"
+                >
+                  <RefreshCw
+                    size={14}
+                    className={
+                      refreshingBanners ? "animate-spin text-indigo-600" : ""
+                    }
+                  />
+                  {refreshingBanners ? "Refreshing..." : "Refresh"}
+                </Button>
+              </div>
+            </div>
+
+            {/* Banner Content Grid / List */}
+            {loadingBanners ? (
+              <Card className="p-10 text-center text-xs text-slate-500">
+                Loading your template proofs...
+              </Card>
+            ) : bannerDisplayItems.length === 0 ? (
+              <Card className="p-12 text-center text-slate-400 space-y-2">
+                <FileImage size={40} className="mx-auto text-slate-300" />
+                <p className="text-sm font-semibold text-slate-700">
+                  No banner templates found.
+                </p>
+                <p className="text-xs">
+                  {bannerSearch
+                    ? "No templates match your search criteria."
+                    : `No marketing banners have been assigned to ${activeFranchiseName} yet.`}
+                </p>
+              </Card>
+            ) : bannerViewMode === "list" ? (
+              /* List View */
+              <div className="space-y-2">
+                {bannerDisplayItems.map((item) => (
+                  <Card
+                    key={item.key}
+                    onClick={() => {
+                      setViewingTemplate(item.template);
+                      setActiveImageIndex(item.imageIndex);
+                    }}
+                    className="p-3.5 transition hover:border-indigo-300 hover:shadow-md cursor-pointer"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-bold text-slate-900 text-sm truncate">
+                            {item.template.name}
+                          </h3>
+                          <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <CheckCircle2
+                              size={11}
+                              className="text-emerald-600"
+                            />{" "}
+                            Approved
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                          Designer:{" "}
+                          <strong className="text-slate-700">
+                            {item.template.franchiseName ||
+                              activeFranchiseName ||
+                              "FBS designer - 1"}
+                          </strong>
+                          {" · "}
+                          Updated{" "}
+                          {new Date(
+                            item.template.updatedAt ||
+                              item.template.createdAt ||
+                              Date.now(),
+                          ).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <span className="text-indigo-600 font-bold text-xs flex items-center gap-1 flex-shrink-0">
+                        <Eye size={13} /> Open Proof
+                      </span>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              /* Grid View (Matching Screenshot 1) */
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {bannerDisplayItems.map((item) => {
+                  const effectiveImage = item.imageUrl
+                    ? resolveImageUrl(item.imageUrl)
+                    : "";
+
+                  return (
+                    <Card
+                      key={item.key}
+                      onClick={() => {
+                        setViewingTemplate(item.template);
+                        setActiveImageIndex(item.imageIndex);
+                      }}
+                      className="overflow-hidden transition hover:border-indigo-300 hover:shadow-md p-0 cursor-pointer"
+                    >
+                      {/* Small proof preview */}
+                      <div className="relative aspect-[16/10] bg-slate-50 border-b border-slate-100 flex items-center justify-center overflow-hidden">
+                        {effectiveImage ? (
+                          <img
+                            src={effectiveImage}
+                            alt={`${item.template.name} preview`}
+                            className="w-full h-full object-contain bg-white"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-1">
+                            <FileImage size={28} />
+                            <span className="text-[10px] font-medium text-slate-400">
+                              No preview yet
+                            </span>
+                          </div>
+                        )}
+                        <div className="absolute top-2 right-2">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-[10.5px] font-semibold">
+                            <CheckCircle2
+                              size={11}
+                              className="text-emerald-600"
+                            />{" "}
+                            Approved
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="p-3.5 space-y-2">
+                        <div className="min-w-0">
+                          <h3
+                            className="font-extrabold text-slate-900 text-sm truncate"
+                            title={item.template.name}
+                          >
+                            {item.template.name}
+                          </h3>
+                          <p className="text-xs text-slate-500 mt-0.5 truncate">
+                            Designer:{" "}
+                            <strong className="text-slate-700">
+                              {item.template.franchiseName ||
+                                activeFranchiseName ||
+                                "FBS designer - 1"}
+                            </strong>
+                          </p>
+                        </div>
+                        <div className="flex items-center justify-between text-xs border-t border-slate-100 pt-2.5">
+                          <span className="text-slate-400 text-[11px]">
+                            Updated{" "}
+                            {new Date(
+                              item.template.updatedAt ||
+                                item.template.createdAt ||
+                                Date.now(),
+                            ).toLocaleDateString()}
+                          </span>
+                          <span className="text-indigo-600 font-bold flex items-center gap-1">
+                            <Eye size={13} /> Open Proof
+                          </span>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ))}
+
+      {/* TAB 4: MY BANNER SUBMISSIONS */}
+      {activeTab === "my-banner-submissions" && (
+        <div
+          className={`space-y-5 ${threadSubmissionId !== null ? "max-w-6xl w-full" : "max-w-3xl"}`}
+        >
+          {threadSubmissionId !== null ? (
+            /* IN-PAGE EMBEDDED SUBMISSION DETAILS & THREAD (NO POPUP) */
+            <BannerSubmissionThreadModal
+              submissionId={threadSubmissionId}
+              isOpen={true}
+              onClose={() => {
+                setThreadSubmissionId(null);
+                loadMySubmissions(true);
+              }}
+              role="user"
+              currentUserName={clientUser?.name}
+              onStatusUpdated={(newStatus) => {
+                setMySubmissions((prev) =>
+                  prev.map((s) =>
+                    s.id === threadSubmissionId
+                      ? { ...s, status: newStatus }
+                      : s,
+                  ),
+                );
+              }}
+              onSubmissionUpdated={() => loadMySubmissions(true)}
+              embedded={true}
+            />
+          ) : (
+            <>
+              {/* Toolbar */}
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                <div className="relative flex-1 min-w-0">
+                  <Search
+                    size={15}
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
+                  />
+                  <Input
+                    type="text"
+                    placeholder="Search submission..."
+                    value={submissionSearch}
+                    onChange={(e) => setSubmissionSearch(e.target.value)}
+                    className="pl-9 h-10 bg-white shadow-sm"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-0.5 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+                    <Button
+                      variant={
+                        submissionListViewMode === "card" ? "default" : "ghost"
+                      }
+                      size="icon-sm"
+                      onClick={() => setSubmissionListViewMode("card")}
+                      title="Card View"
+                      className={
+                        submissionListViewMode === "card" ? "shadow-sm" : ""
+                      }
+                    >
+                      <LayoutGrid size={14} />
+                    </Button>
+                    <Button
+                      variant={
+                        submissionListViewMode === "list" ? "default" : "ghost"
+                      }
+                      size="icon-sm"
+                      onClick={() => setSubmissionListViewMode("list")}
+                      title="List View"
+                      className={
+                        submissionListViewMode === "list" ? "shadow-sm" : ""
+                      }
+                    >
+                      <List size={14} />
+                    </Button>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    disabled={refreshingMySubmissions || loadingMySubmissions}
+                    onClick={() => loadMySubmissions(true)}
+                    title="Refresh Submissions"
+                  >
+                    <RefreshCw
+                      size={14}
+                      className={
+                        refreshingMySubmissions
+                          ? "animate-spin text-indigo-600"
+                          : ""
+                      }
+                    />
+                    {refreshingMySubmissions ? "Refreshing..." : "Refresh"}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Submissions List / Grid */}
+              {loadingMySubmissions ? (
+                <Card className="p-10 text-center text-xs text-slate-500">
+                  Loading your submitted banner requests...
+                </Card>
+              ) : filteredMySubmissions.length === 0 ? (
+                <Card className="p-12 text-center text-slate-400 space-y-2">
+                  <FileImage size={40} className="mx-auto text-slate-300" />
+                  <p className="text-sm font-semibold text-slate-700">
+                    No banner submissions found.
+                  </p>
+                  <p className="text-xs">
+                    {submissionSearch
+                      ? "No submissions matched your search query."
+                      : "When you submit a banner customization request, it will appear here."}
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setActiveTab("banner-templates")}
+                    className="text-xs mt-2 font-semibold"
+                  >
+                    Browse Franchise Templates
+                  </Button>
+                </Card>
+              ) : submissionListViewMode === "list" ? (
+                <div className="space-y-2">
+                  {filteredMySubmissions.map((sub) => (
+                    <Card
+                      key={sub.id}
+                      onClick={() => setThreadSubmissionId(sub.id)}
+                      className="p-3.5 transition hover:border-indigo-300 hover:shadow-md cursor-pointer"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="font-bold text-slate-900 text-sm truncate">
+                              {sub.templateName}
+                            </h3>
+                            {getSubmissionStatusBadge(sub.status)}
+                          </div>
+                          <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                            Franchise:{" "}
+                            <strong className="text-slate-700">
+                              {sub.franchiseName ||
+                                activeFranchiseName ||
+                                "General"}
+                            </strong>
+                            {" · "}
+                            Updated{" "}
+                            {new Date(
+                              sub.updatedAt || sub.createdAt,
+                            ).toLocaleDateString()}
+                          </p>
+                        </div>
+                        <span className="text-indigo-600 font-bold text-xs flex items-center gap-1 flex-shrink-0">
+                          <Eye size={13} /> Open Proof
+                        </span>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {filteredMySubmissions.map((sub) => {
+                    return (
+                      <Card
+                        key={sub.id}
+                        onClick={() => setThreadSubmissionId(sub.id)}
+                        className="overflow-hidden transition hover:border-indigo-300 hover:shadow-md p-0 cursor-pointer"
+                      >
+                        {/* Small proof preview */}
+                        <div className="relative aspect-[16/10] bg-slate-50 border-b border-slate-100 flex items-center justify-center overflow-hidden">
+                          {sub.previewImageUrl ? (
+                            <img
+                              src={resolveImageUrl(sub.previewImageUrl)}
+                              alt={`${sub.templateName} preview`}
+                              className="w-full h-full object-contain bg-white"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center text-slate-300 gap-1">
+                              <FileImage size={28} />
+                              <span className="text-[10px] font-medium text-slate-400">
+                                No preview yet
+                              </span>
+                            </div>
+                          )}
+                          <div className="absolute top-2 right-2">
+                            {getSubmissionStatusBadge(sub.status)}
+                          </div>
+                        </div>
+
+                        <div className="p-3.5 space-y-2">
+                          <div className="min-w-0">
+                            <h3
+                              className="font-extrabold text-slate-900 text-sm truncate"
+                              title={sub.templateName}
+                            >
+                              {sub.templateName}
+                            </h3>
+                            <p className="text-xs text-slate-500 mt-0.5 truncate">
+                              Franchise:{" "}
+                              <strong className="text-slate-700">
+                                {sub.franchiseName ||
+                                  activeFranchiseName ||
+                                  "General"}
+                              </strong>
+                            </p>
+                          </div>
+                          <div className="flex items-center justify-between text-xs border-t border-slate-100 pt-2.5">
+                            <span className="text-slate-400 text-[11px]">
+                              Updated{" "}
+                              {new Date(
+                                sub.updatedAt || sub.createdAt,
+                              ).toLocaleDateString()}
+                            </span>
+                            <span className="text-indigo-600 font-bold flex items-center gap-1">
+                              <Eye size={13} /> Open Proof
+                            </span>
+                          </div>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </>
+          )}
         </div>
       )}
+
       {/* USER SUBMISSION DETAIL MODAL */}
       {selectedMySubmission && (
         <div
@@ -1901,7 +1917,11 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                   {getSubmissionStatusBadge(selectedMySubmission.status)}
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  {selectedMySubmission.widthPx} × {selectedMySubmission.heightPx} px · Submitted {new Date(selectedMySubmission.createdAt).toLocaleDateString()}
+                  {selectedMySubmission.widthPx} ×{" "}
+                  {selectedMySubmission.heightPx} px · Submitted{" "}
+                  {new Date(
+                    selectedMySubmission.createdAt,
+                  ).toLocaleDateString()}
                 </p>
               </div>
               <button
@@ -1928,7 +1948,10 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                   />
                 ) : (
                   <div className="py-8 text-center text-slate-400">
-                    <ImageIcon size={28} className="mx-auto mb-1 text-slate-600" />
+                    <ImageIcon
+                      size={28}
+                      className="mx-auto mb-1 text-slate-600"
+                    />
                     <p className="text-xs">No image preview available</p>
                   </div>
                 )}
@@ -1942,71 +1965,98 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
 
                 {loadingSubmissionDetail ? (
                   <div className="py-6 text-center space-y-2">
-                    <Loader2 size={18} className="animate-spin mx-auto text-indigo-600" />
+                    <Loader2
+                      size={18}
+                      className="animate-spin mx-auto text-indigo-600"
+                    />
                     <p className="text-xs text-slate-500">Loading details...</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {mySubmissionDetail?.submittedFields && mySubmissionDetail.submittedFields.length > 0 ? (
-                      mySubmissionDetail.submittedFields.map((f: any, idx: number) => {
-                        const isFile =
-                          f.fieldType === "file" ||
-                          (typeof f.value === "string" &&
-                            (f.value.startsWith("/uploads/") || f.value.match(/\.(png|jpg|jpeg|svg|webp|pdf)$/i)));
+                    {mySubmissionDetail?.submittedFields &&
+                    mySubmissionDetail.submittedFields.length > 0
+                      ? mySubmissionDetail.submittedFields.map(
+                          (f: any, idx: number) => {
+                            const isFile =
+                              f.fieldType === "file" ||
+                              (typeof f.value === "string" &&
+                                (f.value.startsWith("/uploads/") ||
+                                  f.value.match(
+                                    /\.(png|jpg|jpeg|svg|webp|pdf)$/i,
+                                  )));
 
-                        return (
-                          <div key={f.id || idx} className={`p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1 ${f.fieldType === "textarea" ? "sm:col-span-2" : ""}`}>
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
-                              {f.label}
-                            </label>
-                            {isFile ? (
-                              <a
-                                href={resolveImageUrl(String(f.value))}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800"
+                            return (
+                              <div
+                                key={f.id || idx}
+                                className={`p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1 ${f.fieldType === "textarea" ? "sm:col-span-2" : ""}`}
                               >
-                                <ExternalLink size={12} /> View Uploaded File
-                              </a>
-                            ) : (
-                              <p className="text-xs font-semibold text-slate-800 break-words">
-                                {f.value !== undefined && f.value !== null && String(f.value).trim() !== "" ? String(f.value) : "-"}
-                              </p>
-                            )}
-                          </div>
-                        );
-                      })
-                    ) : (
-                      Object.entries(selectedMySubmission.customizationValues || {})
-                        .filter(([key]) => !key.startsWith("_") && key !== "templateId" && key !== "franchiseId")
-                        .map(([key, val], idx) => {
-                          const isFile =
-                            typeof val === "string" &&
-                            (val.startsWith("/uploads/") || val.match(/\.(png|jpg|jpeg|svg|webp|pdf)$/i));
+                                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                                  {f.label}
+                                </label>
+                                {isFile ? (
+                                  <a
+                                    href={resolveImageUrl(String(f.value))}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800"
+                                  >
+                                    <ExternalLink size={12} /> View Uploaded
+                                    File
+                                  </a>
+                                ) : (
+                                  <p className="text-xs font-semibold text-slate-800 break-words">
+                                    {f.value !== undefined &&
+                                    f.value !== null &&
+                                    String(f.value).trim() !== ""
+                                      ? String(f.value)
+                                      : "-"}
+                                  </p>
+                                )}
+                              </div>
+                            );
+                          },
+                        )
+                      : Object.entries(
+                          selectedMySubmission.customizationValues || {},
+                        )
+                          .filter(
+                            ([key]) =>
+                              !key.startsWith("_") &&
+                              key !== "templateId" &&
+                              key !== "franchiseId",
+                          )
+                          .map(([key, val], idx) => {
+                            const isFile =
+                              typeof val === "string" &&
+                              (val.startsWith("/uploads/") ||
+                                val.match(/\.(png|jpg|jpeg|svg|webp|pdf)$/i));
 
-                          return (
-                            <div key={idx} className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1">
-                              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
-                                Field #{idx + 1}
-                              </label>
-                              {isFile ? (
-                                <a
-                                  href={resolveImageUrl(String(val))}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800"
-                                >
-                                  <ExternalLink size={12} /> View Uploaded File
-                                </a>
-                              ) : (
-                                <p className="text-xs font-semibold text-slate-800 break-words">
-                                  {String(val)}
-                                </p>
-                              )}
-                            </div>
-                          );
-                        })
-                    )}
+                            return (
+                              <div
+                                key={idx}
+                                className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1"
+                              >
+                                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                                  Field #{idx + 1}
+                                </label>
+                                {isFile ? (
+                                  <a
+                                    href={resolveImageUrl(String(val))}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 hover:text-indigo-800"
+                                  >
+                                    <ExternalLink size={12} /> View Uploaded
+                                    File
+                                  </a>
+                                ) : (
+                                  <p className="text-xs font-semibold text-slate-800 break-words">
+                                    {String(val)}
+                                  </p>
+                                )}
+                              </div>
+                            );
+                          })}
                   </div>
                 )}
               </div>
@@ -2018,7 +2068,12 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => handleDownloadBanner(selectedMySubmission.previewImageUrl, `${selectedMySubmission.templateName}.png`)}
+                  onClick={() =>
+                    handleDownloadBanner(
+                      selectedMySubmission.previewImageUrl,
+                      `${selectedMySubmission.templateName}.png`,
+                    )
+                  }
                   className="text-xs font-semibold gap-1.5 h-8 text-slate-700"
                 >
                   <Download size={13} />

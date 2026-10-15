@@ -736,14 +736,119 @@ export const bannerTemplateApi = {
       total: data?.total ?? (data?.submissions?.length || 0),
     };
   },
+
+  /**
+   * 15. GET /api/bannerSubmissions/:id/thread
+   */
+  async getBannerSubmissionThread(id: number): Promise<BannerSubmissionThread> {
+    const data = await request<BannerSubmissionThread>(`/api/bannerSubmissions/${id}/thread`, {
+      method: "GET",
+    });
+    return data;
+  },
+
+  /**
+   * 16. POST /api/bannerSubmissions/:id/messages
+   */
+  async sendBannerSubmissionMessage(
+    id: number,
+    message: string,
+    imageId?: number | null,
+    statusAction?: "approved" | "changes_requested" | string,
+  ): Promise<BannerSubmissionMessage> {
+    const data = await request<any>(`/api/bannerSubmissions/${id}/messages`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message,
+        imageId: imageId ?? null,
+        statusAction: statusAction || undefined,
+      }),
+    });
+    return data?.data || data;
+  },
+
+  /**
+   * 17. POST /api/bannerSubmissions/:id/files
+   */
+  async addBannerSubmissionFile(
+    id: number,
+    file: File,
+    fileName?: string,
+  ): Promise<BannerSubmissionFile> {
+    const formData = new FormData();
+    formData.append("file", file);
+    if (fileName) {
+      formData.append("fileName", fileName);
+    }
+    const data = await request<any>(`/api/bannerSubmissions/${id}/files`, {
+      method: "POST",
+      body: formData,
+    });
+    return data?.file || data;
+  },
+
+  /**
+   * 18. PUT /api/bannerSubmissions/:id/files/:fileId
+   */
+  async replaceBannerSubmissionFile(
+    id: number,
+    fileId: number,
+    file: File,
+    fileName?: string,
+  ): Promise<BannerSubmissionFile> {
+    const formData = new FormData();
+    formData.append("file", file);
+    if (fileName) {
+      formData.append("fileName", fileName);
+    }
+    const data = await request<any>(`/api/bannerSubmissions/${id}/files/${fileId}`, {
+      method: "PUT",
+      body: formData,
+    });
+    return data?.file || data;
+  },
 };
 
 export type BannerSubmissionStatus =
   | "Pending"
   | "In Review"
+  | "Changes Requested"
   | "Approved"
   | "Rejected"
   | "Completed";
+
+export interface BannerSubmissionFile {
+  id: number;
+  submissionId: number;
+  version: number;
+  fileUrl: string;
+  fileName?: string | null;
+  uploadedBy: number;
+  uploadedByName?: string | null;
+  sortOrder: number;
+  replacedFileId?: number | null;
+  createdAt: string;
+  isReplaced?: boolean;
+  history?: BannerSubmissionFile[];
+}
+
+export interface BannerSubmissionMessage {
+  id: number;
+  submissionId: number;
+  imageId?: number | null;
+  senderUserId: number;
+  senderRole: string;
+  senderName?: string | null;
+  message: string;
+  createdAt: string;
+}
+
+export interface BannerSubmissionThread {
+  submission: BannerSubmissionDetail;
+  files: BannerSubmissionFile[];
+  messages: BannerSubmissionMessage[];
+}
 
 export interface BannerSubmissionListItem {
   id: number;
