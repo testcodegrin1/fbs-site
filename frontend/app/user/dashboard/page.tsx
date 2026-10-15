@@ -615,8 +615,24 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
 
   return (
     <SidebarLayout
-      title="Client Review Portal"
-      subtitle="View, review, and submit feedback on your custom design proofs"
+      title={
+        activeTab === "banner-templates"
+          ? "Banner Templates"
+          : activeTab === "my-banner-submissions"
+            ? "My Banner Submissions"
+            : activeTab === "my-franchise"
+              ? "My Franchise"
+              : "Client Review Portal"
+      }
+      subtitle={
+        activeTab === "banner-templates"
+          ? "Browse and customize marketing banner templates for your franchise"
+          : activeTab === "my-banner-submissions"
+            ? "Track and manage your submitted banner requests"
+            : activeTab === "my-franchise"
+              ? "View franchise profile and assigned marketing assets"
+              : "View, review, and submit feedback on your custom design proofs"
+      }
       roleName="Client User"
       userEmail={clientUser.email}
       userName={clientUser.name}
@@ -966,22 +982,23 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                   onClick={() => setViewingTemplate(null)}
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 h-8 px-2.5 rounded-xl border-slate-200 cursor-pointer flex-shrink-0 bg-white shadow-2xs"
                 >
-                  <ArrowLeft size={14} /> Back to Projects
+                  <ArrowLeft size={14} /> Back to Banner Templates
                 </Button>
                 <span className="text-slate-300">|</span>
                 <span className="inline-flex items-center rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-1 text-[11px] font-bold whitespace-nowrap">
-                  Banner Details &amp; Approval
+                  Banner Template Details
                 </span>
-                <span className="hidden sm:inline-flex items-center rounded-xl bg-slate-50 text-slate-500 border border-slate-200 px-2.5 py-1 text-[11px] font-medium whitespace-nowrap">
+                {/* <span className="hidden sm:inline-flex items-center rounded-xl bg-slate-50 text-slate-500 border border-slate-200 px-2.5 py-1 text-[11px] font-medium whitespace-nowrap">
                   Anyone with this link can review
-                </span>
+                </span> */}
               </div>
 
               <div className="flex items-center gap-2 flex-shrink-0">
-                <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                {/* Commented out Approved badge on template view */}
+                {/* <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                   <CheckCircle2 size={12} className="text-emerald-600" />
                   Approved
-                </span>
+                </span> */}
                 <Button
                   type="button"
                   variant="outline"
@@ -994,7 +1011,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                     )
                   }
                   className="h-8 px-3 rounded-xl bg-white text-xs font-semibold flex-shrink-0"
-                  title="Refresh Proof Data"
+                  title="Refresh Template Data"
                 >
                   <RefreshCw
                     size={13}
@@ -1043,13 +1060,13 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
               {/* LEFT COLUMN: Project Banners */}
               <div className="lg:col-span-8 space-y-4">
                 <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-4">
-                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center justify-between gap-3">
                     <h3 className="text-[11px] font-bold uppercase tracking-[0.08em] text-indigo-600">
-                      PROJECT BANNERS ({viewingTemplate.images?.length || 1})
+                      BANNER TEMPLATE
                     </h3>
-                    <p className="text-[11px] text-slate-400 font-medium">
-                      Review &amp; approve on each banner
-                    </p>
+                    {/* <p className="text-[11px] text-slate-400 font-medium">
+                      Select variation &amp; preview
+                    </p> */}
                   </div>
 
                   {/* Banner proof container */}
@@ -1062,21 +1079,22 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                             {viewingTemplate.name}
                           </h4>
                           <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 text-[11px] font-semibold">
-                            <FileImage size={11} /> Individual Banner
+                            <FileImage size={11} /> Banner Template
                           </span>
-                          <span className="text-[11px] text-slate-400 font-mono font-semibold">
+                          {/* <span className="text-[11px] text-slate-400 font-mono font-semibold">
                             v{activeImageIndex + 1}
-                          </span>
+                          </span> */}
                         </div>
                         <p className="text-[12px] text-slate-500">
                           {viewingTemplate.description ||
-                            "Individual banner proof"}
+                            "Banner template preview"}
                         </p>
                       </div>
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      {/* Commented out Approved badge on banner preview */}
+                      {/* <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                         <CheckCircle2 size={11} className="text-emerald-600" />{" "}
                         Approved
-                      </span>
+                      </span> */}
                     </div>
 
                     {/* Banner Main Proof Preview */}
@@ -1120,23 +1138,24 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                                   size="sm"
                                   className="bg-white/95 hover:bg-white shadow cursor-pointer font-semibold text-xs gap-1.5"
                                 >
-                                  <Maximize2 size={14} /> Fullscreen Proof
+                                  <Maximize2 size={14} /> Fullscreen View
                                 </Button>
                               </a>
                             </div>
                           )}
 
-                        <span className="absolute top-2 right-2 bg-slate-900/85 text-white text-[9.5px] sm:text-[10px] font-mono font-bold px-1.5 sm:px-2 py-0.5 rounded-md shadow">
+                        {/* <span className="absolute top-2 right-2 bg-slate-900/85 text-white text-[9.5px] sm:text-[10px] font-mono font-bold px-1.5 sm:px-2 py-0.5 rounded-md shadow">
                           v{activeImageIndex + 1}
-                        </span>
+                        </span> */}
 
-                        <span className="absolute bottom-2 left-2 inline-flex items-center rounded-full bg-slate-100/90 text-slate-600 border border-slate-200 text-[8.5px] sm:text-[9px] font-bold px-1.5 sm:px-2 py-0.5 uppercase tracking-wide">
+                        {/* <span className="absolute bottom-2 left-2 inline-flex items-center rounded-full bg-slate-100/90 text-slate-600 border border-slate-200 text-[8.5px] sm:text-[9px] font-bold px-1.5 sm:px-2 py-0.5 uppercase tracking-wide">
                           WATERMARKED
-                        </span>
+                        </span> */}
                       </div>
                     </div>
 
-                    {/* Multiple images thumbnail row */}
+                    {/* Multiple images thumbnail row commented out - show only one image */}
+                    {/* 
                     {viewingTemplate.images &&
                       viewingTemplate.images.length > 1 && (
                         <div className="space-y-1.5 pt-1">
@@ -1168,6 +1187,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                           </div>
                         </div>
                       )}
+                    */}
 
                     {/* Banner Technical Specifications */}
                     <div className="pt-2 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
@@ -1201,7 +1221,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                           Format
                         </span>
                         <span className="font-bold text-slate-900 mt-0.5 block">
-                          High Res Proof
+                          Banner Template
                         </span>
                       </div>
                     </div>
@@ -1215,10 +1235,10 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                 <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-4">
                   <div>
                     <h3 className="font-bold text-slate-900 text-sm">
-                      Overall Feedback
+                      Customize Banner
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Share feedback or approve this banner proof as a whole.
+                      Fill in your franchise details to request this banner.
                     </p>
                   </div>
 
@@ -1368,37 +1388,54 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                       </div>
                     )}
 
-                    {/* Action buttons (matching Screenshot 2: Request Changes & Approve) */}
-                    <div className="grid grid-cols-2 gap-2 pt-1">
-                      <Button
-                        type="button"
-                        disabled={savingCustomization}
-                        variant="outline"
-                        onClick={() => handleSaveCustomization()}
-                        className="h-9 px-2 text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300 rounded-xl flex items-center justify-center gap-1.5"
-                      >
-                        <AlertCircle size={13} className="text-amber-600" />
-                        <span className="truncate">Request Changes</span>
-                      </Button>
+                    {/* Action button: Submit banner customization request */}
+                    <div className="pt-2">
+                      {/* Commented out proof review buttons:
+                      <div className="grid grid-cols-2 gap-2 pt-1">
+                        <Button
+                          type="button"
+                          disabled={savingCustomization}
+                          variant="outline"
+                          onClick={() => handleSaveCustomization()}
+                          className="h-9 px-2 text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300 rounded-xl flex items-center justify-center gap-1.5"
+                        >
+                          <AlertCircle size={13} className="text-amber-600" />
+                          <span className="truncate">Request Changes</span>
+                        </Button>
 
+                        <Button
+                          type="submit"
+                          disabled={savingCustomization}
+                          onClick={() => handleSaveCustomization()}
+                          className="h-9 px-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm flex items-center justify-center gap-1.5"
+                        >
+                          {savingCustomization ? (
+                            <Loader2 size={13} className="animate-spin" />
+                          ) : (
+                            <CheckCircle2 size={13} />
+                          )}
+                          <span className="truncate">Approve</span>
+                        </Button>
+                      </div>
+                      */}
                       <Button
                         type="submit"
                         disabled={savingCustomization}
-                        onClick={() => handleSaveCustomization()}
-                        className="h-9 px-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm flex items-center justify-center gap-1.5"
+                        className="w-full h-10 px-4 text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-sm flex items-center justify-center gap-2 cursor-pointer"
                       >
                         {savingCustomization ? (
-                          <Loader2 size={13} className="animate-spin" />
+                          <Loader2 size={14} className="animate-spin" />
                         ) : (
-                          <CheckCircle2 size={13} />
+                          <Send size={14} />
                         )}
-                        <span className="truncate">Approve</span>
+                        <span>Submit Banner Request</span>
                       </Button>
                     </div>
                   </form>
                 </div>
 
-                {/* Activity & Status History Card (Matching Screenshot 2) */}
+                {/* Commented out fake approval status history - actual submissions are tracked under 'My Banner Submissions' */}
+                {/* 
                 <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-3.5">
                   <div className="flex items-center justify-between">
                     <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wide flex items-center gap-1.5">
@@ -1417,9 +1454,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                     </span>
                   </div>
 
-                  {/* History Timeline */}
                   <div className="space-y-3 text-xs">
-                    {/* Item 1: Approved */}
                     <div className="relative pl-5 space-y-1">
                       <div className="absolute left-0 top-1 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-emerald-100" />
                       <span className="font-bold text-emerald-700 text-xs block">
@@ -1436,7 +1471,6 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                       </span>
                     </div>
 
-                    {/* Item 2: Pending Review */}
                     <div className="relative pl-5 space-y-1">
                       <div className="absolute left-0 top-1 w-2.5 h-2.5 rounded-full bg-indigo-500 ring-4 ring-indigo-100" />
                       <span className="font-bold text-indigo-700 text-xs block">
@@ -1454,6 +1488,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                     </div>
                   </div>
                 </div>
+                */}
               </div>
             </div>
           </div>
@@ -1469,7 +1504,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                 />
                 <Input
                   type="text"
-                  placeholder="Search project..."
+                  placeholder="Search banner templates..."
                   value={bannerSearch}
                   onChange={(e) => setBannerSearch(e.target.value)}
                   className="pl-9 h-10 bg-white shadow-sm text-xs"
@@ -1507,7 +1542,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                       true,
                     )
                   }
-                  title="Refresh Projects"
+                  title="Refresh Banner Templates"
                 >
                   <RefreshCw
                     size={14}
@@ -1523,7 +1558,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
             {/* Banner Content Grid / List */}
             {loadingBanners ? (
               <Card className="p-10 text-center text-xs text-slate-500">
-                Loading your template proofs...
+                Loading banner templates...
               </Card>
             ) : bannerDisplayItems.length === 0 ? (
               <Card className="p-12 text-center text-slate-400 space-y-2">
@@ -1555,13 +1590,14 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                           <h3 className="font-bold text-slate-900 text-sm truncate">
                             {item.template.name}
                           </h3>
-                          <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          {/* Commented out Approved badge on template */}
+                          {/* <span className="inline-flex items-center gap-1 text-[10.5px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                             <CheckCircle2
                               size={11}
                               className="text-emerald-600"
                             />{" "}
                             Approved
-                          </span>
+                          </span> */}
                         </div>
                         <p className="text-[11px] text-slate-500 truncate mt-0.5">
                           Designer:{" "}
@@ -1580,7 +1616,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                         </p>
                       </div>
                       <span className="text-indigo-600 font-bold text-xs flex items-center gap-1 flex-shrink-0">
-                        <Eye size={13} /> Open Proof
+                        <Eye size={13} /> Customize Banner
                       </span>
                     </div>
                   </Card>
@@ -1603,7 +1639,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                       }}
                       className="overflow-hidden transition hover:border-indigo-300 hover:shadow-md p-0 cursor-pointer"
                     >
-                      {/* Small proof preview */}
+                      {/* Banner image preview */}
                       <div className="relative aspect-[16/10] bg-slate-50 border-b border-slate-100 flex items-center justify-center overflow-hidden">
                         {effectiveImage ? (
                           <img
@@ -1619,7 +1655,8 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                             </span>
                           </div>
                         )}
-                        <div className="absolute top-2 right-2">
+                        {/* Commented out Approved badge on banner template card */}
+                        {/* <div className="absolute top-2 right-2">
                           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-[10.5px] font-semibold">
                             <CheckCircle2
                               size={11}
@@ -1627,7 +1664,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                             />{" "}
                             Approved
                           </span>
-                        </div>
+                        </div> */}
                       </div>
 
                       <div className="p-3.5 space-y-2">
@@ -1657,7 +1694,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                             ).toLocaleDateString()}
                           </span>
                           <span className="text-indigo-600 font-bold flex items-center gap-1">
-                            <Eye size={13} /> Open Proof
+                            <Eye size={13} /> Customize Banner
                           </span>
                         </div>
                       </div>
