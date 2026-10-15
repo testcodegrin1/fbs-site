@@ -894,7 +894,8 @@ export function BannerSubmissionThreadModal({
                 )}
                 */}
 
-              {/* Only visible if staff/admin */}
+              {/* Only visible if staff/admin - COMMENTED OUT FOR ADMIN SIDE PER REQUEST */}
+              {/* 
               {isStaff && !isReadOnly && (
                 <div className="pt-2 space-y-3">
                   <span className="text-xs font-bold text-indigo-700 flex items-center gap-1.5">
@@ -989,6 +990,7 @@ export function BannerSubmissionThreadModal({
                   )}
                 </div>
               )}
+              */}
             </div>
 
             {/* SUBMITTED FORM FIELDS (Collapsible) */}
@@ -1573,9 +1575,10 @@ export function BannerSubmissionThreadModal({
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Overall Feedback + Activity History (4 cols) */}
+          {/* RIGHT COLUMN: Activity History (Overall Feedback card commented out as requested) */}
           <div className="lg:col-span-4 space-y-4">
-            {/* Overall Feedback Card (Matching Screenshot 2) */}
+            {/* Overall Feedback Card commented out as requested */}
+            {/* 
             <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-4">
               <div>
                 <h3 className="font-bold text-slate-900 text-sm">
@@ -1621,6 +1624,7 @@ export function BannerSubmissionThreadModal({
                 </Button>
               </div>
             </div>
+            */}
 
             {/* Activity & Status History Card (Matching Screenshot 2) */}
             <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-3.5">
