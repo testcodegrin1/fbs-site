@@ -145,6 +145,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
   >({});
   const [loadingCustomization, setLoadingCustomization] = useState(false);
   const [savingCustomization, setSavingCustomization] = useState(false);
+  const [customizationQuantity, setCustomizationQuantity] = useState<number>(1);
   const [customizationNotice, setCustomizationNotice] = useState<{
     type: "success" | "error";
     message: string;
@@ -250,6 +251,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
     if (!viewingTemplate) {
       setCustomFieldValues({});
       setCustomFieldFiles({});
+      setCustomizationQuantity(1);
       setCustomizationNotice(null);
       return;
     }
@@ -263,8 +265,17 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
         const cust = await bannerTemplateApi.getBannerCustomization(
           viewingTemplate.id,
         );
-        if (isMounted && cust?.customizationValues) {
-          setCustomFieldValues(cust.customizationValues);
+        if (isMounted) {
+          if (cust?.customizationValues) {
+            setCustomFieldValues(cust.customizationValues);
+          }
+          const savedQty = Number(
+            cust?.quantity ||
+              cust?.customizationValues?.quantity ||
+              cust?.customizationValues?._quantity ||
+              1,
+          );
+          setCustomizationQuantity(savedQty > 0 ? savedQty : 1);
         }
       } catch (err) {
         console.warn("No existing banner customization found:", err);
@@ -328,8 +339,11 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
       const res = await bannerTemplateApi.submitBannerCustomization({
         templateId: viewingTemplate.id,
         franchiseId: userFranchiseId ? Number(userFranchiseId) : undefined,
+        quantity: customizationQuantity,
         values: {
           ...customFieldValues,
+          quantity: customizationQuantity,
+          _quantity: customizationQuantity,
           _selectedImageIndex: activeImageIndex,
           _selectedImageUrl: currentImage?.imageUrl || "",
           _bannerTitle: variantTitle,
@@ -1384,6 +1398,57 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                       </div>
                     )}
 
+                    {/* Quantity of Banners Required */}
+                    <div className="pt-2 border-t border-slate-100 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[11.5px] font-bold text-slate-700 flex items-center gap-1.5">
+                          <span>Quantity (Number of Banners)</span>
+                          <span className="text-red-500 font-bold">*</span>
+                        </label>
+                        <span className="text-[10.5px] text-slate-400">
+                          Total prints / banners needed
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setCustomizationQuantity((prev) =>
+                              Math.max(1, prev - 1),
+                            )
+                          }
+                          className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center transition cursor-pointer text-sm"
+                        >
+                          -
+                        </button>
+                        <Input
+                          type="number"
+                          min={1}
+                          value={customizationQuantity}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value, 10);
+                            setCustomizationQuantity(
+                              isNaN(val) || val < 1 ? 1 : val,
+                            );
+                          }}
+                          className="h-8 w-20 text-center font-bold text-xs bg-slate-50/50 focus:bg-white"
+                          required
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setCustomizationQuantity((prev) => prev + 1)
+                          }
+                          className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center transition cursor-pointer text-sm"
+                        >
+                          +
+                        </button>
+                        <span className="text-xs text-slate-500 font-medium ml-1">
+                          {customizationQuantity > 1 ? "Banners" : "Banner"}
+                        </span>
+                      </div>
+                    </div>
+
                     {/* Action button: Submit banner customization request */}
                     <div className="pt-2">
                       {/* Commented out proof review buttons:
@@ -1842,6 +1907,11 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                                 "General"}
                             </strong>
                             {" · "}
+                            Qty:{" "}
+                            <strong className="text-indigo-600 font-bold font-mono">
+                              {sub.quantity || 1}
+                            </strong>
+                            {" · "}
                             Updated{" "}
                             {new Date(
                               sub.updatedAt || sub.createdAt,
@@ -1897,6 +1967,11 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                                 {sub.franchiseName ||
                                   activeFranchiseName ||
                                   "General"}
+                              </strong>
+                              {" · "}
+                              Qty:{" "}
+                              <strong className="text-indigo-600 font-bold font-mono">
+                                {sub.quantity || 1}
                               </strong>
                             </p>
                           </div>

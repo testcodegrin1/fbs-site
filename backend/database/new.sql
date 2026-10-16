@@ -42,3 +42,7 @@ CREATE TABLE IF NOT EXISTS banner_submission_messages (
 -- If status or updated_at are not present or need widening in banner_customizations:
 -- ALTER TABLE banner_customizations ADD COLUMN IF NOT EXISTS status VARCHAR(50) NOT NULL DEFAULT 'Pending';
 -- ALTER TABLE banner_customizations ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;
+
+-- 4. Quantity column on banner_customizations (Number of banners requested by user)
+ALTER TABLE banner_customizations ADD COLUMN IF NOT EXISTS quantity INT NOT NULL DEFAULT 1;
+

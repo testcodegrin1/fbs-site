@@ -600,12 +600,14 @@ export const bannerTemplateApi = {
     let vals: Record<string, any>;
     let fls: Record<string, File> | undefined;
     let fId: number | undefined;
+    let qty: number | undefined;
 
     if (typeof templateIdOrOptions === "object" && templateIdOrOptions !== null) {
       tId = templateIdOrOptions.templateId;
       vals = templateIdOrOptions.values;
       fls = templateIdOrOptions.files;
       fId = templateIdOrOptions.franchiseId;
+      qty = (templateIdOrOptions as any).quantity;
     } else {
       tId = templateIdOrOptions;
       vals = values || {};
@@ -617,6 +619,9 @@ export const bannerTemplateApi = {
     formData.append("templateId", String(tId));
     if (fId) {
       formData.append("franchiseId", String(fId));
+    }
+    if (qty) {
+      formData.append("quantity", String(qty));
     }
     formData.append("customizationValues", JSON.stringify(vals));
 
@@ -653,11 +658,15 @@ export const bannerTemplateApi = {
     values: Record<string, any>;
     files?: Record<string, File>;
     franchiseId?: number;
+    quantity?: number;
   }): Promise<{ message: string; submissionId?: number; submission: any }> {
     const formData = new FormData();
     formData.append("templateId", String(options.templateId));
     if (options.franchiseId) {
       formData.append("franchiseId", String(options.franchiseId));
+    }
+    if (options.quantity) {
+      formData.append("quantity", String(options.quantity));
     }
     formData.append("customizationValues", JSON.stringify(options.values));
 
@@ -858,6 +867,7 @@ export interface BannerSubmissionListItem {
   heightPx: number;
   orientation: "landscape" | "portrait";
   previewImageUrl?: string | null;
+  quantity?: number;
   userId: number;
   userName: string;
   userEmail: string;
@@ -878,6 +888,7 @@ export interface BannerSubmissionDetail {
   dimensionsLabel?: string;
   previewImageUrl?: string | null;
   images?: BannerTemplateImage[];
+  quantity?: number;
   userId: number;
   userName: string;
   userEmail: string;

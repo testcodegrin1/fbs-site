@@ -425,6 +425,9 @@ export function BannerSubmissionThreadModal({
                 {submission.dimensionsLabel}
               </span>
             )}
+            <span className="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 text-[11px]">
+              Qty: {submission?.quantity || 1}
+            </span>
             {!isStaff && (
               <span>
                 By:{" "}
@@ -1247,6 +1250,13 @@ export function BannerSubmissionThreadModal({
                 </span>
               </>
             )}
+            <span className="text-slate-300">·</span>
+            <span>
+              Qty:{" "}
+              <strong className="text-indigo-600 font-bold font-mono">
+                {submission.quantity || 1}
+              </strong>
+            </span>
           </p>
         </div>
 

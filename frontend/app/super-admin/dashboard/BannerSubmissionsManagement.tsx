@@ -528,6 +528,8 @@ export function BannerSubmissionsManagement() {
                                   </span>
                                   <span className="text-slate-300">·</span>
                                   <span className="capitalize">{order.orientation}</span>
+                                  <span className="text-slate-300">·</span>
+                                  <span className="font-bold text-indigo-600">Qty: {order.quantity || 1}</span>
                                 </div>
                               </div>
                             </div>
@@ -692,6 +694,15 @@ export function BannerSubmissionsManagement() {
                                 </span>
                               </div>
                               <div>
+                                Quantity:{" "}
+                                <strong className="text-slate-800">
+                                  {selectedSubmission.quantity || 1}{" "}
+                                  {Number(selectedSubmission.quantity || 1) > 1
+                                    ? "Banners"
+                                    : "Banner"}
+                                </strong>
+                              </div>
+                              <div>
                                 Uploaded by: <strong className="text-slate-600">{file.uploadedBy || "Client"}</strong>
                               </div>
                             </div>
@@ -772,6 +783,15 @@ export function BannerSubmissionsManagement() {
                             <span className="font-mono text-indigo-600 font-bold">
                               {selectedSubmission.widthPx} × {selectedSubmission.heightPx} px
                             </span>
+                          </div>
+                          <div>
+                            Quantity:{" "}
+                            <strong className="text-slate-800">
+                              {selectedSubmission.quantity || 1}{" "}
+                              {Number(selectedSubmission.quantity || 1) > 1
+                                ? "Banners"
+                                : "Banner"}
+                            </strong>
                           </div>
                         </div>
 

@@ -418,6 +418,20 @@ bannerTemplatesRouter.post(
       const franchiseId = Number(
         req.body.franchiseId ?? req.body.franchise_id ?? user.franchiseId,
       );
+      const quantity = Math.max(
+        1,
+        Number(
+          req.body.quantity ??
+            req.body.qty ??
+            values.quantity ??
+            values._quantity ??
+            values.qty ??
+            1,
+        ),
+      );
+      values.quantity = quantity;
+      values._quantity = quantity;
+
       const result = await saveBannerCustomization(
         templateId,
         user.id,
@@ -510,6 +524,20 @@ bannerTemplatesRouter.post(
       const franchiseId = Number(
         req.body.franchiseId ?? req.body.franchise_id ?? user.franchiseId,
       );
+      const quantity = Math.max(
+        1,
+        Number(
+          req.body.quantity ??
+            req.body.qty ??
+            values.quantity ??
+            values._quantity ??
+            values.qty ??
+            1,
+        ),
+      );
+      values.quantity = quantity;
+      values._quantity = quantity;
+
       const result = await saveBannerCustomization(
         templateId,
         user.id,

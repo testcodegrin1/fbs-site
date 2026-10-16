@@ -701,6 +701,18 @@ export async function saveBannerCustomization(
     }
   }
 
+  const qty = Math.max(
+    1,
+    Number(
+      customizationValues.quantity ??
+        customizationValues._quantity ??
+        customizationValues.qty ??
+        1,
+    ),
+  );
+  customizationValues.quantity = qty;
+  customizationValues._quantity = qty;
+
   const valuesJson = JSON.stringify(customizationValues);
   const fId = franchiseId || template.franchiseId || null;
 
@@ -717,15 +729,25 @@ export async function saveBannerCustomization(
         custId = Number(existing[0].id);
         try {
           await execute(
-            `UPDATE banner_customizations SET customization_values = ?, franchise_id = ?, status = 'Pending', updated_at = NOW() WHERE id = ?`,
-            [valuesJson, fId, custId],
+            `UPDATE banner_customizations SET customization_values = ?, franchise_id = ?, status = 'Pending', quantity = ?, updated_at = NOW() WHERE id = ?`,
+            [valuesJson, fId, qty, custId],
           );
         } catch (colErr: any) {
-          if (colErr.code === "ER_BAD_FIELD_ERROR" || String(colErr.message).includes("Unknown column")) {
-            await execute(
-              `UPDATE banner_customizations SET customization_values = ?, franchise_id = ?, updated_at = NOW() WHERE id = ?`,
-              [valuesJson, fId, custId],
-            );
+          if (
+            colErr.code === "ER_BAD_FIELD_ERROR" ||
+            String(colErr.message).includes("Unknown column")
+          ) {
+            try {
+              await execute(
+                `UPDATE banner_customizations SET customization_values = ?, franchise_id = ?, status = 'Pending', updated_at = NOW() WHERE id = ?`,
+                [valuesJson, fId, custId],
+              );
+            } catch (statusErr: any) {
+              await execute(
+                `UPDATE banner_customizations SET customization_values = ?, franchise_id = ?, updated_at = NOW() WHERE id = ?`,
+                [valuesJson, fId, custId],
+              );
+            }
           } else {
             throw colErr;
           }
@@ -736,6 +758,7 @@ export async function saveBannerCustomization(
           templateId,
           userId,
           franchiseId: fId,
+          quantity: qty,
           customizationValues,
           status: "Pending",
           createdAt: new Date().toISOString(),
@@ -747,17 +770,28 @@ export async function saveBannerCustomization(
     // Insert new submission record
     try {
       const [res] = await execute<ResultSetHeader>(
-        `INSERT INTO banner_customizations (template_id, user_id, franchise_id, customization_values, status) VALUES (?, ?, ?, ?, 'Pending')`,
-        [templateId, userId, fId, valuesJson],
+        `INSERT INTO banner_customizations (template_id, user_id, franchise_id, customization_values, status, quantity) VALUES (?, ?, ?, ?, 'Pending', ?)`,
+        [templateId, userId, fId, valuesJson, qty],
       );
       custId = res.insertId;
     } catch (colErr: any) {
-      if (colErr.code === "ER_BAD_FIELD_ERROR" || String(colErr.message).includes("Unknown column")) {
-        const [res] = await execute<ResultSetHeader>(
-          `INSERT INTO banner_customizations (template_id, user_id, franchise_id, customization_values) VALUES (?, ?, ?, ?)`,
-          [templateId, userId, fId, valuesJson],
-        );
-        custId = res.insertId;
+      if (
+        colErr.code === "ER_BAD_FIELD_ERROR" ||
+        String(colErr.message).includes("Unknown column")
+      ) {
+        try {
+          const [res] = await execute<ResultSetHeader>(
+            `INSERT INTO banner_customizations (template_id, user_id, franchise_id, customization_values, status) VALUES (?, ?, ?, ?, 'Pending')`,
+            [templateId, userId, fId, valuesJson],
+          );
+          custId = res.insertId;
+        } catch (statusErr: any) {
+          const [res] = await execute<ResultSetHeader>(
+            `INSERT INTO banner_customizations (template_id, user_id, franchise_id, customization_values) VALUES (?, ?, ?, ?)`,
+            [templateId, userId, fId, valuesJson],
+          );
+          custId = res.insertId;
+        }
       } else {
         throw colErr;
       }
@@ -768,6 +802,7 @@ export async function saveBannerCustomization(
       templateId,
       userId,
       franchiseId: fId,
+      quantity: qty,
       customizationValues,
       status: "Pending",
       createdAt: new Date().toISOString(),
@@ -933,6 +968,9 @@ export async function listBannerSubmissions(filter?: {
         heightPx: Number(r.height_px || 1080),
         orientation: r.orientation || "landscape",
         previewImageUrl,
+        quantity: Number(
+          r.quantity ?? vals.quantity ?? vals._quantity ?? vals.qty ?? 1,
+        ),
         userId: Number(r.user_id),
         userName: r.user_name || "Unknown User",
         userEmail: r.user_email || "",
@@ -1068,6 +1106,9 @@ export async function getBannerSubmissionById(
       dimensionsLabel: `${r.width_px || 1920} × ${r.height_px || 1080} px`,
       previewImageUrl,
       images,
+      quantity: Number(
+        r.quantity ?? vals.quantity ?? vals._quantity ?? vals.qty ?? 1,
+      ),
       userId: Number(r.user_id),
       userName: r.user_name || "Unknown User",
       userEmail: r.user_email || "",

@@ -108,6 +108,7 @@ export type BannerCustomizationModel = {
   templateId: number;
   userId: number;
   franchiseId?: number | null;
+  quantity?: number;
   customizationValues: Record<string, any>;
   status?: string;
   createdAt: string;
@@ -163,6 +164,7 @@ export type BannerSubmissionDetailModel = {
   dimensionsLabel?: string;
   previewImageUrl?: string | null;
   images?: BannerTemplateImageModel[];
+  quantity?: number;
   userId: number;
   userName: string;
   userEmail: string;
