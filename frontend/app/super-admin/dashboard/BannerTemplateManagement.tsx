@@ -529,6 +529,37 @@ export function BannerTemplateManagement() {
     }));
   }
 
+  // Handle Orientation Change: Swap width & height if needed when toggling landscape <-> portrait
+  function handleOrientationChange(newOrientation: "landscape" | "portrait") {
+    setFormData((prev) => {
+      let w = Number(prev.width_px) || (newOrientation === "portrait" ? 1080 : 1920);
+      let h = Number(prev.height_px) || (newOrientation === "portrait" ? 1920 : 1080);
+
+      if (prev.orientation !== newOrientation) {
+        if (newOrientation === "portrait" && w > h) {
+          const temp = w;
+          w = h;
+          h = temp;
+        } else if (newOrientation === "landscape" && h > w) {
+          const temp = w;
+          w = h;
+          h = temp;
+        } else if (w !== h) {
+          const temp = w;
+          w = h;
+          h = temp;
+        }
+      }
+
+      return {
+        ...prev,
+        orientation: newOrientation,
+        width_px: w,
+        height_px: h,
+      };
+    });
+  }
+
   // Add additional image slot
   function handleAddImageSlot(file?: File) {
     if (file) {
@@ -856,111 +887,120 @@ export function BannerTemplateManagement() {
                 type="file"
                 accept="image/png, image/jpeg, image/jpg, image/webp"
                 className="hidden"
+                multiple
                 onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleAddImageSlot(file);
+                  const files = Array.from(e.target.files || []);
+                  files.forEach((file) => handleAddImageSlot(file));
+                  e.target.value = "";
                 }}
               />
-
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => handleAddImageSlot()}
-                className="h-8 text-xs gap-1 border-slate-200 font-semibold bg-white text-slate-700"
-              >
-                <Plus size={13} /> Add Path
-              </Button>
             </div>
           </div>
 
           {formData.images.length === 0 ? (
-            <div className="p-6 border-2 border-dashed border-slate-200 rounded-xl text-center text-xs text-slate-400 italic">
-              No additional images attached to this template.
-            </div>
+            <label
+              htmlFor={`${inputIdPrefix}-add-multi-file`}
+              className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-50/50 rounded-xl cursor-pointer transition text-center group"
+            >
+              <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 group-hover:scale-105 transition-transform mb-3">
+                <Upload size={22} className="text-slate-600" />
+              </div>
+              <p className="text-xs font-bold text-slate-800">
+                Click to upload Banner Image
+              </p>
+              <p className="text-[11px] text-slate-400 mt-1">
+                PNG, JPG, WebP supported
+              </p>
+            </label>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {formData.images.map((img, idx) => {
                 const effectiveSlotSrc =
                   img.previewUrl ||
                   (img.imageUrl ? resolveImageUrl(img.imageUrl) : "");
+                const fileName =
+                  img.file?.name ||
+                  (img.imageUrl ? img.imageUrl.split("/").pop() : `Image #${idx + 1}`);
 
                 return (
                   <div
                     key={idx}
-                    className="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-200 shadow-2xs"
+                    className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs"
                   >
-                    <span className="text-[11px] font-extrabold text-slate-400 w-5 text-center flex-shrink-0">
-                      #{idx + 1}
-                    </span>
-
-                    {/* Thumbnail Preview */}
-                    <div className="w-14 h-12 flex-shrink-0">
+                    {/* Banner Image Preview */}
+                    <div className="w-full h-56 sm:h-64 bg-slate-900/5 relative flex items-center justify-center p-2">
                       <ImagePreviewWithFallback
                         src={effectiveSlotSrc}
                         rawPath={img.imageUrl}
-                        alt={`Attachment ${idx}`}
-                        containerClassName="w-14 h-12 rounded-lg bg-slate-50 border border-slate-200 overflow-hidden flex items-center justify-center relative"
+                        alt={fileName || `Banner image ${idx + 1}`}
+                        containerClassName="w-full h-full flex items-center justify-center"
+                        className="max-h-full max-w-full object-contain"
                       />
                     </div>
 
-                    {/* Path Input */}
-                    <div className="flex-1 min-w-0">
-                      <Input
-                        type="text"
-                        placeholder="/uploads/banners/..."
-                        value={img.imageUrl}
-                        onChange={(e) =>
-                          handleUpdateImageUrl(idx, e.target.value)
-                        }
-                        className="h-8 text-xs font-mono"
-                      />
-                    </div>
+                    {/* Action Bar below image */}
+                    <div className="p-3 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-[11px] font-extrabold text-slate-400 bg-white border border-slate-200 rounded px-1.5 py-0.5">
+                          #{idx + 1}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-700 truncate max-w-[200px] sm:max-w-[320px]">
+                          {fileName}
+                        </span>
+                      </div>
 
-                    {/* Upload file directly to slot */}
-                    <label
-                      htmlFor={`${inputIdPrefix}-slot-${idx}`}
-                      className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-lg cursor-pointer flex-shrink-0"
-                      title="Upload / Replace image file"
-                    >
-                      <Upload size={14} />
-                    </label>
-                    <input
-                      id={`${inputIdPrefix}-slot-${idx}`}
-                      type="file"
-                      accept="image/png, image/jpeg, image/jpg, image/webp"
-                      className="hidden"
-                      onChange={(e) => handleAdditionalImageFileChange(idx, e)}
-                    />
+                      <div className="flex items-center gap-2">
+                        {/* Replace image */}
+                        <label
+                          htmlFor={`${inputIdPrefix}-slot-${idx}`}
+                          className="px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold cursor-pointer border border-slate-200 flex items-center gap-1.5 transition-colors shadow-2xs"
+                          title="Replace image file"
+                        >
+                          <Upload size={13} />
+                          <span>Replace</span>
+                        </label>
+                        <input
+                          id={`${inputIdPrefix}-slot-${idx}`}
+                          type="file"
+                          accept="image/png, image/jpeg, image/jpg, image/webp"
+                          className="hidden"
+                          onChange={(e) => handleAdditionalImageFileChange(idx, e)}
+                        />
 
-                    {/* Sort Controls */}
-                    <div className="flex items-center gap-0.5 flex-shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => handleMoveImageUp(idx)}
-                        disabled={idx === 0}
-                        className="p-1.5 text-slate-400 hover:text-slate-700 disabled:opacity-20 rounded"
-                        title="Move Up"
-                      >
-                        <ArrowUp size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleMoveImageDown(idx)}
-                        disabled={idx === formData.images.length - 1}
-                        className="p-1.5 text-slate-400 hover:text-slate-700 disabled:opacity-20 rounded"
-                        title="Move Down"
-                      >
-                        <ArrowDown size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImageSlot(idx)}
-                        className="p-1.5 text-red-400 hover:text-red-600 rounded ml-1"
-                        title="Remove Image"
-                      >
-                        <Trash2 size={13} />
-                      </button>
+                        {/* Sort Controls (if multiple images) */}
+                        {formData.images.length > 1 && (
+                          <div className="flex items-center gap-0.5">
+                            <button
+                              type="button"
+                              onClick={() => handleMoveImageUp(idx)}
+                              disabled={idx === 0}
+                              className="p-1.5 text-slate-400 hover:text-slate-700 disabled:opacity-20 rounded"
+                              title="Move Up"
+                            >
+                              <ArrowUp size={13} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleMoveImageDown(idx)}
+                              disabled={idx === formData.images.length - 1}
+                              className="p-1.5 text-slate-400 hover:text-slate-700 disabled:opacity-20 rounded"
+                              title="Move Down"
+                            >
+                              <ArrowDown size={13} />
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Remove Image */}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImageSlot(idx)}
+                          className="p-1.5 text-red-500 hover:bg-red-50 rounded transition-colors"
+                          title="Remove Image"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );
@@ -1916,6 +1956,7 @@ export function BannerTemplateManagement() {
                       type="number"
                       min={1}
                       value={formData.width_px}
+                      onWheel={(e) => e.currentTarget.blur()}
                       onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
@@ -1934,6 +1975,7 @@ export function BannerTemplateManagement() {
                       type="number"
                       min={1}
                       value={formData.height_px}
+                      onWheel={(e) => e.currentTarget.blur()}
                       onChange={(e) =>
                         setFormData((prev) => ({
                           ...prev,
@@ -1951,10 +1993,9 @@ export function BannerTemplateManagement() {
                     <select
                       value={formData.orientation}
                       onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          orientation: e.target.value as "landscape" | "portrait",
-                        }))
+                        handleOrientationChange(
+                          e.target.value as "landscape" | "portrait"
+                        )
                       }
                       className="w-full h-9 px-2 bg-white border border-slate-200 rounded-lg text-xs font-medium"
                     >
@@ -1968,8 +2009,8 @@ export function BannerTemplateManagement() {
               {/* Row 4: Image Management & Upload Section */}
               {renderImageUploadSection("create")}
 
-              {/* Row 4.5: Custom Input Fields Builder */}
-              {renderCustomInputFieldsSection()}
+              {/* Row 4.5: Custom Input Fields Builder (Only shown once an image is uploaded) */}
+              {formData.images.length > 0 && renderCustomInputFieldsSection()}
 
               {/* Row 5: Active Status */}
               <div className="flex items-center gap-3 pt-1">
@@ -2152,12 +2193,14 @@ export function BannerTemplateManagement() {
                     </Label>
                     <Input
                       type="number"
+                      min={1}
                       value={formData.width_px}
+                      onWheel={(e) => e.currentTarget.blur()}
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
+                        setFormData((prev) => ({
+                          ...prev,
                           width_px: Number(e.target.value),
-                        })
+                        }))
                       }
                       className="h-9 text-xs"
                     />
@@ -2168,12 +2211,14 @@ export function BannerTemplateManagement() {
                     </Label>
                     <Input
                       type="number"
+                      min={1}
                       value={formData.height_px}
+                      onWheel={(e) => e.currentTarget.blur()}
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
+                        setFormData((prev) => ({
+                          ...prev,
                           height_px: Number(e.target.value),
-                        })
+                        }))
                       }
                       className="h-9 text-xs"
                     />
@@ -2185,14 +2230,11 @@ export function BannerTemplateManagement() {
                     <select
                       value={formData.orientation}
                       onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          orientation: e.target.value as
-                            | "landscape"
-                            | "portrait",
-                        })
+                        handleOrientationChange(
+                          e.target.value as "landscape" | "portrait"
+                        )
                       }
-                      className="w-full h-9 px-2 bg-white border border-slate-200 rounded-lg text-xs"
+                      className="w-full h-9 px-2 bg-white border border-slate-200 rounded-lg text-xs font-medium"
                     >
                       <option value="landscape">Landscape</option>
                       <option value="portrait">Portrait</option>
@@ -2204,8 +2246,8 @@ export function BannerTemplateManagement() {
               {/* Image Upload & Edit Section */}
               {renderImageUploadSection("edit")}
 
-              {/* Custom Input Fields Builder */}
-              {renderCustomInputFieldsSection()}
+              {/* Custom Input Fields Builder (Only shown once an image is uploaded) */}
+              {formData.images.length > 0 && renderCustomInputFieldsSection()}
 
               {/* Active Toggle */}
               <div className="flex items-center gap-3">

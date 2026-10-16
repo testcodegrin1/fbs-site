@@ -541,19 +541,8 @@ export function BannerSubmissionsManagement() {
                                 </span>
                               </div>
 
-                              <div className="flex items-center gap-1">
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setThreadSubmissionId(order.id);
-                                  }}
-                                  title="View / Edit Revisions Thread"
-                                  className="p-1 rounded-md text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition cursor-pointer"
-                                >
-                                  <Edit3 size={12} />
-                                </button>
-                                {order.previewImageUrl && (
+                              {order.previewImageUrl && (
+                                <div className="flex items-center gap-1">
                                   <button
                                     type="button"
                                     onClick={(e) => {
@@ -568,8 +557,8 @@ export function BannerSubmissionsManagement() {
                                   >
                                     <Download size={12} />
                                   </button>
-                                )}
-                              </div>
+                                </div>
+                              )}
                             </div>
                           </div>
                         );
@@ -587,67 +576,12 @@ export function BannerSubmissionsManagement() {
               <>
                 {/* Header Card */}
                 <Card className="rounded-2xl border-slate-200/90 bg-white shadow-xs">
-                  <CardHeader className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 p-5 space-y-0">
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2.5 flex-wrap">
-                        <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
-                          {detailData?.templateName || selectedSubmission.templateName}
-                        </h2>
-                        {detailData && getStatusBadge(detailData.status)}
-                      </div>
-                      <p className="text-xs text-slate-500 mt-1.5 flex items-center gap-1.5 flex-wrap">
-                        <span>
-                          Client:{" "}
-                          <strong className="text-slate-800">
-                            {detailData?.userName || selectedSubmission.userName}
-                          </strong>
-                          {(detailData?.userEmail || selectedSubmission.userEmail) && (
-                            <span className="text-slate-400 ml-1">
-                              ({detailData?.userEmail || selectedSubmission.userEmail})
-                            </span>
-                          )}
-                        </span>
-                        {selectedSubmission.franchiseName && (
-                          <>
-                            <span>·</span>
-                            <span className="inline-flex items-center gap-1">
-                              <Building2 size={11} className="text-slate-400" />
-                              {selectedSubmission.franchiseName}
-                            </span>
-                          </>
-                        )}
-                        <span>·</span>
-                        <span className="font-mono text-indigo-600 font-bold">
-                          {selectedSubmission.widthPx} × {selectedSubmission.heightPx} px
-                        </span>
-                      </p>
-                    </div>
-
-                    {/* Right Header Actions */}
-                    <div className="flex items-center gap-2 flex-wrap flex-shrink-0">
-                      {selectedSubmission.previewImageUrl && (
-                        <Button
-                          variant="outline"
-                          size="icon-sm"
-                          className="portal-action"
-                          onClick={() =>
-                            handleDownloadBanner(
-                              selectedSubmission.previewImageUrl,
-                              `${selectedSubmission.templateName}.png`,
-                            )
-                          }
-                         title="Download" aria-label="Download">
-                      <Download size={15} aria-hidden="true" />
-                    </Button>
-                      )}
-
-                      <Button
-                        size="sm"
-                        className="h-9 gap-1.5 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-2xs cursor-pointer"
-                        onClick={() => setThreadSubmissionId(selectedSubmission.id)}
-                      >
-                        <Edit3 size={13} /> View / Edit Banner
-                      </Button>
+                  <CardHeader className="p-4 sm:p-5 space-y-0">
+                    <div className="flex items-center gap-2.5 flex-wrap">
+                      <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
+                        {detailData?.templateName || selectedSubmission.templateName}
+                      </h2>
+                      {detailData && getStatusBadge(detailData.status)}
                     </div>
                   </CardHeader>
                 </Card>
@@ -732,19 +666,45 @@ export function BannerSubmissionsManagement() {
                               {detailData && getStatusBadge(detailData.status)}
                             </div>
 
-                            <div className="text-[11px] text-slate-400 truncate">
-                              Uploaded by: <strong className="text-slate-600">{file.uploadedBy || "Client"}</strong>
+                            <div className="space-y-1 text-[11px] text-slate-500 pt-1">
+                              <div>
+                                Client:{" "}
+                                <strong className="text-slate-800">
+                                  {detailData?.userName || selectedSubmission.userName}
+                                </strong>
+                                {(detailData?.userEmail || selectedSubmission.userEmail) && (
+                                  <span className="text-slate-400 ml-1">
+                                    ({detailData?.userEmail || selectedSubmission.userEmail})
+                                  </span>
+                                )}
+                              </div>
+                              {selectedSubmission.franchiseName && (
+                                <div className="flex items-center gap-1">
+                                  <Building2 size={11} className="text-slate-400" />
+                                  <span>Franchise: </span>
+                                  <strong className="text-slate-700">{selectedSubmission.franchiseName}</strong>
+                                </div>
+                              )}
+                              <div>
+                                Dimensions:{" "}
+                                <span className="font-mono text-indigo-600 font-bold">
+                                  {selectedSubmission.widthPx} × {selectedSubmission.heightPx} px
+                                </span>
+                              </div>
+                              <div>
+                                Uploaded by: <strong className="text-slate-600">{file.uploadedBy || "Client"}</strong>
+                              </div>
                             </div>
 
-                            {/* Bottom Actions */}
-                            <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-100">
-                              <button
-                                type="button"
+                            {/* Bottom Actions - Button */}
+                            <div className="pt-2 border-t border-slate-100">
+                              <Button
+                                size="sm"
+                                className="h-8 gap-1.5 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-2xs cursor-pointer"
                                 onClick={() => setThreadSubmissionId(selectedSubmission.id)}
-                                className="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1.5 cursor-pointer"
                               >
-                                <Edit3 size={13} /> Edit Banner / Revisions
-                              </button>
+                                <Edit3 size={13} /> View / Edit Banner
+                              </Button>
                             </div>
                           </Card>
                         );
@@ -788,18 +748,42 @@ export function BannerSubmissionsManagement() {
                           {detailData && getStatusBadge(detailData.status)}
                         </div>
 
-                        <div className="text-[11px] text-slate-400">
-                          Dimensions: {selectedSubmission.widthPx} × {selectedSubmission.heightPx} px
+                        <div className="space-y-1 text-[11px] text-slate-500 pt-1">
+                          <div>
+                            Client:{" "}
+                            <strong className="text-slate-800">
+                              {detailData?.userName || selectedSubmission.userName}
+                            </strong>
+                            {(detailData?.userEmail || selectedSubmission.userEmail) && (
+                              <span className="text-slate-400 ml-1">
+                                ({detailData?.userEmail || selectedSubmission.userEmail})
+                              </span>
+                            )}
+                          </div>
+                          {selectedSubmission.franchiseName && (
+                            <div className="flex items-center gap-1">
+                              <Building2 size={11} className="text-slate-400" />
+                              <span>Franchise: </span>
+                              <strong className="text-slate-700">{selectedSubmission.franchiseName}</strong>
+                            </div>
+                          )}
+                          <div>
+                            Dimensions:{" "}
+                            <span className="font-mono text-indigo-600 font-bold">
+                              {selectedSubmission.widthPx} × {selectedSubmission.heightPx} px
+                            </span>
+                          </div>
                         </div>
 
-                        <div className="flex items-center justify-between text-xs pt-2 border-t border-slate-100">
-                          <button
-                            type="button"
+                        {/* Bottom Actions - Button */}
+                        <div className="pt-2 border-t border-slate-100">
+                          <Button
+                            size="sm"
+                            className="h-8 gap-1.5 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-2xs cursor-pointer"
                             onClick={() => setThreadSubmissionId(selectedSubmission.id)}
-                            className="text-xs font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1.5 cursor-pointer"
                           >
-                            <Edit3 size={13} /> Edit Banner / Revisions
-                          </button>
+                            <Edit3 size={13} /> View / Edit Banner
+                          </Button>
                         </div>
                       </Card>
                     </div>
@@ -812,32 +796,7 @@ export function BannerSubmissionsManagement() {
                   )}
                 </Card>
 
-                {/* Submitted Form Fields Card */}
-                {detailData?.submittedFields && detailData.submittedFields.length > 0 && (
-                  <Card className="p-5 space-y-3 rounded-2xl border-slate-200/90 bg-white shadow-xs">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                        <FileText size={14} className="text-indigo-600" />
-                        Submitted Form Fields ({detailData.submittedFields.length})
-                      </h3>
-                    </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-                      {detailData.submittedFields.map((f, fIdx) => (
-                        <div
-                          key={f.id || fIdx}
-                          className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs space-y-1"
-                        >
-                          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
-                            {f.label}
-                          </label>
-                          <p className="font-semibold text-slate-800 break-words">
-                            {String(f.value ?? "-")}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </Card>
-                )}
+
               </>
             ) : (
               <div className="py-20 text-center text-slate-400 space-y-2 border border-dashed border-slate-200 rounded-2xl bg-white">

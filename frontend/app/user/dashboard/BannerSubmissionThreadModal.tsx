@@ -425,13 +425,15 @@ export function BannerSubmissionThreadModal({
                 {submission.dimensionsLabel}
               </span>
             )}
-            <span>
-              By:{" "}
-              <strong className="text-slate-800">
-                {submission?.userName || "Client"}
-              </strong>{" "}
-              ({submission?.userEmail || "-"})
-            </span>
+            {!isStaff && (
+              <span>
+                By:{" "}
+                <strong className="text-slate-800">
+                  {submission?.userName || "Client"}
+                </strong>{" "}
+                ({submission?.userEmail || "-"})
+              </span>
+            )}
             <span>
               Submitted:{" "}
               <span className="text-slate-700 font-medium">
@@ -472,17 +474,6 @@ export function BannerSubmissionThreadModal({
           </div>
         ) : (
           <>
-            {/* Status Alert Banner */}
-            {isReadOnly && (
-              <div className="p-3.5 rounded-2xl bg-slate-100 border border-slate-200/80 flex items-center gap-2.5 text-xs text-slate-700">
-                <Lock size={16} className="text-slate-500 flex-shrink-0" />
-                <span>
-                  This banner submission is <strong>{submission.status}</strong>
-                  . File replacements and messaging are finalized and locked in
-                  read-only mode.
-                </span>
-              </div>
-            )}
 
             {statusMessage && (
               <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-semibold flex items-center gap-2">
@@ -515,8 +506,10 @@ export function BannerSubmissionThreadModal({
                   </p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {files.map((file, idx) => {
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                  {/* Left Column: Photo Tiles */}
+                  <div className="space-y-4">
+                    {files.map((file, idx) => {
                     const tileImgUrl = resolveImageUrl(file.fileUrl);
                     const isUpdating = replacingFileId === file.id;
                     const tileMessages = messages.filter(
@@ -554,15 +547,6 @@ export function BannerSubmissionThreadModal({
                             className="w-full h-full object-contain"
                           />
 
-                          <div className="absolute top-2 left-2 z-10">
-                            <span className="px-2 py-0.5 rounded-md text-[9px] font-extrabold tracking-wide shadow-sm bg-indigo-600 text-white">
-                              {submission.status === "Changes Requested"
-                                ? "CHANGES REQUESTED"
-                                : submission.status === "Approved"
-                                  ? "APPROVED"
-                                  : "PENDING REVIEW"}
-                            </span>
-                          </div>
 
                           {/* Hover Actions */}
                           <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2 backdrop-blur-2xs">
@@ -801,6 +785,35 @@ export function BannerSubmissionThreadModal({
                       </div>
                     );
                   })}
+                  </div>
+
+                  {/* Right Column: Submitted Form Fields / Changes */}
+                  {submission.submittedFields && submission.submittedFields.length > 0 && (
+                    <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3 shadow-xs">
+                      <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                        <span className="text-xs font-extrabold uppercase tracking-wide text-slate-800 flex items-center gap-1.5">
+                          <FileText size={14} className="text-indigo-600" />
+                          Submitted Form Fields ({submission.submittedFields.length})
+                        </span>
+                      </div>
+
+                      <div className="space-y-2.5">
+                        {submission.submittedFields.map((f, fIdx) => (
+                          <div
+                            key={f.id || fIdx}
+                            className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs space-y-1"
+                          >
+                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                              {f.label}
+                            </label>
+                            <p className="font-semibold text-slate-800 break-words text-xs sm:text-sm">
+                              {String(f.value ?? "-")}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -995,49 +1008,7 @@ export function BannerSubmissionThreadModal({
               */}
             </div>
 
-            {/* SUBMITTED FORM FIELDS (Collapsible) */}
-            {submission.submittedFields &&
-              submission.submittedFields.length > 0 && (
-                <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-extrabold uppercase tracking-wide text-slate-700 flex items-center gap-1.5">
-                      <FileText size={14} className="text-indigo-600" />
-                      Submitted Form Fields ({submission.submittedFields.length}
-                      )
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setShowCustomFields((prev) => !prev)}
-                      className="text-xs text-indigo-600 font-semibold hover:underline flex items-center gap-1 cursor-pointer"
-                    >
-                      {showCustomFields ? "Hide Fields" : "View Fields"}
-                      {showCustomFields ? (
-                        <ChevronUp size={14} />
-                      ) : (
-                        <ChevronDown size={14} />
-                      )}
-                    </button>
-                  </div>
 
-                  {showCustomFields && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2 border-t border-slate-100">
-                      {submission.submittedFields.map((f, fIdx) => (
-                        <div
-                          key={f.id || fIdx}
-                          className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs space-y-1"
-                        >
-                          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
-                            {f.label}
-                          </label>
-                          <p className="font-semibold text-slate-800 break-words">
-                            {String(f.value ?? "-")}
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
 
             {/* ========================================================================= */}
             {/* OVERALL NOTES & CONVERSATION SECTION - COMMENTED OUT FOR BOTH USER & ADMIN */}
@@ -1140,36 +1111,15 @@ export function BannerSubmissionThreadModal({
       </div>
 
       {/* Modal Footer */}
-      <div className="px-5 sm:px-6 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-between gap-3 flex-shrink-0">
-        <div>
-          {submission?.previewImageUrl && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                handleDownloadBanner(
-                  submission.previewImageUrl!,
-                  `${submission.templateName || "banner"}.png`,
-                )
-              }
-              className="text-xs font-semibold gap-1.5 h-8 text-slate-700"
-            >
-              <Download size={13} />
-              <span>Download Preview</span>
-            </Button>
-          )}
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={onClose}
-            className="text-xs font-semibold h-8 px-4 cursor-pointer"
-          >
-            {embedded ? "Back to Submissions" : "Close"}
-          </Button>
-        </div>
+      <div className="px-5 sm:px-6 py-3.5 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3 flex-shrink-0">
+        <Button
+          variant="secondary"
+          size="sm"
+          onClick={onClose}
+          className="text-xs font-semibold h-8 px-4 cursor-pointer"
+        >
+          {embedded ? "Back to Submissions" : "Close"}
+        </Button>
       </div>
     </div>
   );
@@ -1242,13 +1192,6 @@ export function BannerSubmissionThreadModal({
             >
               <ArrowLeft size={14} /> Back to My Submissions
             </Button>
-            <span className="text-slate-300">|</span>
-            <span className="inline-flex items-center rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-1 text-[11px] font-bold whitespace-nowrap">
-              Banner Details &amp; Approval
-            </span>
-            <span className="hidden sm:inline-flex items-center rounded-xl bg-slate-50 text-slate-500 border border-slate-200 px-2.5 py-1 text-[11px] font-medium whitespace-nowrap">
-              Anyone with this link can review
-            </span>
           </div>
 
           <div className="flex items-center gap-2 flex-shrink-0">
@@ -1329,16 +1272,10 @@ export function BannerSubmissionThreadModal({
                       <h4 className="font-extrabold text-[15px] text-slate-900 truncate">
                         {activeFile?.fileName || submission.templateName}
                       </h4>
-                      <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 text-[11px] font-semibold">
-                        <FileImage size={11} /> Individual Banner
-                      </span>
                       <span className="text-[11px] text-slate-400 font-mono font-semibold">
                         v{activeFile?.version || 1}
                       </span>
                     </div>
-                    <p className="text-[12px] text-slate-500">
-                      Individual banner proof
-                    </p>
                   </div>
                   {getStatusBadge(submission.status)}
                 </div>
@@ -1386,10 +1323,6 @@ export function BannerSubmissionThreadModal({
                     <span className="absolute top-2 right-2 bg-slate-900/85 text-white text-[9.5px] sm:text-[10px] font-mono font-bold px-1.5 sm:px-2 py-0.5 rounded-md shadow">
                       v{activeFile?.version || 1}
                     </span>
-
-                    <span className="absolute bottom-2 left-2 inline-flex items-center rounded-full bg-slate-100/90 text-slate-600 border border-slate-200 text-[8.5px] sm:text-[9px] font-bold px-1.5 sm:px-2 py-0.5 uppercase tracking-wide">
-                      WATERMARKED
-                    </span>
                   </div>
                 </div>
 
@@ -1425,198 +1358,59 @@ export function BannerSubmissionThreadModal({
                   </div>
                 )}
 
-                {/* Banner Review Action section */}
-                <div className="pt-3 border-t border-slate-100 space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-slate-800 flex items-center gap-1.5">
-                      <CheckCircle2 size={13} className="text-indigo-600" />{" "}
-                      Banner Review Action
-                    </span>
-                    {getStatusBadge(submission.status)}
-                  </div>
-
-                  <Textarea
-                    rows={2}
-                    value={
-                      activeFile
-                        ? tileReplies[activeFile.id] || ""
-                        : overallNote
-                    }
-                    onChange={(e) => {
-                      if (activeFile) {
-                        setTileReplies((prev) => ({
-                          ...prev,
-                          [activeFile.id]: e.target.value,
-                        }));
-                      } else {
-                        setOverallNote(e.target.value);
-                      }
-                    }}
-                    disabled={isReadOnly || sendingReplyKey !== null || sendingOverallNote}
-                    placeholder={
-                      isReadOnly
-                        ? `This banner proof has already been ${normStatus === "completed" ? "completed" : "approved"}.`
-                        : `Feedback or change requests for "${submission.templateName}"...`
-                    }
-                    className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition resize-none bg-white disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
-                  />
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button
-                      type="button"
-                      disabled={isReadOnly || sendingReplyKey !== null || sendingOverallNote}
-                      variant="outline"
-                      onClick={() =>
-                        handleSendMessage(
-                          activeFile ? activeFile.id : null,
-                          "changes_requested",
-                        )
-                      }
-                      className="h-9 px-2 text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-amber-50"
-                    >
-                      <AlertCircle size={13} className="text-amber-600" />
-                      <span className="truncate">Request Changes</span>
-                    </Button>
-
-                    <Button
-                      type="button"
-                      disabled={isReadOnly || sendingReplyKey !== null || sendingOverallNote}
-                      onClick={() =>
-                        handleSendMessage(
-                          activeFile ? activeFile.id : null,
-                          "approved",
-                        )
-                      }
-                      className="h-9 px-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-emerald-600"
-                    >
-                      {sendingReplyKey !== null || sendingOverallNote ? (
-                        <Loader2 size={13} className="animate-spin" />
-                      ) : (
-                        <CheckCircle2 size={13} />
-                      )}
-                      <span className="truncate">
-                        {isReadOnly ? "Approved" : "Approve Banner"}
-                      </span>
-                    </Button>
-                  </div>
-
-                  {/* Replace Photo action - Enabled for Admin / Staff */}
-                  {isStaff && activeFile && !isReadOnly && (
-                    <div className="pt-2">
-                      <label
-                        className={`w-full h-8.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition ${
-                          replacingFileId === activeFile.id
-                            ? "opacity-50 pointer-events-none"
-                            : ""
-                        }`}
-                      >
-                        {replacingFileId === activeFile.id ? (
-                          <Loader2 size={13} className="animate-spin" />
-                        ) : (
-                          <RefreshCw size={13} className="text-indigo-600" />
-                        )}
-                        <span>
-                          {replacingFileId === activeFile.id
-                            ? "Uploading replacement..."
-                            : "Upload / Replace Photo"}
-                        </span>
-                        <input
-                          type="file"
-                          accept="image/png, image/jpeg, image/webp"
-                          className="hidden"
-                          onChange={(e) => {
-                            const f = e.target.files?.[0];
-                            if (f && activeFile)
-                              handleReplacePhoto(activeFile.id, f);
-                          }}
-                        />
-                      </label>
-                    </div>
-                  )}
-                </div>
-
-                {/* Submitted Form Fields (Collapsible) */}
-                {(() => {
-                  const customVals =
-                    (submission as any).customizationValues ||
-                    (submission as any).customFieldValues ||
-                    {};
-                  const fieldKeys = Object.keys(customVals).filter(
-                    (k) => !k.startsWith("_"),
-                  );
-                  if (fieldKeys.length === 0) return null;
-
-                  return (
-                    <div className="pt-2 border-t border-slate-100">
-                      <button
-                        type="button"
-                        onClick={() => setShowCustomFields(!showCustomFields)}
-                        className="w-full flex items-center justify-between text-xs font-bold text-slate-700 p-2 rounded-xl bg-slate-50 hover:bg-slate-100 transition"
-                      >
-                        <span className="flex items-center gap-1.5">
-                          <FileText size={13} className="text-indigo-600" />
-                          Submitted Form Fields ({fieldKeys.length})
-                        </span>
-                        {showCustomFields ? (
-                          <ChevronUp size={14} />
-                        ) : (
-                          <ChevronDown size={14} />
-                        )}
-                      </button>
-
-                      {showCustomFields && (
-                        <div className="mt-2.5 p-3 rounded-xl bg-white border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                          {fieldKeys.map((k) => (
-                            <div
-                              key={k}
-                              className="p-2 rounded-lg bg-slate-50 border border-slate-100"
-                            >
-                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">
-                                {k}
-                              </span>
-                              <span className="font-semibold text-slate-800 mt-0.5 block truncate">
-                                {String(customVals[k])}
-                              </span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })()}
               </div>
             </div>
           </div>
 
-          {/* RIGHT COLUMN: Activity History (Overall Feedback card commented out as requested) */}
+          {/* RIGHT COLUMN: Review Actions, Submitted Fields, Activity History */}
           <div className="lg:col-span-4 space-y-4">
-            {/* Overall Feedback Card commented out as requested */}
-            {/* 
-            <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-4">
-              <div>
-                <h3 className="font-bold text-slate-900 text-sm">
-                  Overall Feedback
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Share feedback or approve this banner proof as a whole.
-                </p>
+            {/* Banner Review Action Card */}
+            <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-3">
+              <div className="flex items-center justify-between text-xs pb-1 border-b border-slate-100">
+                <span className="font-bold text-slate-800 flex items-center gap-1.5">
+                  <CheckCircle2 size={14} className="text-indigo-600" />
+                  Banner Review Action
+                </span>
               </div>
 
               <Textarea
-                rows={4}
-                value={overallNote}
-                onChange={(e) => setOverallNote(e.target.value)}
-                placeholder="Type feedback or required changes for this banner..."
-                className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition resize-none bg-white"
+                rows={3}
+                value={
+                  activeFile
+                    ? tileReplies[activeFile.id] || ""
+                    : overallNote
+                }
+                onChange={(e) => {
+                  if (activeFile) {
+                    setTileReplies((prev) => ({
+                      ...prev,
+                      [activeFile.id]: e.target.value,
+                    }));
+                  } else {
+                    setOverallNote(e.target.value);
+                  }
+                }}
+                disabled={isReadOnly || sendingReplyKey !== null || sendingOverallNote}
+                placeholder={
+                  isReadOnly
+                    ? `This banner proof has already been ${normStatus === "completed" ? "completed" : "approved"}.`
+                    : `Feedback or change requests for "${submission.templateName}"...`
+                }
+                className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition resize-none bg-white disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
               />
 
               <div className="grid grid-cols-2 gap-2">
                 <Button
                   type="button"
-                  disabled={sendingOverallNote}
+                  disabled={isReadOnly || sendingReplyKey !== null || sendingOverallNote}
                   variant="outline"
-                  onClick={() => handleSendMessage(null, "changes_requested")}
-                  className="h-9 px-2 text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer"
+                  onClick={() =>
+                    handleSendMessage(
+                      activeFile ? activeFile.id : null,
+                      "changes_requested",
+                    )
+                  }
+                  className="h-9 px-2 text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-300 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-amber-50"
                 >
                   <AlertCircle size={13} className="text-amber-600" />
                   <span className="truncate">Request Changes</span>
@@ -1624,20 +1418,99 @@ export function BannerSubmissionThreadModal({
 
                 <Button
                   type="button"
-                  disabled={sendingOverallNote}
-                  onClick={() => handleSendMessage(null, "approved")}
-                  className="h-9 px-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                  disabled={isReadOnly || sendingReplyKey !== null || sendingOverallNote}
+                  onClick={() =>
+                    handleSendMessage(
+                      activeFile ? activeFile.id : null,
+                      "approved",
+                    )
+                  }
+                  className="h-9 px-2 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-sm flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-emerald-600"
                 >
-                  {sendingOverallNote ? (
+                  {sendingReplyKey !== null || sendingOverallNote ? (
                     <Loader2 size={13} className="animate-spin" />
                   ) : (
                     <CheckCircle2 size={13} />
                   )}
-                  <span className="truncate">Approve</span>
+                  <span className="truncate">
+                    {isReadOnly ? "Approved" : "Approve Banner"}
+                  </span>
                 </Button>
               </div>
+
+              {/* Replace Photo action - Enabled for Admin / Staff */}
+              {isStaff && activeFile && !isReadOnly && (
+                <div className="pt-1">
+                  <label
+                    className={`w-full h-8.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition ${
+                      replacingFileId === activeFile.id
+                        ? "opacity-50 pointer-events-none"
+                        : ""
+                    }`}
+                  >
+                    {replacingFileId === activeFile.id ? (
+                      <Loader2 size={13} className="animate-spin" />
+                    ) : (
+                      <RefreshCw size={13} className="text-indigo-600" />
+                    )}
+                    <span>
+                      {replacingFileId === activeFile.id
+                        ? "Uploading replacement..."
+                        : "Upload / Replace Photo"}
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/png, image/jpeg, image/webp"
+                      className="hidden"
+                      onChange={(e) => {
+                        const f = e.target.files?.[0];
+                        if (f && activeFile)
+                          handleReplacePhoto(activeFile.id, f);
+                      }}
+                    />
+                  </label>
+                </div>
+              )}
             </div>
-            */}
+
+            {/* Submitted Form Fields (Right Column) */}
+            {(() => {
+              const customVals =
+                (submission as any).customizationValues ||
+                (submission as any).customFieldValues ||
+                {};
+              const fieldKeys = Object.keys(customVals).filter(
+                (k) => !k.startsWith("_"),
+              );
+              if (fieldKeys.length === 0) return null;
+
+              return (
+                <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3 shadow-sm">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <span className="text-xs font-extrabold uppercase tracking-wide text-slate-800 flex items-center gap-1.5">
+                      <FileText size={14} className="text-indigo-600" />
+                      Submitted Form Fields ({fieldKeys.length})
+                    </span>
+                  </div>
+
+                  <div className="space-y-2 text-xs">
+                    {fieldKeys.map((k) => (
+                      <div
+                        key={k}
+                        className="p-2.5 rounded-xl bg-slate-50 border border-slate-100"
+                      >
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">
+                          {k}
+                        </span>
+                        <span className="font-semibold text-slate-800 mt-0.5 block break-words">
+                          {String(customVals[k])}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              );
+            })()}
 
             {/* Activity & Status History Card (Matching Screenshot 2) */}
             <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-3.5">
