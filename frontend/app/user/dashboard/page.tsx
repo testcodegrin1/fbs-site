@@ -653,6 +653,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
       navItems={navItems}
       activeTab={activeTab}
       onTabChange={setActiveTab}
+      contentAlign="left"
     >
       {/* TAB 1: DESIGN PROOFS */}
       {activeTab === "projects" && (
@@ -748,7 +749,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                         </h3>
                         <StatusBadge status={p.status} />
                       </div>
-                      <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                      <p className="text-[13px] text-slate-500 truncate mt-0.5">
                         Designer:{" "}
                         <strong className="text-slate-700">
                           {p.designerName || "Designer"}
@@ -758,7 +759,10 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                       </p>
                     </div>
                     {p.shareToken && (
-                      <span className="portal-action" title="Open Proof"><Eye size={15} aria-hidden="true" /><span className="sr-only">Open Proof</span></span>
+                      <span className="portal-action" title="Open Proof">
+                        <Eye size={15} aria-hidden="true" />
+                        <span className="sr-only">Open Proof</span>
+                      </span>
                     )}
                   </div>
                 </Card>
@@ -818,11 +822,14 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                         </p>
                       </div>
                       <div className="flex items-center justify-between text-xs border-t border-slate-100 pt-2.5">
-                        <span className="text-slate-400 text-[11px]">
+                        <span className="text-slate-400 text-[13px]">
                           Updated {new Date(p.updatedAt).toLocaleDateString()}
                         </span>
                         {p.shareToken && (
-                          <span className="portal-action" title="Open Proof"><Eye size={15} aria-hidden="true" /><span className="sr-only">Open Proof</span></span>
+                          <span className="portal-action" title="Open Proof">
+                            <Eye size={15} aria-hidden="true" />
+                            <span className="sr-only">Open Proof</span>
+                          </span>
                         )}
                       </div>
                     </div>
@@ -933,7 +940,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                       <h3 className="text-2xl font-black text-slate-900 tracking-tight">
                         {franchiseDetail?.name || activeFranchiseName}
                       </h3>
-                      <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                      <span className="inline-flex items-center gap-1 text-[13px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
                         <Building2 size={12} /> Franchise
                       </span>
                     </div>
@@ -954,7 +961,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                     <p className="text-xs font-bold text-slate-900 mt-1 truncate">
                       {clientUser?.name || "Client User"}
                     </p>
-                    <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                    <p className="text-[13px] text-slate-500 truncate mt-0.5">
                       {clientUser?.email}
                     </p>
                   </div>
@@ -966,7 +973,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                     <p className="text-xs font-bold text-slate-900 mt-1">
                       {totalBannerImages} Templates
                     </p>
-                    <p className="text-[11px] text-indigo-600 font-medium mt-0.5">
+                    <p className="text-[13px] text-indigo-600 font-medium mt-0.5">
                       Available for customization
                     </p>
                   </div>
@@ -995,17 +1002,17 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                   <ArrowLeft size={14} /> Back to Banner Templates
                 </Button>
                 <span className="text-slate-300">|</span>
-                <span className="inline-flex items-center rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-1 text-[11px] font-bold whitespace-nowrap">
+                <span className="inline-flex items-center rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-1 text-[13px] font-bold whitespace-nowrap">
                   Banner Template Details
                 </span>
-                {/* <span className="hidden sm:inline-flex items-center rounded-xl bg-slate-50 text-slate-500 border border-slate-200 px-2.5 py-1 text-[11px] font-medium whitespace-nowrap">
+                {/* <span className="hidden sm:inline-flex items-center rounded-xl bg-slate-50 text-slate-500 border border-slate-200 px-2.5 py-1 text-[13px] font-medium whitespace-nowrap">
                   Anyone with this link can review
                 </span> */}
               </div>
 
               <div className="flex items-center gap-2 flex-shrink-0">
                 {/* Commented out Approved badge on template view */}
-                {/* <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                {/* <span className="inline-flex items-center gap-1 text-[13px] font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                   <CheckCircle2 size={12} className="text-emerald-600" />
                   Approved
                 </span> */}
@@ -1070,11 +1077,11 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
               {/* LEFT COLUMN: Project Banners */}
               <div className="lg:col-span-8 space-y-4">
                 <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-4">
-                    <div className="flex items-center justify-between gap-3">
-                    <h3 className="text-[11px] font-bold uppercase tracking-[0.08em] text-indigo-600">
+                  <div className="flex items-center justify-between gap-3">
+                    <h3 className="text-[13px] font-bold uppercase tracking-[0.08em] text-indigo-600">
                       BANNER TEMPLATE
                     </h3>
-                    {/* <p className="text-[11px] text-slate-400 font-medium">
+                    {/* <p className="text-[13px] text-slate-400 font-medium">
                       Select variation &amp; preview
                     </p> */}
                   </div>
@@ -1088,10 +1095,10 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                           <h4 className="font-extrabold text-[15px] text-slate-900 truncate">
                             {viewingTemplate.name}
                           </h4>
-                          <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 text-[11px] font-semibold">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 text-[13px] font-semibold">
                             <FileImage size={11} /> Banner Template
                           </span>
-                          {/* <span className="text-[11px] text-slate-400 font-mono font-semibold">
+                          {/* <span className="text-[13px] text-slate-400 font-mono font-semibold">
                             v{activeImageIndex + 1}
                           </span> */}
                         </div>
@@ -1101,7 +1108,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                         </p>
                       </div>
                       {/* Commented out Approved badge on banner preview */}
-                      {/* <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      {/* <span className="inline-flex items-center gap-1 text-[13px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                         <CheckCircle2 size={11} className="text-emerald-600" />{" "}
                         Approved
                       </span> */}
@@ -1169,7 +1176,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                     {viewingTemplate.images &&
                       viewingTemplate.images.length > 1 && (
                         <div className="space-y-1.5 pt-1">
-                          <span className="text-[11px] font-bold text-slate-600 block">
+                          <span className="text-[13px] font-bold text-slate-600 block">
                             Switch Banner Variation:
                           </span>
                           <div className="flex items-center gap-2 overflow-x-auto pb-1">
@@ -1521,7 +1528,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                       <span className="font-bold text-emerald-700 text-xs block">
                         Approved
                       </span>
-                      <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-150 text-slate-700 text-[11px] leading-relaxed">
+                      <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-150 text-slate-700 text-[13px] leading-relaxed">
                         Approved photo.
                       </div>
                       <span className="text-[10px] text-slate-400 block">
@@ -1537,7 +1544,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                       <span className="font-bold text-indigo-700 text-xs block">
                         Pending Review
                       </span>
-                      <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-150 text-slate-700 text-[11px] leading-relaxed">
+                      <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-150 text-slate-700 text-[13px] leading-relaxed">
                         Initial banner uploaded
                       </div>
                       <span className="text-[10px] text-slate-400 block">
@@ -1660,7 +1667,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                             Approved
                           </span> */}
                         </div>
-                        <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                        <p className="text-[13px] text-slate-500 truncate mt-0.5">
                           Designer:{" "}
                           <strong className="text-slate-700">
                             {item.template.franchiseName ||
@@ -1676,7 +1683,10 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                           ).toLocaleDateString()}
                         </p>
                       </div>
-                      <span className="portal-action" title="Customize Banner"><Eye size={15} aria-hidden="true" /><span className="sr-only">Customize Banner</span></span>
+                      <span className="portal-action" title="Customize Banner">
+                        <Eye size={15} aria-hidden="true" />
+                        <span className="sr-only">Customize Banner</span>
+                      </span>
                     </div>
                   </Card>
                 ))}
@@ -1744,7 +1754,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                           </p>
                         </div>
                         <div className="flex items-center justify-between text-xs border-t border-slate-100 pt-2.5">
-                          <span className="text-slate-400 text-[11px]">
+                          <span className="text-slate-400 text-[13px]">
                             Updated{" "}
                             {new Date(
                               item.template.updatedAt ||
@@ -1752,7 +1762,13 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                                 Date.now(),
                             ).toLocaleDateString()}
                           </span>
-                          <span className="portal-action" title="Customize Banner"><Eye size={15} aria-hidden="true" /><span className="sr-only">Customize Banner</span></span>
+                          <span
+                            className="portal-action"
+                            title="Customize Banner"
+                          >
+                            <Eye size={15} aria-hidden="true" />
+                            <span className="sr-only">Customize Banner</span>
+                          </span>
                         </div>
                       </div>
                     </Card>
@@ -1899,7 +1915,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                             </h3>
                             {getSubmissionStatusBadge(sub.status)}
                           </div>
-                          <p className="text-[11px] text-slate-500 truncate mt-0.5">
+                          <p className="text-[13px] text-slate-500 truncate mt-0.5">
                             Franchise:{" "}
                             <strong className="text-slate-700">
                               {sub.franchiseName ||
@@ -1918,7 +1934,10 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                             ).toLocaleDateString()}
                           </p>
                         </div>
-                        <span className="portal-action" title="Open Proof"><Eye size={15} aria-hidden="true" /><span className="sr-only">Open Proof</span></span>
+                        <span className="portal-action" title="Open Proof">
+                          <Eye size={15} aria-hidden="true" />
+                          <span className="sr-only">Open Proof</span>
+                        </span>
                       </div>
                     </Card>
                   ))}
@@ -1976,13 +1995,16 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                             </p>
                           </div>
                           <div className="flex items-center justify-between text-xs border-t border-slate-100 pt-2.5">
-                            <span className="text-slate-400 text-[11px]">
+                            <span className="text-slate-400 text-[13px]">
                               Updated{" "}
                               {new Date(
                                 sub.updatedAt || sub.createdAt,
                               ).toLocaleDateString()}
                             </span>
-                            <span className="portal-action" title="Open Proof"><Eye size={15} aria-hidden="true" /><span className="sr-only">Open Proof</span></span>
+                            <span className="portal-action" title="Open Proof">
+                              <Eye size={15} aria-hidden="true" />
+                              <span className="sr-only">Open Proof</span>
+                            </span>
                           </div>
                         </div>
                       </Card>

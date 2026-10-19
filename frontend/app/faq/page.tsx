@@ -209,12 +209,12 @@ export default function FaqPage() {
         <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="inline-flex items-center gap-3 bg-primary-light text-primary px-5 py-2 rounded-full shadow mb-6">
             <span className="w-2 h-2 bg-primary rounded-full" />
-            <span className="text-[11px] font-bold uppercase tracking-widest">
+            <span className="text-[13px] font-bold uppercase tracking-widest">
               Common Questions
             </span>
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold text-primary-dark leading-tight">
-            FAQs  Business Signage,{" "}
+            FAQs Business Signage,{" "}
             <span className="text-primary">Printing &amp; More</span>
           </h1>
           <p className="mt-4 text-primary-dark/70 text-lg">

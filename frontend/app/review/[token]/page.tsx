@@ -7,12 +7,7 @@ import {
   type ProjectModel,
   type CanvasModel,
 } from "@/app/lib/client/canvas-api";
-import {
-  Button,
-  Card,
-  Textarea,
-  StatusBadge,
-} from "@/app/Components/ui";
+import { Button, Card, Textarea, StatusBadge } from "@/app/Components/ui";
 import {
   AlertCircle,
   CheckCircle2,
@@ -30,10 +25,7 @@ import {
   RefreshCw,
   Maximize2,
 } from "lucide-react";
-import {
-  getStoredUser,
-  getDashboardPathFromToken,
-} from "@/app/lib/auth/token";
+import { getStoredUser, getDashboardPathFromToken } from "@/app/lib/auth/token";
 
 export default function SecureCanvasReviewPage() {
   const params = useParams();
@@ -46,7 +38,9 @@ export default function SecureCanvasReviewPage() {
   const [error, setError] = useState("");
   const [project, setProject] = useState<ProjectModel | null>(null);
   const [canvases, setCanvases] = useState<CanvasModel[]>([]);
-  const [selectedCanvas, setSelectedCanvas] = useState<CanvasModel | null>(null);
+  const [selectedCanvas, setSelectedCanvas] = useState<CanvasModel | null>(
+    null,
+  );
 
   const [fullscreenCanvas, setFullscreenCanvas] = useState<{
     url: string;
@@ -58,10 +52,15 @@ export default function SecureCanvasReviewPage() {
     date?: string;
   } | null>(null);
 
-  const [subImageRemarks, setSubImageRemarks] = useState<Record<number, string>>({});
-  const [submittingImageId, setSubmittingImageId] = useState<number | null>(null);
+  const [subImageRemarks, setSubImageRemarks] = useState<
+    Record<number, string>
+  >({});
+  const [submittingImageId, setSubmittingImageId] = useState<number | null>(
+    null,
+  );
 
-  const backendHost = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+  const backendHost =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
   async function loadReviewData() {
     if (!token) return;
@@ -79,7 +78,9 @@ export default function SecureCanvasReviewPage() {
         if (updated) setSelectedCanvas(updated);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unable to load review project.");
+      setError(
+        err instanceof Error ? err.message : "Unable to load review project.",
+      );
     } finally {
       setLoading(false);
     }
@@ -127,7 +128,9 @@ export default function SecureCanvasReviewPage() {
     const inputRemark = subImageRemarks[remarkKey]?.trim() || "";
 
     if (statusAction === "changes_requested" && !inputRemark) {
-      alert("Please type a remark explaining what changes are needed for this image.");
+      alert(
+        "Please type a remark explaining what changes are needed for this image.",
+      );
       return;
     }
 
@@ -148,7 +151,11 @@ export default function SecureCanvasReviewPage() {
       setSubImageRemarks((prev) => ({ ...prev, [remarkKey]: "" }));
       await loadReviewData();
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Failed to update image review status.");
+      alert(
+        err instanceof Error
+          ? err.message
+          : "Failed to update image review status.",
+      );
     } finally {
       setSubmittingImageId(null);
     }
@@ -158,19 +165,19 @@ export default function SecureCanvasReviewPage() {
     switch (type) {
       case "collage":
         return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 text-violet-700 border border-violet-100 px-2 py-0.5 text-[11px] font-semibold">
+          <span className="inline-flex items-center gap-1 rounded-full bg-violet-50 text-violet-700 border border-violet-100 px-2 py-0.5 text-[13px] font-semibold">
             <LayoutGrid size={11} /> Auto Collage
           </span>
         );
       case "diagram":
         return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-0.5 text-[11px] font-semibold">
+          <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-0.5 text-[13px] font-semibold">
             <Layers size={11} /> Diagram Layout
           </span>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 text-[11px] font-semibold">
+          <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 text-[13px] font-semibold">
             <FileImage size={11} /> Individual Canvas
           </span>
         );
@@ -219,18 +226,22 @@ export default function SecureCanvasReviewPage() {
     return (
       <Card
         key={img.id}
-        className={`p-3 space-y-2 flex flex-col justify-between transition ${isBlueprint
+        className={`p-3 space-y-2 flex flex-col justify-between transition ${
+          isBlueprint
             ? "border-indigo-300 bg-indigo-50/20 ring-1 ring-indigo-200"
             : img.status === "approved"
               ? "border-emerald-400 bg-emerald-50/10 ring-1 ring-emerald-400/20"
               : img.status === "changes_requested"
                 ? "border-amber-400 bg-amber-50/10 ring-1 ring-amber-400/20"
                 : ""
-          }`}
+        }`}
       >
         <div className="space-y-2">
           <div className="flex items-center justify-between gap-1 border-b border-slate-100 pb-1.5 min-w-0">
-            <span className="font-bold text-[11px] text-slate-800 truncate min-w-0" title={label}>
+            <span
+              className="font-bold text-[13px] text-slate-800 truncate min-w-0"
+              title={label}
+            >
               {label}
             </span>
             {!isBlueprint && (
@@ -239,7 +250,11 @@ export default function SecureCanvasReviewPage() {
           </div>
 
           <div className="relative aspect-[4/3] bg-slate-50 rounded-xl overflow-hidden group/tile border border-slate-100 flex items-center justify-center">
-            <img src={imgUrl} alt={label} className="w-full h-full object-contain p-1" />
+            <img
+              src={imgUrl}
+              alt={label}
+              className="w-full h-full object-contain p-1"
+            />
             <div
               onClick={() =>
                 setFullscreenCanvas({
@@ -271,10 +286,15 @@ export default function SecureCanvasReviewPage() {
                   return (
                     <div
                       key={r.id}
-                      className={`text-[10.5px] border-t border-slate-200/50 pt-1 ${isDesigner ? "text-indigo-900" : "text-slate-700"
-                        }`}
+                      className={`text-[10.5px] border-t border-slate-200/50 pt-1 ${
+                        isDesigner ? "text-indigo-900" : "text-slate-700"
+                      }`}
                     >
-                      <strong className={isDesigner ? "text-indigo-800" : "text-slate-800"}>
+                      <strong
+                        className={
+                          isDesigner ? "text-indigo-800" : "text-slate-800"
+                        }
+                      >
                         {r.userName || (isDesigner ? "Designer" : "Client")}
                         {isDesigner ? " (Designer)" : ""}:
                       </strong>{" "}
@@ -293,7 +313,10 @@ export default function SecureCanvasReviewPage() {
               rows={2}
               value={currentRemarkText}
               onChange={(e) =>
-                setSubImageRemarks({ ...subImageRemarks, [img.id]: e.target.value })
+                setSubImageRemarks({
+                  ...subImageRemarks,
+                  [img.id]: e.target.value,
+                })
               }
               placeholder={`Remarks for ${label}...`}
               className="w-full rounded-xl border border-slate-200 p-2 text-[10.5px] focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition resize-none bg-white"
@@ -304,12 +327,17 @@ export default function SecureCanvasReviewPage() {
                 disabled={isSubmitting}
                 size="sm"
                 className="h-8 px-1.5 text-[10.5px] font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 shadow-none rounded-xl flex items-center justify-center gap-1 min-w-0"
-                onClick={() => handleImageAction(c, img.id, "changes_requested", img.id)}
+                onClick={() =>
+                  handleImageAction(c, img.id, "changes_requested", img.id)
+                }
               >
                 {isSubmitting ? (
                   <Loader2 size={11} className="animate-spin flex-shrink-0" />
                 ) : (
-                  <AlertCircle size={11} className="flex-shrink-0 text-amber-600" />
+                  <AlertCircle
+                    size={11}
+                    className="flex-shrink-0 text-amber-600"
+                  />
                 )}
                 <span className="truncate">Request Changes</span>
               </Button>
@@ -333,8 +361,8 @@ export default function SecureCanvasReviewPage() {
 
         {isBlueprint && (
           <p className="text-[10px] text-indigo-700 font-medium border-t border-indigo-100 pt-2">
-            Diagram blueprint is reference layout only. Use overall proof feedback or photo tiles
-            below for changes.
+            Diagram blueprint is reference layout only. Use overall proof
+            feedback or photo tiles below for changes.
           </p>
         )}
       </Card>
@@ -346,7 +374,9 @@ export default function SecureCanvasReviewPage() {
       <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
         <div className="text-center space-y-3">
           <Loader2 size={36} className="mx-auto text-indigo-600 animate-spin" />
-          <p className="text-sm font-medium text-slate-600">Loading design review details...</p>
+          <p className="text-sm font-medium text-slate-600">
+            Loading design review details...
+          </p>
         </div>
       </div>
     );
@@ -357,7 +387,9 @@ export default function SecureCanvasReviewPage() {
       <div className="min-h-screen flex items-center justify-center bg-[#f8fafc] p-6">
         <Card className="max-w-md w-full p-8 text-center space-y-3">
           <AlertCircle size={48} className="mx-auto text-amber-500" />
-          <h1 className="text-xl font-extrabold text-slate-900">Review Link Unavailable</h1>
+          <h1 className="text-xl font-extrabold text-slate-900">
+            Review Link Unavailable
+          </h1>
           <p className="text-sm text-slate-600">
             {error || "This review link may be invalid or expired."}
           </p>
@@ -414,7 +446,8 @@ export default function SecureCanvasReviewPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    const targetPath = getDashboardPathFromToken() || "/user/dashboard";
+                    const targetPath =
+                      getDashboardPathFromToken() || "/user/dashboard";
                     router.push(targetPath);
                   }}
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 h-8 px-2.5 rounded-xl border-slate-200 cursor-pointer flex-shrink-0"
@@ -423,14 +456,18 @@ export default function SecureCanvasReviewPage() {
                 </Button>
               ) : (
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 bg-slate-100 px-2.5 py-1 rounded-xl flex-shrink-0">
-                  <ShieldCheck size={14} className="text-indigo-600 flex-shrink-0" /> Direct Review
+                  <ShieldCheck
+                    size={14}
+                    className="text-indigo-600 flex-shrink-0"
+                  />{" "}
+                  Direct Review
                 </span>
               )}
               <span className="hidden md:inline text-slate-300">|</span>
-              <span className="hidden sm:inline-flex items-center rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-1 text-[11px] font-bold whitespace-nowrap">
+              <span className="hidden sm:inline-flex items-center rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-1 text-[13px] font-bold whitespace-nowrap">
                 Canvas Details &amp; Approval
               </span>
-              <span className="hidden md:inline-flex items-center rounded-xl bg-slate-50 text-slate-500 border border-slate-200 px-2.5 py-1 text-[11px] font-medium whitespace-nowrap">
+              <span className="hidden md:inline-flex items-center rounded-xl bg-slate-50 text-slate-500 border border-slate-200 px-2.5 py-1 text-[13px] font-medium whitespace-nowrap">
                 Anyone with this link can review
               </span>
             </div>
@@ -443,7 +480,7 @@ export default function SecureCanvasReviewPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => router.push("/user/login")}
-                  className="h-7 px-2 rounded-xl bg-white text-[11px] font-semibold flex-shrink-0"
+                  className="h-7 px-2 rounded-xl bg-white text-[13px] font-semibold flex-shrink-0"
                   title="Log in to view all of your proof history"
                 >
                   <LogIn size={12} />
@@ -460,7 +497,7 @@ export default function SecureCanvasReviewPage() {
                   await loadReviewData();
                   setIsRefreshing(false);
                 }}
-                className="h-7 px-2 rounded-xl bg-white text-[11px] font-semibold flex-shrink-0"
+                className="h-7 px-2 rounded-xl bg-white text-[13px] font-semibold flex-shrink-0"
                 title="Refresh Proof Data"
               >
                 <RefreshCw
@@ -519,7 +556,9 @@ export default function SecureCanvasReviewPage() {
           <p className="text-xs sm:text-[13px] text-slate-500 flex flex-wrap items-center gap-x-2 gap-y-0.5">
             <span>
               Client:{" "}
-              <strong className="text-slate-800 font-semibold">{project.clientName}</strong>
+              <strong className="text-slate-800 font-semibold">
+                {project.clientName}
+              </strong>
             </span>
             <span className="text-slate-300">·</span>
             <span>
@@ -537,10 +576,10 @@ export default function SecureCanvasReviewPage() {
           <div className="lg:col-span-8 space-y-4">
             <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-4">
               <div className="flex items-center justify-between gap-3">
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.08em] text-indigo-600">
+                <h3 className="text-[13px] font-bold uppercase tracking-[0.08em] text-indigo-600">
                   Project Canvases ({canvases.length})
                 </h3>
-                <p className="text-[11px] text-slate-400 font-medium">
+                <p className="text-[13px] text-slate-400 font-medium">
                   Review &amp; approve on each canvas
                 </p>
               </div>
@@ -571,12 +610,13 @@ export default function SecureCanvasReviewPage() {
                       <div
                         key={c.id}
                         onClick={() => setSelectedCanvas(c)}
-                        className={`rounded-2xl border bg-white p-4 sm:p-5 space-y-4 transition cursor-pointer ${isSelected
+                        className={`rounded-2xl border bg-white p-4 sm:p-5 space-y-4 transition cursor-pointer ${
+                          isSelected
                             ? "border-indigo-300 shadow-[0_0_0_3px_rgba(99,102,241,0.12)]"
                             : isChangesReq
                               ? "border-amber-300 shadow-[0_0_0_3px_rgba(251,191,36,0.12)]"
                               : "border-slate-200 hover:border-slate-300 hover:shadow-sm"
-                          }`}
+                        }`}
                       >
                         {/* Canvas header */}
                         <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -589,7 +629,7 @@ export default function SecureCanvasReviewPage() {
                                 {c.name}
                               </h4>
                               {getCanvasTypeBadge(c.canvasType)}
-                              <span className="text-[11px] text-slate-400 font-mono font-semibold">
+                              <span className="text-[13px] text-slate-400 font-mono font-semibold">
                                 v{c.latestVersion?.versionNumber || 1}
                               </span>
                             </div>
@@ -601,7 +641,10 @@ export default function SecureCanvasReviewPage() {
                                   : "Individual canvas proof"}
                             </p>
                           </div>
-                          <StatusBadge status={c.status} pendingLabel="pending" />
+                          <StatusBadge
+                            status={c.status}
+                            pendingLabel="pending"
+                          />
                         </div>
 
                         {/* Preview */}
@@ -643,16 +686,22 @@ export default function SecureCanvasReviewPage() {
 
                         {/* Diagram info + components (overall approve lives in right sidebar) */}
                         {isDiagram && hasSubImages ? (
-                          <div className="space-y-4" onClick={(e) => e.stopPropagation()}>
+                          <div
+                            className="space-y-4"
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             <div className="p-3 rounded-xl bg-indigo-50/80 border border-indigo-100 text-xs text-indigo-950 space-y-1">
                               <span className="font-bold flex items-center gap-1.5 text-indigo-800">
-                                <Layers size={14} className="text-indigo-600" /> Diagram review
+                                <Layers size={14} className="text-indigo-600" />{" "}
+                                Diagram review
                               </span>
-                              <p className="text-[11px] text-indigo-800/90 leading-relaxed">
-                                This proof includes a <strong>diagram blueprint</strong> (layout
+                              <p className="text-[13px] text-indigo-800/90 leading-relaxed">
+                                This proof includes a{" "}
+                                <strong>diagram blueprint</strong> (layout
                                 reference) plus photo tiles. Use{" "}
-                                <strong>Overall Feedback</strong> on the right for the full proof,
-                                and request changes on individual photos when needed.
+                                <strong>Overall Feedback</strong> on the right
+                                for the full proof, and request changes on
+                                individual photos when needed.
                               </p>
                             </div>
 
@@ -661,17 +710,23 @@ export default function SecureCanvasReviewPage() {
                                 <span className="font-bold text-indigo-900 flex items-center gap-1.5">
                                   <Layers size={14} /> Diagram components
                                 </span>
-                                <span className="text-[11px] text-slate-500">
-                                  {blueprint ? "1 blueprint" : "No blueprint"} · {photoTiles.length}{" "}
-                                  photo{photoTiles.length === 1 ? "" : "s"}
+                                <span className="text-[13px] text-slate-500">
+                                  {blueprint ? "1 blueprint" : "No blueprint"} ·{" "}
+                                  {photoTiles.length} photo
+                                  {photoTiles.length === 1 ? "" : "s"}
                                 </span>
                               </div>
 
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {blueprint &&
-                                  renderTileReviewCard(c, blueprint, "Blueprint", {
-                                    isBlueprint: true,
-                                  })}
+                                  renderTileReviewCard(
+                                    c,
+                                    blueprint,
+                                    "Blueprint",
+                                    {
+                                      isBlueprint: true,
+                                    },
+                                  )}
                                 {photoTiles.map((img, idx) =>
                                   renderTileReviewCard(
                                     c,
@@ -683,13 +738,19 @@ export default function SecureCanvasReviewPage() {
                             </div>
                           </div>
                         ) : isCollage && hasSubImages ? (
-                          <div className="space-y-3" onClick={(e) => e.stopPropagation()}>
+                          <div
+                            className="space-y-3"
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             <div className="flex items-center justify-between gap-2 flex-wrap text-xs">
                               <span className="font-bold text-violet-800 flex items-center gap-1.5">
-                                <LayoutGrid size={14} className="text-violet-600" /> Collage photo
-                                review
+                                <LayoutGrid
+                                  size={14}
+                                  className="text-violet-600"
+                                />{" "}
+                                Collage photo review
                               </span>
-                              <span className="text-[11px] text-slate-500">
+                              <span className="text-[13px] text-slate-500">
                                 Approve or request changes on each photo
                               </span>
                             </div>
@@ -714,9 +775,16 @@ export default function SecureCanvasReviewPage() {
                           >
                             <div className="flex items-center justify-between gap-2 flex-wrap text-xs">
                               <span className="font-bold text-slate-700 flex items-center gap-1.5">
-                                <CheckCircle2 size={14} className="text-indigo-600" /> Canvas Review Action
+                                <CheckCircle2
+                                  size={14}
+                                  className="text-indigo-600"
+                                />{" "}
+                                Canvas Review Action
                               </span>
-                              <StatusBadge status={c.status} pendingLabel="pending" />
+                              <StatusBadge
+                                status={c.status}
+                                pendingLabel="pending"
+                              />
                             </div>
 
                             <Textarea
@@ -748,11 +816,19 @@ export default function SecureCanvasReviewPage() {
                                 }
                               >
                                 {submittingImageId === c.id ? (
-                                  <Loader2 size={13} className="animate-spin text-amber-700 flex-shrink-0" />
+                                  <Loader2
+                                    size={13}
+                                    className="animate-spin text-amber-700 flex-shrink-0"
+                                  />
                                 ) : (
-                                  <AlertCircle size={13} className="text-amber-700 flex-shrink-0" />
+                                  <AlertCircle
+                                    size={13}
+                                    className="text-amber-700 flex-shrink-0"
+                                  />
                                 )}
-                                <span className="truncate">Request Changes</span>
+                                <span className="truncate">
+                                  Request Changes
+                                </span>
                               </Button>
                               <Button
                                 type="button"
@@ -760,18 +836,19 @@ export default function SecureCanvasReviewPage() {
                                 size="sm"
                                 className="w-full h-9 px-3 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm rounded-xl flex items-center justify-center gap-1.5 cursor-pointer min-w-0"
                                 onClick={() =>
-                                  handleImageAction(
-                                    c,
-                                    null,
-                                    "approved",
-                                    c.id,
-                                  )
+                                  handleImageAction(c, null, "approved", c.id)
                                 }
                               >
                                 {submittingImageId === c.id ? (
-                                  <Loader2 size={13} className="animate-spin text-white flex-shrink-0" />
+                                  <Loader2
+                                    size={13}
+                                    className="animate-spin text-white flex-shrink-0"
+                                  />
                                 ) : (
-                                  <CheckCircle2 size={13} className="flex-shrink-0" />
+                                  <CheckCircle2
+                                    size={13}
+                                    className="flex-shrink-0"
+                                  />
                                 )}
                                 <span className="truncate">Approve Canvas</span>
                               </Button>
@@ -791,8 +868,10 @@ export default function SecureCanvasReviewPage() {
             {/* Overall Feedback card */}
             <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-3">
               <div>
-                <h3 className="text-sm font-extrabold text-slate-900">Overall Feedback</h3>
-                <p className="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
+                <h3 className="text-sm font-extrabold text-slate-900">
+                  Overall Feedback
+                </h3>
+                <p className="text-[13px] text-slate-500 mt-0.5 leading-relaxed">
                   {activeCanvas?.canvasType === "diagram"
                     ? "Overall feedback for this diagram proof (layout, placement, specs)..."
                     : "Share feedback or approve this canvas proof as a whole."}
@@ -817,7 +896,7 @@ export default function SecureCanvasReviewPage() {
                     <Button
                       type="button"
                       disabled={isSubmittingOverall}
-                      className="h-10 px-2 sm:px-4 text-[11px] sm:text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 shadow-none rounded-xl flex items-center justify-center gap-1.5 min-w-0"
+                      className="h-10 px-2 sm:px-4 text-[13px] sm:text-xs font-bold bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-300 shadow-none rounded-xl flex items-center justify-center gap-1.5 min-w-0"
                       onClick={() =>
                         handleImageAction(
                           activeCanvas,
@@ -828,22 +907,36 @@ export default function SecureCanvasReviewPage() {
                       }
                     >
                       {isSubmittingOverall ? (
-                        <Loader2 size={14} className="animate-spin flex-shrink-0" />
+                        <Loader2
+                          size={14}
+                          className="animate-spin flex-shrink-0"
+                        />
                       ) : (
-                        <AlertCircle size={14} className="flex-shrink-0 text-amber-600" />
+                        <AlertCircle
+                          size={14}
+                          className="flex-shrink-0 text-amber-600"
+                        />
                       )}
                       <span className="truncate">Request Changes</span>
                     </Button>
                     <Button
                       type="button"
                       disabled={isSubmittingOverall}
-                      className="h-10 px-2 sm:px-4 text-[11px] sm:text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm rounded-xl flex items-center justify-center gap-1.5 min-w-0"
+                      className="h-10 px-2 sm:px-4 text-[13px] sm:text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm rounded-xl flex items-center justify-center gap-1.5 min-w-0"
                       onClick={() =>
-                        handleImageAction(activeCanvas, null, "approved", activeRemarkKey)
+                        handleImageAction(
+                          activeCanvas,
+                          null,
+                          "approved",
+                          activeRemarkKey,
+                        )
                       }
                     >
                       {isSubmittingOverall ? (
-                        <Loader2 size={14} className="animate-spin flex-shrink-0" />
+                        <Loader2
+                          size={14}
+                          className="animate-spin flex-shrink-0"
+                        />
                       ) : (
                         <CheckCircle2 size={14} className="flex-shrink-0" />
                       )}
@@ -886,32 +979,37 @@ export default function SecureCanvasReviewPage() {
                   <div className="relative pl-1">
                     {activeCanvas.history && activeCanvas.history.length > 0 ? (
                       <div className="space-y-0">
-                        {[...activeCanvas.history].reverse().map((h, idx, arr) => (
-                          <div key={h.id} className="relative flex gap-3 pb-5 last:pb-0">
-                            {idx < arr.length - 1 && (
-                              <div className="absolute left-[7px] top-4 bottom-0 w-px bg-slate-200" />
-                            )}
+                        {[...activeCanvas.history]
+                          .reverse()
+                          .map((h, idx, arr) => (
                             <div
-                              className={`relative z-10 mt-1 w-[15px] h-[15px] rounded-full border-2 border-white shadow-sm flex-shrink-0 ${historyDotClass(h.newStatus)}`}
-                            />
-                            <div className="min-w-0 flex-1 -mt-0.5">
-                              <p
-                                className={`text-[13px] font-bold capitalize ${historyTitleClass(h.newStatus)}`}
-                              >
-                                {h.newStatus.replace(/_/g, " ")}
-                              </p>
-                              {h.note && (
-                                <div className="mt-1.5 rounded-lg bg-slate-50 border border-slate-100 px-2.5 py-1.5 text-[12px] text-slate-600 leading-snug">
-                                  {h.note}
-                                </div>
+                              key={h.id}
+                              className="relative flex gap-3 pb-5 last:pb-0"
+                            >
+                              {idx < arr.length - 1 && (
+                                <div className="absolute left-[7px] top-4 bottom-0 w-px bg-slate-200" />
                               )}
-                              <p className="text-[11px] text-slate-400 mt-1">
-                                {new Date(h.createdAt).toLocaleString()} ·{" "}
-                                {h.actorName || "System"}
-                              </p>
+                              <div
+                                className={`relative z-10 mt-1 w-[15px] h-[15px] rounded-full border-2 border-white shadow-sm flex-shrink-0 ${historyDotClass(h.newStatus)}`}
+                              />
+                              <div className="min-w-0 flex-1 -mt-0.5">
+                                <p
+                                  className={`text-[13px] font-bold capitalize ${historyTitleClass(h.newStatus)}`}
+                                >
+                                  {h.newStatus.replace(/_/g, " ")}
+                                </p>
+                                {h.note && (
+                                  <div className="mt-1.5 rounded-lg bg-slate-50 border border-slate-100 px-2.5 py-1.5 text-[12px] text-slate-600 leading-snug">
+                                    {h.note}
+                                  </div>
+                                )}
+                                <p className="text-[13px] text-slate-400 mt-1">
+                                  {new Date(h.createdAt).toLocaleString()} ·{" "}
+                                  {h.actorName || "System"}
+                                </p>
+                              </div>
                             </div>
-                          </div>
-                        ))}
+                          ))}
                       </div>
                     ) : (
                       <p className="text-xs text-slate-400 italic py-3">
@@ -981,7 +1079,9 @@ export default function SecureCanvasReviewPage() {
                       <span className="truncate">SIGNS &amp; PRINTING</span>
                     </div>
                     <p className="text-[9.5px] sm:text-[10px] font-bold text-slate-600 mt-1 leading-tight uppercase">
-                      750 WARRENVILLE RD<br />LISLE, IL 60532
+                      750 WARRENVILLE RD
+                      <br />
+                      LISLE, IL 60532
                     </p>
                   </div>
                   <p className="text-[9.5px] font-mono text-indigo-700 font-bold mt-1.5">
@@ -1038,12 +1138,14 @@ export default function SecureCanvasReviewPage() {
                 {/* Block 4: Legal & Metadata */}
                 <div className="p-2.5 sm:p-3.5 bg-slate-50 flex flex-col justify-between text-[9px] sm:text-[9.5px] leading-tight text-slate-600">
                   <p className="italic text-[9px] sm:text-[9.5px] leading-tight text-slate-500">
-                    This design is original work of FBS SIGNS and may not be reproduced without express written permission.
+                    This design is original work of FBS SIGNS and may not be
+                    reproduced without express written permission.
                   </p>
                   <div className="pt-2 border-t border-slate-300 font-mono text-[9px] sm:text-[9.5px] font-bold text-slate-800 flex justify-between gap-1 flex-wrap">
                     <span>SCALE: N.T.S.</span>
                     <span>
-                      DATE: {fullscreenCanvas.date || new Date().toLocaleDateString()}
+                      DATE:{" "}
+                      {fullscreenCanvas.date || new Date().toLocaleDateString()}
                     </span>
                   </div>
                 </div>

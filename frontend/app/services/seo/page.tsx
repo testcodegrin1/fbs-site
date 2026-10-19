@@ -146,8 +146,7 @@ export default function Page() {
                   </h1>
 
                   <p className="text-primary-dark/70 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0">
-                    At FBS, we are not just another SEO agency, we are your
-                    dedicated partner in achieving online success.
+                    FBS Prints provides SEO services that help businesses improve their search visibility, reach relevant audiences, and build a stronger presence in search engines. Our SEO services cover technical SEO, on-page optimization, local SEO, content optimization, link building, competitor analysis, and SEO reporting, with strategies tailored to each business and its goals.
                   </p>
                 </div>
 
@@ -213,13 +212,7 @@ export default function Page() {
 
               <div data-aos="fade-left">
                 <p className="text-base md:text-lg text-primary-light leading-relaxed text-center lg:text-start">
-                  Having a beautiful website isn't enough if no one can find it.
-                  That's where our Search Engine Optimization (SEO) services
-                  come in. At FBS Prints, we help your business climb the search
-                  rankings, attract the right audience, and turn clicks into
-                  customers. Whether you're a small local business or a growing
-                  brand, our SEO strategies are tailored to put you ahead of the
-                  competition.
+                  A well-designed website needs strong search visibility to reach the people looking for your products or services. FBS Prints provides SEO services that improve website structure, content, technical performance, and search relevance. Our approach is tailored to each business, helping build a stronger foundation for organic search visibility and long-term growth.
                 </p>
               </div>
             </div>

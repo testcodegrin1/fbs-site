@@ -181,7 +181,9 @@ function ImagePreviewWithFallback({
       <div className={containerClassName}>
         <div className="flex flex-col items-center justify-center text-slate-400 gap-1.5 p-2 text-center w-full h-full">
           <ImageIcon size={compact ? 16 : 28} className="text-slate-300" />
-          {!compact && <span className="text-xs font-semibold">No image selected</span>}
+          {!compact && (
+            <span className="text-xs font-semibold">No image selected</span>
+          )}
         </div>
       </div>
     );
@@ -240,7 +242,7 @@ function ImagePreviewWithFallback({
           <p className="text-xs font-bold text-slate-800">
             Image could not be loaded
           </p>
-          <p className="text-[11px] text-slate-500 font-mono mt-1 max-w-xs truncate px-2">
+          <p className="text-[13px] text-slate-500 font-mono mt-1 max-w-xs truncate px-2">
             {rawPath || src}
           </p>
           <Button
@@ -351,9 +353,7 @@ export function BannerTemplateManagement() {
     const activeFilter =
       franchiseFilter !== undefined ? franchiseFilter : selectedFranchiseFilter;
     const fId =
-      activeFilter && activeFilter !== "all"
-        ? Number(activeFilter)
-        : undefined;
+      activeFilter && activeFilter !== "all" ? Number(activeFilter) : undefined;
 
     try {
       const [tData, fData] = await Promise.all([
@@ -393,12 +393,15 @@ export function BannerTemplateManagement() {
 
       const matchesName = item.name.toLowerCase().includes(query);
       const matchesFranchise = Boolean(
-        item.franchiseName && item.franchiseName.toLowerCase().includes(query)
+        item.franchiseName && item.franchiseName.toLowerCase().includes(query),
       );
       const matchesDimensions =
         `${item.widthPx}x${item.heightPx}`.includes(query) ||
         `${item.widthPx} x ${item.heightPx}`.includes(query) ||
-        Boolean(item.dimensionsLabel && item.dimensionsLabel.toLowerCase().includes(query));
+        Boolean(
+          item.dimensionsLabel &&
+          item.dimensionsLabel.toLowerCase().includes(query),
+        );
 
       return matchesName || matchesFranchise || matchesDimensions;
     });
@@ -446,7 +449,10 @@ export function BannerTemplateManagement() {
               sortOrder: img.sortOrder ?? i,
             }))
           : [],
-      fields: template.fields && template.fields.length > 0 ? [...template.fields] : [],
+      fields:
+        template.fields && template.fields.length > 0
+          ? [...template.fields]
+          : [],
     });
 
     setFormErrors({});
@@ -532,8 +538,10 @@ export function BannerTemplateManagement() {
   // Handle Orientation Change: Swap width & height if needed when toggling landscape <-> portrait
   function handleOrientationChange(newOrientation: "landscape" | "portrait") {
     setFormData((prev) => {
-      let w = Number(prev.width_px) || (newOrientation === "portrait" ? 1080 : 1920);
-      let h = Number(prev.height_px) || (newOrientation === "portrait" ? 1920 : 1080);
+      let w =
+        Number(prev.width_px) || (newOrientation === "portrait" ? 1080 : 1920);
+      let h =
+        Number(prev.height_px) || (newOrientation === "portrait" ? 1920 : 1080);
 
       if (prev.orientation !== newOrientation) {
         if (newOrientation === "portrait" && w > h) {
@@ -716,13 +724,17 @@ export function BannerTemplateManagement() {
           let finalUrl = img.imageUrl.trim();
           let finalName = img.file?.name;
           if (img.file) {
-            const uploadRes = await bannerTemplateApi.uploadBannerImage(img.file);
+            const uploadRes = await bannerTemplateApi.uploadBannerImage(
+              img.file,
+            );
             finalUrl = uploadRes.imageUrl;
-            finalName = uploadRes.originalName || uploadRes.filename || img.file.name;
+            finalName =
+              uploadRes.originalName || uploadRes.filename || img.file.name;
           }
           return {
             imageUrl: finalUrl,
-            imageName: finalName || (finalUrl ? finalUrl.split("/").pop() : undefined),
+            imageName:
+              finalName || (finalUrl ? finalUrl.split("/").pop() : undefined),
             sortOrder: idx,
           };
         }),
@@ -780,13 +792,17 @@ export function BannerTemplateManagement() {
           let finalUrl = img.imageUrl.trim();
           let finalName = img.file?.name;
           if (img.file) {
-            const uploadRes = await bannerTemplateApi.uploadBannerImage(img.file);
+            const uploadRes = await bannerTemplateApi.uploadBannerImage(
+              img.file,
+            );
             finalUrl = uploadRes.imageUrl;
-            finalName = uploadRes.originalName || uploadRes.filename || img.file.name;
+            finalName =
+              uploadRes.originalName || uploadRes.filename || img.file.name;
           }
           return {
             imageUrl: finalUrl,
-            imageName: finalName || (finalUrl ? finalUrl.split("/").pop() : undefined),
+            imageName:
+              finalName || (finalUrl ? finalUrl.split("/").pop() : undefined),
             sortOrder: idx,
           };
         }),
@@ -869,7 +885,7 @@ export function BannerTemplateManagement() {
                 <Layers size={15} className="text-emerald-600" />
                 Main Image ({formData.images.length})
               </Label>
-              <p className="text-[11px] text-slate-500 mt-0.5">
+              <p className="text-[13px] text-slate-500 mt-0.5">
                 Attached angles, side proofs, or variations with sort ordering.
               </p>
             </div>
@@ -908,7 +924,7 @@ export function BannerTemplateManagement() {
               <p className="text-xs font-bold text-slate-800">
                 Click to upload Banner Image
               </p>
-              <p className="text-[11px] text-slate-400 mt-1">
+              <p className="text-[13px] text-slate-400 mt-1">
                 PNG, JPG, WebP supported
               </p>
             </label>
@@ -920,7 +936,9 @@ export function BannerTemplateManagement() {
                   (img.imageUrl ? resolveImageUrl(img.imageUrl) : "");
                 const fileName =
                   img.file?.name ||
-                  (img.imageUrl ? img.imageUrl.split("/").pop() : `Image #${idx + 1}`);
+                  (img.imageUrl
+                    ? img.imageUrl.split("/").pop()
+                    : `Image #${idx + 1}`);
 
                 return (
                   <div
@@ -941,7 +959,7 @@ export function BannerTemplateManagement() {
                     {/* Action Bar below image */}
                     <div className="p-3 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-[11px] font-extrabold text-slate-400 bg-white border border-slate-200 rounded px-1.5 py-0.5">
+                        <span className="text-[13px] font-extrabold text-slate-400 bg-white border border-slate-200 rounded px-1.5 py-0.5">
                           #{idx + 1}
                         </span>
                         <span className="text-xs font-semibold text-slate-700 truncate max-w-[200px] sm:max-w-[320px]">
@@ -964,7 +982,9 @@ export function BannerTemplateManagement() {
                           type="file"
                           accept="image/png, image/jpeg, image/jpg, image/webp"
                           className="hidden"
-                          onChange={(e) => handleAdditionalImageFileChange(idx, e)}
+                          onChange={(e) =>
+                            handleAdditionalImageFileChange(idx, e)
+                          }
                         />
 
                         {/* Sort Controls (if multiple images) */}
@@ -1158,7 +1178,7 @@ export function BannerTemplateManagement() {
                 {formData.fields.length === 1 ? "Field" : "Fields"}
               </Badge>
             </div>
-            <p className="text-[11px] text-slate-500 mt-0.5">
+            <p className="text-[13px] text-slate-500 mt-0.5">
               Configure the fields users can fill for this banner template.
             </p>
           </div>
@@ -1170,8 +1190,9 @@ export function BannerTemplateManagement() {
             <p className="text-xs font-semibold text-slate-600">
               No custom input fields configured yet.
             </p>
-            <p className="text-[11px] text-slate-400">
-              Click "+ Add Input Field" below to configure dynamic inputs for this template.
+            <p className="text-[13px] text-slate-400">
+              Click "+ Add Input Field" below to configure dynamic inputs for
+              this template.
             </p>
           </div>
         ) : (
@@ -1191,11 +1212,13 @@ export function BannerTemplateManagement() {
                   {/* Top Bar: Field Number and Actions */}
                   <div className="flex items-center justify-between gap-2 border-b border-slate-200/70 pb-2">
                     <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 text-slate-700 text-[11px] font-bold">
+                      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-200 text-slate-700 text-[13px] font-bold">
                         #{fIdx + 1}
                       </span>
                       <span className="text-xs font-semibold text-slate-800">
-                        {field.label.trim() ? field.label : `Field #${fIdx + 1}`}
+                        {field.label.trim()
+                          ? field.label
+                          : `Field #${fIdx + 1}`}
                       </span>
                       {/* Temporarily hidden: Input Type badge */}
                       {/* <Badge
@@ -1238,7 +1261,7 @@ export function BannerTemplateManagement() {
 
                   {/* A. Field Label */}
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-bold text-slate-700">
+                    <Label className="text-[13px] font-bold text-slate-700">
                       Field Label <span className="text-red-500">*</span>
                     </Label>
                     <Input
@@ -1263,7 +1286,7 @@ export function BannerTemplateManagement() {
                   {/*
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <Label className="text-[11px] font-bold text-slate-700">
+                      <Label className="text-[13px] font-bold text-slate-700">
                         Input Type
                       </Label>
                       <select
@@ -1285,7 +1308,7 @@ export function BannerTemplateManagement() {
 
                     {showPlaceholder && (
                       <div className="space-y-1 sm:col-span-2">
-                        <Label className="text-[11px] font-bold text-slate-700">
+                        <Label className="text-[13px] font-bold text-slate-700">
                           Placeholder (Optional)
                         </Label>
                         <Input
@@ -1344,7 +1367,7 @@ export function BannerTemplateManagement() {
                   {hasOptions && (
                     <div className="p-3 bg-white border border-slate-200 rounded-lg space-y-2 mt-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold text-slate-700">
+                        <span className="text-[13px] font-bold text-slate-700">
                           Options List ({field.options?.length || 0})
                         </span>
                         <Button
@@ -1359,7 +1382,7 @@ export function BannerTemplateManagement() {
                       </div>
 
                       {!field.options || field.options.length === 0 ? (
-                        <p className="text-[11px] text-slate-400 italic">
+                        <p className="text-[13px] text-slate-400 italic">
                           No options added. Click "+ Add Option" to add selectable options.
                         </p>
                       ) : (
@@ -1435,8 +1458,7 @@ export function BannerTemplateManagement() {
             onClick={handleAddField}
             className="w-full h-9 text-xs font-semibold gap-1.5 border-dashed border-slate-300 hover:border-slate-400 text-slate-700 bg-slate-50/50 hover:bg-slate-100"
           >
-            <Plus size={14} />
-            + Add Input Field
+            <Plus size={14} />+ Add Input Field
           </Button>
         </div>
       </div>
@@ -1654,7 +1676,7 @@ export function BannerTemplateManagement() {
           {/* Desktop Table View */}
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
-              <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 text-[11px] font-bold uppercase tracking-wider">
+              <thead className="bg-slate-50/80 border-b border-slate-200/80 text-slate-600 text-[13px] font-bold uppercase tracking-wider">
                 <tr>
                   <th className="px-5 py-3.5">Preview</th>
                   <th className="px-5 py-3.5">Template Name</th>
@@ -1760,14 +1782,14 @@ export function BannerTemplateManagement() {
                         {template.isActive ? (
                           <Badge
                             variant="success"
-                            className="text-[11px] font-bold"
+                            className="text-[13px] font-bold"
                           >
                             Active
                           </Badge>
                         ) : (
                           <Badge
                             variant="secondary"
-                            className="text-[11px] font-bold"
+                            className="text-[13px] font-bold"
                           >
                             Inactive
                           </Badge>
@@ -1879,7 +1901,7 @@ export function BannerTemplateManagement() {
                     className="h-10 text-sm"
                   />
                   {formErrors.name && (
-                    <p className="text-[11px] text-red-500 font-medium">
+                    <p className="text-[13px] text-red-500 font-medium">
                       {formErrors.name}
                     </p>
                   )}
@@ -1914,7 +1936,7 @@ export function BannerTemplateManagement() {
                     ))}
                   </select>
                   {formErrors.franchise_id && (
-                    <p className="text-[11px] text-red-500 font-medium">
+                    <p className="text-[13px] text-red-500 font-medium">
                       {formErrors.franchise_id}
                     </p>
                   )}
@@ -1949,7 +1971,7 @@ export function BannerTemplateManagement() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-bold text-slate-700">
+                    <Label className="text-[13px] font-bold text-slate-700">
                       Width (px)
                     </Label>
                     <Input
@@ -1968,7 +1990,7 @@ export function BannerTemplateManagement() {
                   </div>
 
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-bold text-slate-700">
+                    <Label className="text-[13px] font-bold text-slate-700">
                       Height (px)
                     </Label>
                     <Input
@@ -1987,14 +2009,14 @@ export function BannerTemplateManagement() {
                   </div>
 
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-bold text-slate-700">
+                    <Label className="text-[13px] font-bold text-slate-700">
                       Orientation
                     </Label>
                     <select
                       value={formData.orientation}
                       onChange={(e) =>
                         handleOrientationChange(
-                          e.target.value as "landscape" | "portrait"
+                          e.target.value as "landscape" | "portrait",
                         )
                       }
                       className="w-full h-9 px-2 bg-white border border-slate-200 rounded-lg text-xs font-medium"
@@ -2188,7 +2210,7 @@ export function BannerTemplateManagement() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-bold text-slate-700">
+                    <Label className="text-[13px] font-bold text-slate-700">
                       Width (px)
                     </Label>
                     <Input
@@ -2206,7 +2228,7 @@ export function BannerTemplateManagement() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-bold text-slate-700">
+                    <Label className="text-[13px] font-bold text-slate-700">
                       Height (px)
                     </Label>
                     <Input
@@ -2224,14 +2246,14 @@ export function BannerTemplateManagement() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label className="text-[11px] font-bold text-slate-700">
+                    <Label className="text-[13px] font-bold text-slate-700">
                       Orientation
                     </Label>
                     <select
                       value={formData.orientation}
                       onChange={(e) =>
                         handleOrientationChange(
-                          e.target.value as "landscape" | "portrait"
+                          e.target.value as "landscape" | "portrait",
                         )
                       }
                       className="w-full h-9 px-2 bg-white border border-slate-200 rounded-lg text-xs font-medium"
@@ -2415,7 +2437,9 @@ export function BannerTemplateManagement() {
               {viewingTemplate.fields && viewingTemplate.fields.length > 0 && (
                 <div className="space-y-2">
                   <span className="text-xs font-bold text-slate-700 flex items-center justify-between">
-                    <span>Configured Custom Fields ({viewingTemplate.fields.length})</span>
+                    <span>
+                      Configured Custom Fields ({viewingTemplate.fields.length})
+                    </span>
                   </span>
                   <div className="border border-slate-200 rounded-xl overflow-hidden divide-y divide-slate-100 bg-white">
                     {viewingTemplate.fields.map((f, idx) => (
@@ -2424,7 +2448,7 @@ export function BannerTemplateManagement() {
                         className="p-3 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2"
                       >
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="w-5 text-center text-slate-400 font-bold text-[11px]">
+                          <span className="w-5 text-center text-slate-400 font-bold text-[13px]">
                             #{idx + 1}
                           </span>
                           <span className="font-semibold text-slate-800">
@@ -2454,14 +2478,15 @@ export function BannerTemplateManagement() {
                         </div>
                         {/* Temporarily hidden: Placeholder display */}
                         {/* {f.placeholder && (
-                          <span className="text-[11px] text-slate-400 italic">
+                          <span className="text-[13px] text-slate-400 italic">
                             Placeholder: "{f.placeholder}"
                           </span>
                         )} */}
-                        {(f.fieldType === "select" || f.fieldType === "radio") &&
+                        {(f.fieldType === "select" ||
+                          f.fieldType === "radio") &&
                           f.options &&
                           f.options.length > 0 && (
-                            <span className="text-[11px] text-slate-500">
+                            <span className="text-[13px] text-slate-500">
                               Options: {f.options.join(", ")}
                             </span>
                           )}

@@ -30,7 +30,10 @@ export async function generateMetadata(): Promise<Metadata> {
         "Explore FBS Prints service areas across Illinois for custom signage, printing, direct mail, web design, and SEO services for local businesses.",
       images: [
         {
-          url: absoluteUrl("/images/services/signage/signage-service.webp", baseUrl),
+          url: absoluteUrl(
+            "/images/services/signage/signage-service.webp",
+            baseUrl,
+          ),
           width: 1200,
           height: 630,
           alt: "FBS Signs service areas in Illinois",
@@ -42,7 +45,9 @@ export async function generateMetadata(): Promise<Metadata> {
       title: "FBS Prints Service Areas in Illinois | Signage, Printing & SEO",
       description:
         "Explore FBS Prints service areas across Illinois for custom signage, printing, direct mail, web design, and SEO services for local businesses.",
-      images: [absoluteUrl("/images/services/signage/signage-service.webp", baseUrl)],
+      images: [
+        absoluteUrl("/images/services/signage/signage-service.webp", baseUrl),
+      ],
     },
   };
 }
@@ -77,7 +82,8 @@ export default async function ServiceAreasListingPage() {
     "@type": "WebPage",
     "@id": `${canonical}#webpage`,
     name: "FBS Prints Service Areas in Illinois | Signage, Printing & SEO",
-    description: "Explore FBS Prints service areas across Illinois for custom signage, printing, direct mail, web design, and SEO services for local businesses.",
+    description:
+      "Explore FBS Prints service areas across Illinois for custom signage, printing, direct mail, web design, and SEO services for local businesses.",
     url: canonical,
     inLanguage: "en-US",
     isPartOf: {
@@ -111,7 +117,7 @@ export default async function ServiceAreasListingPage() {
           <div className="container relative z-10 text-center max-w-4xl mx-auto px-4">
             <div className="inline-flex items-center gap-3 bg-primary/10 text-primary-light px-5 py-2 rounded-full border border-primary/20 shadow-lg mb-6">
               <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-              <span className="text-[11px] font-bold uppercase tracking-widest">
+              <span className="text-[13px] font-bold uppercase tracking-widest">
                 Our Coverage
               </span>
             </div>
@@ -122,7 +128,10 @@ export default async function ServiceAreasListingPage() {
               </span>
             </h1>
             <p className="text-primary-light/80 text-lg sm:text-xl max-w-2xl mx-auto leading-relaxed">
-              FBS Signs provides signage, printing, direct mail, web design, and SEO services across northeastern Illinois. Explore our service areas below to find local services and solutions tailored to your business needs.
+              FBS Signs provides signage, printing, direct mail, web design, and
+              SEO services across northeastern Illinois. Explore our service
+              areas below to find local services and solutions tailored to your
+              business needs.
             </p>
           </div>
         </section>
@@ -139,14 +148,17 @@ export default async function ServiceAreasListingPage() {
               </h2>
               <div className="w-12 h-1 bg-primary rounded-full mb-6" />
               <p className="text-primary-dark/70 mb-4 leading-relaxed">
-                We believe that strong physical branding goes hand-in-hand with a robust digital footprint.
-                That&apos;s why we don&apos;t just supply businesses with premium banners or illuminated signs;
-                we help you optimize your Google Business Profiles, run neighborhood direct mail marketing,
-                and build search authority in every city you serve.
+                We believe that strong physical branding goes hand-in-hand with
+                a robust digital footprint. That&apos;s why we don&apos;t just
+                supply businesses with premium banners or illuminated signs; we
+                help you optimize your Google Business Profiles, run
+                neighborhood direct mail marketing, and build search authority
+                in every city you serve.
               </p>
               <p className="text-primary-dark/70 leading-relaxed">
-                With a price match guarantee and decades of local experience, FBS Signs is the preferred
-                partner for retail, hospitality, and home-service brands across the region.
+                With a price match guarantee and decades of local experience,
+                FBS Signs is the preferred partner for retail, hospitality, and
+                home-service brands across the region.
               </p>
             </div>
             <div className="relative h-[250px] md:h-[350px] rounded-2xl overflow-hidden shadow-md">
@@ -169,8 +181,9 @@ export default async function ServiceAreasListingPage() {
               Operating Outside of These Cities?
             </h2>
             <p className="max-w-2xl mx-auto mt-4 text-base md:text-lg text-primary-light leading-relaxed">
-              Although we have dedicated physical service zones, we design websites, manage SEO,
-              and ship custom signs and commercial printing projects nationwide. Contact us to discuss your goals.
+              Although we have dedicated physical service zones, we design
+              websites, manage SEO, and ship custom signs and commercial
+              printing projects nationwide. Contact us to discuss your goals.
             </p>
             <div className="pt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
               <a

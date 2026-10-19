@@ -20,7 +20,10 @@ import {
   Loader2,
 } from "lucide-react";
 import productDetailData from "../../../data/product-detail.json";
-import { getProductFaqs, ProductFaqItem } from "../../../data/Product-faqs-data";
+import {
+  getProductFaqs,
+  ProductFaqItem,
+} from "../../../data/Product-faqs-data";
 import Link from "next/link";
 import FaqAccordion from "@/app/Components/FaqAccordion";
 
@@ -150,21 +153,21 @@ function mapRawToProductData(raw: any): ProductData {
     gallery: [
       ...(raw?.images?.mainImage
         ? [
-          {
-            id: "main",
-            label: "Main Image",
-            url: raw.images.mainImage.startsWith("/")
-              ? raw.images.mainImage
-              : `/${raw.images.mainImage}`,
-          },
-        ]
+            {
+              id: "main",
+              label: "Main Image",
+              url: raw.images.mainImage.startsWith("/")
+                ? raw.images.mainImage
+                : `/${raw.images.mainImage}`,
+            },
+          ]
         : []),
       ...(Array.isArray(raw?.images?.subImages)
         ? raw.images.subImages.map((img: string, i: number) => ({
-          id: `sub-${i}`,
-          label: `Image ${i + 1}`,
-          url: img.startsWith("/") ? img : `/${img}`,
-        }))
+            id: `sub-${i}`,
+            label: `Image ${i + 1}`,
+            url: img.startsWith("/") ? img : `/${img}`,
+          }))
         : []),
     ],
     bullets: Array.isArray(raw?.features) ? raw.features : [],
@@ -205,10 +208,7 @@ function Breadcrumbs({ productName }: { productName: string }) {
           Home
         </Link>
         <span className="mx-1">&gt;</span>
-        <Link
-          href="/services/signage"
-          className="text-primary hover:underline"
-        >
+        <Link href="/services/signage" className="text-primary hover:underline">
           Signage Services
         </Link>
         <span className="mx-1">&gt;</span>
@@ -364,7 +364,6 @@ export default function ProductDetailPage() {
     { id: "file-setup", label: "File Setup" },
   ];
 
-
   return (
     <>
       <div className="min-h-screen bg-white text-primary-dark">
@@ -400,10 +399,11 @@ export default function ProductDetailPage() {
                         onClick={() => setActiveImageId(item.id)}
                         aria-label={item.label}
                         aria-pressed={active}
-                        className={`aspect-square rounded-sm border bg-primary-light/40 flex items-center justify-center overflow-hidden transition-colors ${active
-                          ? "border-primary ring-1 ring-primary"
-                          : "border-primary-light hover:border-primary"
-                          }`}
+                        className={`aspect-square rounded-sm border bg-primary-light/40 flex items-center justify-center overflow-hidden transition-colors ${
+                          active
+                            ? "border-primary ring-1 ring-primary"
+                            : "border-primary-light hover:border-primary"
+                        }`}
                       >
                         {item.url ? (
                           <img
@@ -455,10 +455,11 @@ export default function ProductDetailPage() {
                             key={p.id}
                             onClick={() => setPackageId(p.id)}
                             aria-pressed={active}
-                            className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${active
-                              ? "border-primary bg-primary/5 text-primary"
-                              : "border-primary-light text-primary-dark/80 hover:border-primary"
-                              }`}
+                            className={`rounded-lg border px-4 py-2 text-sm font-medium transition-colors ${
+                              active
+                                ? "border-primary bg-primary/5 text-primary"
+                                : "border-primary-light text-primary-dark/80 hover:border-primary"
+                            }`}
                           >
                             {p.label}
                           </button>
@@ -478,14 +479,14 @@ export default function ProductDetailPage() {
                       {sizeGroup.label}
                     </p>
                     <div
-                      className={`grid gap-2.5 ${sizeGroup.options.length > 3
-                        ? "grid-cols-4"
-                        : "grid-cols-2"
-                        }`}
+                      className={`grid gap-2.5 ${
+                        sizeGroup.options.length > 3
+                          ? "grid-cols-4"
+                          : "grid-cols-2"
+                      }`}
                     >
                       {sizeGroup.options.map((opt) => {
-                        const active =
-                          selections[sizeGroup.key] === opt.value;
+                        const active = selections[sizeGroup.key] === opt.value;
                         return (
                           <button
                             key={opt.value}
@@ -496,10 +497,11 @@ export default function ProductDetailPage() {
                               }))
                             }
                             aria-pressed={active}
-                            className={`rounded-lg border px-2 py-2.5 text-center transition-colors ${active
-                              ? "border-primary bg-primary/5"
-                              : "border-primary-light hover:border-primary"
-                              }`}
+                            className={`rounded-lg border px-2 py-2.5 text-center transition-colors ${
+                              active
+                                ? "border-primary bg-primary/5"
+                                : "border-primary-light hover:border-primary"
+                            }`}
                           >
                             <span
                               className={`block text-sm font-semibold ${active ? "text-primary" : "text-primary-dark"}`}
@@ -525,7 +527,10 @@ export default function ProductDetailPage() {
                       label={group.label}
                       value={selections[group.key] ?? ""}
                       onChange={(value) =>
-                        setSelections((prev) => ({ ...prev, [group.key]: value }))
+                        setSelections((prev) => ({
+                          ...prev,
+                          [group.key]: value,
+                        }))
                       }
                       options={group.options}
                     />
@@ -561,10 +566,11 @@ export default function ProductDetailPage() {
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
                       aria-selected={active}
-                      className={`relative py-3 text-sm sm:text-[15px] font-medium whitespace-nowrap transition-colors ${active
-                        ? "text-primary"
-                        : "text-primary-dark/60 hover:text-primary-dark"
-                        }`}
+                      className={`relative py-3 text-sm sm:text-[15px] font-medium whitespace-nowrap transition-colors ${
+                        active
+                          ? "text-primary"
+                          : "text-primary-dark/60 hover:text-primary-dark"
+                      }`}
                     >
                       {tab.label}
                       {active && (
@@ -623,7 +629,9 @@ function StateScreen({
       {kind === "loading" ? (
         <>
           <Loader2 className="h-6 w-6 text-primary animate-spin" />
-          <p className="text-sm text-primary-dark/60">Loading product details…</p>
+          <p className="text-sm text-primary-dark/60">
+            Loading product details…
+          </p>
         </>
       ) : (
         <>
@@ -763,7 +771,9 @@ function FeatureGrid({ bullets }: { bullets: string[] }) {
             <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
               <Icon className="h-4 w-4" />
             </span>
-            <span className="pt-1 text-sm leading-snug text-primary-dark/80">{b}</span>
+            <span className="pt-1 text-sm leading-snug text-primary-dark/80">
+              {b}
+            </span>
           </div>
         );
       })}
@@ -915,10 +925,11 @@ function SizeSpecificationBlock({
                 {columns.map((col) => (
                   <td
                     key={col}
-                    className={`py-3 px-3 text-center border-r border-primary-light last:border-r-0 whitespace-nowrap ${col === "assembledHeight"
-                      ? "text-primary font-medium"
-                      : "text-primary-dark/80"
-                      }`}
+                    className={`py-3 px-3 text-center border-r border-primary-light last:border-r-0 whitespace-nowrap ${
+                      col === "assembledHeight"
+                        ? "text-primary font-medium"
+                        : "text-primary-dark/80"
+                    }`}
                   >
                     {row[col]}
                   </td>
@@ -1026,7 +1037,11 @@ function SpecEntry({
   if (typeof value === "string" && !nodeKey.toLowerCase().includes("image")) {
     return (
       <p
-        className={compact ? "text-xs text-primary-dark/80" : "text-sm text-primary-dark/80"}
+        className={
+          compact
+            ? "text-xs text-primary-dark/80"
+            : "text-sm text-primary-dark/80"
+        }
       >
         <span className="font-medium text-primary-dark">{label}:</span> {value}
       </p>
@@ -1231,7 +1246,8 @@ function FaqsTab({
         FAQs for {productName}
       </h2>
       <p className="text-sm text-primary-dark/70 sm:text-base mb-8">
-        Clear answers for common questions about our {productName.toLowerCase()}.
+        Clear answers for common questions about our {productName.toLowerCase()}
+        .
       </p>
 
       <FaqAccordion
@@ -1281,7 +1297,10 @@ function SignageQuoteForm({
     if (bot?.checked) return;
 
     if (W3F_ACCESS_KEY === "YOUR_WEB3FORMS_ACCESS_KEY") {
-      setState({ type: "error", message: "Web3Forms access key is not configured." });
+      setState({
+        type: "error",
+        message: "Web3Forms access key is not configured.",
+      });
       return;
     }
 
@@ -1304,7 +1323,8 @@ function SignageQuoteForm({
     currentGroups.forEach((g) => {
       const selectedValue = selections[g.key];
       const selectedLabel =
-        g.options.find((o) => o.value === selectedValue)?.label ?? selectedValue;
+        g.options.find((o) => o.value === selectedValue)?.label ??
+        selectedValue;
       fd.append(g.label, selectedLabel ?? "");
     });
 
@@ -1380,7 +1400,9 @@ function SignageQuoteForm({
               Phone *
             </label>
             <div className="flex items-center rounded-xl border border-primary-light bg-white transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/10">
-              <span className="pl-4 text-sm text-primary-dark/45 font-medium select-none pr-1.5">+1</span>
+              <span className="pl-4 text-sm text-primary-dark/45 font-medium select-none pr-1.5">
+                +1
+              </span>
               <input
                 id={`${formId}-phone`}
                 name="phone"
@@ -1432,8 +1454,9 @@ function SignageQuoteForm({
         {state.type !== "idle" && (
           <p
             aria-live="polite"
-            className={`text-sm font-medium ${state.type === "success" ? "text-green-600" : "text-red-600"
-              }`}
+            className={`text-sm font-medium ${
+              state.type === "success" ? "text-green-600" : "text-red-600"
+            }`}
           >
             {state.message}
           </p>
@@ -1454,9 +1477,12 @@ function SignageQuoteForm({
           )}
         </button>
 
-        <p className="text-center text-[11px] text-primary-dark/45">
+        <p className="text-center text-[13px] text-primary-dark/45">
           Or call us at{" "}
-          <a href="tel:+18552221133" className="font-semibold text-primary hover:underline">
+          <a
+            href="tel:+18552221133"
+            className="font-semibold text-primary hover:underline"
+          >
             +1-855-222-1133
           </a>
         </p>

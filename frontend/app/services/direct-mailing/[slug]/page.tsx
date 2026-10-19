@@ -133,7 +133,10 @@ export async function generateMetadata({
   }
 
   const baseUrl = await getRequestBaseUrl();
-  const canonical = absoluteUrl(`/services/direct-mailing/${format.slug}`, baseUrl);
+  const canonical = absoluteUrl(
+    `/services/direct-mailing/${format.slug}`,
+    baseUrl,
+  );
   const image = toAbsoluteImageUrl(format.img, baseUrl);
 
   return {
@@ -221,7 +224,10 @@ export default async function DirectMailFormatPage({ params }: PageProps) {
   if (!format) notFound();
 
   const baseUrl = await getRequestBaseUrl();
-  const canonical = absoluteUrl(`/services/direct-mailing/${format.slug}`, baseUrl);
+  const canonical = absoluteUrl(
+    `/services/direct-mailing/${format.slug}`,
+    baseUrl,
+  );
   const image = toAbsoluteImageUrl(format.img, baseUrl);
 
   const breadcrumbSchema = buildBreadcrumbSchema(
@@ -249,9 +255,10 @@ export default async function DirectMailFormatPage({ params }: PageProps) {
     areaServed: buildAreaServedSchema(),
   };
 
-  const faqSchema = format.faqs.length > 0
-    ? buildFaqSchema(`${canonical}#faq`, format.faqs)
-    : null;
+  const faqSchema =
+    format.faqs.length > 0
+      ? buildFaqSchema(`${canonical}#faq`, format.faqs)
+      : null;
 
   const related = getRelatedFormats(format);
   const includedItems = buildIncludedItems(format);
@@ -296,7 +303,9 @@ export default async function DirectMailFormatPage({ params }: PageProps) {
               Direct Mailing
             </Link>
             <span className="mx-2">&gt;</span>
-            <span className="text-primary-dark font-semibold">{format.title}</span>
+            <span className="text-primary-dark font-semibold">
+              {format.title}
+            </span>
           </p>
 
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-start">
@@ -402,7 +411,9 @@ export default async function DirectMailFormatPage({ params }: PageProps) {
               <dt className="text-xs font-semibold uppercase tracking-wide text-primary-dark/45">
                 {label}
               </dt>
-              <dd className="text-md font-semibold text-primary-dark">{value}</dd>
+              <dd className="text-md font-semibold text-primary-dark">
+                {value}
+              </dd>
             </div>
           ))}
         </dl>
@@ -419,7 +430,7 @@ export default async function DirectMailFormatPage({ params }: PageProps) {
           <div className="relative z-10 max-w-6xl mx-auto">
             {/* Heading */}
             <div className="text-center max-w-3xl mx-auto mb-12">
-              <span className="inline-block px-4 py-1.5 rounded-full bg-white text-primary text-[11px] font-extrabold uppercase tracking-[0.15em] shadow-sm mb-4">
+              <span className="inline-block px-4 py-1.5 rounded-full bg-white text-primary text-[13px] font-extrabold uppercase tracking-[0.15em] shadow-sm mb-4">
                 Why It Works
               </span>
               <h2 className="text-3xl sm:text-4xl font-extrabold text-primary-dark mb-5">
@@ -496,7 +507,7 @@ export default async function DirectMailFormatPage({ params }: PageProps) {
                         className="flex-1 min-w-[120px] lg:w-full flex items-center justify-center lg:justify-start rounded-xl bg-primary-light/50 px-4 py-3 text-[15px] font-bold text-primary-dark/70 border border-primary-light transition-colors hover:border-primary hover:bg-primary-light"
                       >
                         {spec.label.toLowerCase() !== "size" && (
-                          <span className="text-[11px] uppercase tracking-wider text-primary-dark/70 mr-2">
+                          <span className="text-[13px] uppercase tracking-wider text-primary-dark/70 mr-2">
                             {spec.label}
                           </span>
                         )}

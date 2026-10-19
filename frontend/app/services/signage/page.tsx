@@ -128,12 +128,30 @@ export default function Page() {
   ];
 
   const services = [
-    { title: "Awning & Canopy", img: "/images/services/signage/awning-canopy-signage.webp" },
-    { title: "Car Wrap", img: "/images/services/signage/car-wrap-signage.webp" },
-    { title: "Exterior Monuments", img: "/images/services/signage/exterior-monument-signage.webp" },
-    { title: "Wall Sign", img: "/images/services/signage/wall-signage-example.webp" },
-    { title: "Street Sign", img: "/images/services/signage/street-signage-example.webp" },
-    { title: "Window Graphics", img: "/images/services/signage/window-graphics-example.webp" },
+    {
+      title: "Awning & Canopy",
+      img: "/images/services/signage/awning-canopy-signage.webp",
+    },
+    {
+      title: "Car Wrap",
+      img: "/images/services/signage/car-wrap-signage.webp",
+    },
+    {
+      title: "Exterior Monuments",
+      img: "/images/services/signage/exterior-monument-signage.webp",
+    },
+    {
+      title: "Wall Sign",
+      img: "/images/services/signage/wall-signage-example.webp",
+    },
+    {
+      title: "Street Sign",
+      img: "/images/services/signage/street-signage-example.webp",
+    },
+    {
+      title: "Window Graphics",
+      img: "/images/services/signage/window-graphics-example.webp",
+    },
   ];
 
   return (
@@ -392,7 +410,6 @@ export default function Page() {
             </div>
           </div>
         </section>
-
       </main>
     </>
   );

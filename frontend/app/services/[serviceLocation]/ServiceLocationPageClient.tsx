@@ -20,7 +20,7 @@ export default function ServiceLocationPageClient({
 }) {
   const [loaderDone, setLoaderDone] = useState(false);
   const matchingServiceArea = serviceAreas.find(
-    (sa) => sa.name.toLowerCase() === page.location.city.toLowerCase()
+    (sa) => sa.name.toLowerCase() === page.location.city.toLowerCase(),
   );
 
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function ServiceLocationPageClient({
                   <div className="flex justify-center lg:justify-start">
                     <div className="inline-flex items-center gap-3 bg-primary-light text-primary px-5 py-2 rounded-full shadow-lg">
                       <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                      <span className="text-[11px] font-bold uppercase tracking-widest">
+                      <span className="text-[13px] font-bold uppercase tracking-widest">
                         {page.heroBadge}
                       </span>
                     </div>
@@ -172,7 +172,8 @@ export default function ServiceLocationPageClient({
               {page.highlightsTitle}
             </h2>
             <p className="mt-4 sm:mt-6 text-base sm:text-lg md:text-xl text-primary-dark/70 font-medium">
-              Service options built for practical local campaigns and repeat use.
+              Service options built for practical local campaigns and repeat
+              use.
             </p>
           </div>
 
@@ -285,7 +286,8 @@ export default function ServiceLocationPageClient({
               Other services in {page.location.city}, {page.location.stateCode}
             </h2>
             <p className="mt-4 text-base sm:text-lg md:text-xl text-primary-dark/70 font-medium">
-              Internal links that help visitors explore related support in the same city.
+              Internal links that help visitors explore related support in the
+              same city.
             </p>
           </div>
 
@@ -319,10 +321,12 @@ export default function ServiceLocationPageClient({
         <section className="container section-padding">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-primary-dark leading-tight">
-              FAQs for {page.service.routeLabel.toLowerCase()} in {page.location.city}
+              FAQs for {page.service.routeLabel.toLowerCase()} in{" "}
+              {page.location.city}
             </h2>
             <p className="mt-4 text-base sm:text-lg md:text-xl text-primary-dark/70 font-medium">
-              Clear answers for common local questions about scope, process, and next steps.
+              Clear answers for common local questions about scope, process, and
+              next steps.
             </p>
           </div>
 

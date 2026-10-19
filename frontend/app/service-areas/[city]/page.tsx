@@ -26,7 +26,9 @@ export function generateStaticParams() {
   }));
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const { city } = await params;
   const area = getServiceArea(city);
 
@@ -63,7 +65,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description: `Need signage or marketing in ${area.name}, IL? FBS Signs provides storefront signs, commercial printing, direct mail, web design, and local SEO across ${area.county}.`,
       images: [
         {
-          url: absoluteUrl("/images/services/signage/signage-service.webp", baseUrl),
+          url: absoluteUrl(
+            "/images/services/signage/signage-service.webp",
+            baseUrl,
+          ),
           width: 1200,
           height: 630,
           alt: `Commercial signage and printing in ${area.name}, Illinois`,
@@ -74,7 +79,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       card: "summary_large_image",
       title: `Custom Signs, Print & SEO in ${area.name}, IL | ${area.county} | FBS Signs`,
       description: `Need signage or marketing in ${area.name}, IL? FBS Signs provides storefront signs, commercial printing, direct mail, web design, and local SEO across ${area.county}.`,
-      images: [absoluteUrl("/images/services/signage/signage-service.webp", baseUrl)],
+      images: [
+        absoluteUrl("/images/services/signage/signage-service.webp", baseUrl),
+      ],
     },
   };
 }
@@ -144,54 +151,64 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
           itemOffered: {
             "@type": "Service",
             name: "Custom Signage Services",
-            description: "Custom storefront signs, LED channel letters, window vinyls, and vehicle wraps."
-          }
+            description:
+              "Custom storefront signs, LED channel letters, window vinyls, and vehicle wraps.",
+          },
         },
         {
           "@type": "Offer",
           itemOffered: {
             "@type": "Service",
             name: "Commercial Printing Products",
-            description: "Premium business cards, brochures, restaurant menus, catalogs, and marketing handouts."
-          }
+            description:
+              "Premium business cards, brochures, restaurant menus, catalogs, and marketing handouts.",
+          },
         },
         {
           "@type": "Offer",
           itemOffered: {
             "@type": "Service",
             name: "Targeted Direct Mailing",
-            description: "Route-based Every Door Direct Mail (EDDM) and direct mailing campaigns targeting local zip codes."
-          }
+            description:
+              "Route-based Every Door Direct Mail (EDDM) and direct mailing campaigns targeting local zip codes.",
+          },
         },
         {
           "@type": "Offer",
           itemOffered: {
             "@type": "Service",
             name: "Responsive Web Design",
-            description: "Custom lead-generation websites, mobile-friendly layouts, and service landing pages."
-          }
+            description:
+              "Custom lead-generation websites, mobile-friendly layouts, and service landing pages.",
+          },
         },
         {
           "@type": "Offer",
           itemOffered: {
             "@type": "Service",
             name: "Local SEO & Optimization",
-            description: "Google Map Pack ranking, localized search visibility, and directory listings optimization."
-          }
-        }
-      ]
-    }
+            description:
+              "Google Map Pack ranking, localized search visibility, and directory listings optimization.",
+          },
+        },
+      ],
+    },
   };
 
   const allFaqsForSchema = [
-    ...(area.quickAnswers ? area.quickAnswers.map((q) => ({ question: q.question, answer: q.answer })) : []),
+    ...(area.quickAnswers
+      ? area.quickAnswers.map((q) => ({
+          question: q.question,
+          answer: q.answer,
+        }))
+      : []),
     ...area.faqs,
   ];
   const faqSchema = buildFaqSchema(`${canonical}#faq`, allFaqsForSchema);
 
   const markets = getLocationMarkets();
   const matchingMarket = markets.find(
-    (m) => m.city.toLowerCase() === area.name.toLowerCase()
+    (m) => m.city.toLowerCase() === area.name.toLowerCase(),
   );
 
   const getServiceLink = (genericPath: string) => {
@@ -272,7 +289,6 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
       />
 
       <main className="bg-linear-to-br from-white via-white to-primary-light/10 min-h-screen">
-
         {/* Hero Section */}
         <section className="bg-linear-to-br from-primary-dark to-primary-dark text-white xl:pt-28 pt-20 pb-20 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
@@ -282,7 +298,7 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
             <div className="flex justify-center lg:justify-start">
               <div className="inline-flex items-center gap-3 bg-primary/10 text-primary-light px-5 py-2 rounded-full border border-primary/20 shadow-lg mb-6">
                 <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                <span className="text-[11px] font-bold uppercase tracking-widest">
+                <span className="text-[13px] font-bold uppercase tracking-widest">
                   {area.name} Service Area
                 </span>
               </div>
@@ -299,11 +315,23 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
 
                 {/* Breadcrumbs */}
                 <div className="flex items-center gap-2 text-sm text-primary-dark/45 mb-6 font-medium">
-                  <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+                  <Link
+                    href="/"
+                    className="hover:text-primary transition-colors"
+                  >
+                    Home
+                  </Link>
                   <span>/</span>
-                  <Link href="/service-areas" className="hover:text-primary transition-colors">Service Areas</Link>
+                  <Link
+                    href="/service-areas"
+                    className="hover:text-primary transition-colors"
+                  >
+                    Service Areas
+                  </Link>
                   <span>/</span>
-                  <span className="text-primary-light font-bold">{area.name}</span>
+                  <span className="text-primary-light font-bold">
+                    {area.name}
+                  </span>
                 </div>
 
                 <p className="text-primary-light/80 text-base sm:text-lg leading-relaxed mb-8">
@@ -361,7 +389,8 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
                 ✨
               </span>
               <h2 className="text-2xl font-extrabold text-primary-dark leading-tight">
-                {area.quickAnswersTitle || `Local Quick Answers: Services in ${area.name}, IL`}
+                {area.quickAnswersTitle ||
+                  `Local Quick Answers: Services in ${area.name}, IL`}
               </h2>
             </div>
             <div className="grid md:grid-cols-2 gap-6">
@@ -371,7 +400,9 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
                     key={idx}
                     className="bg-white/85 p-6 rounded-2xl border border-primary-light/60 shadow-sm hover:shadow-md transition-shadow duration-300"
                   >
-                    <h3 className="text-base font-bold text-primary-dark mb-2">{item.question}</h3>
+                    <h3 className="text-base font-bold text-primary-dark mb-2">
+                      {item.question}
+                    </h3>
                     <p className="text-primary-dark/70 text-sm leading-relaxed">
                       {item.answer}
                     </p>
@@ -380,27 +411,56 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
               ) : (
                 <>
                   <div className="bg-white/85 p-6 rounded-2xl border border-primary-light/60 shadow-sm hover:shadow-md transition-shadow duration-300">
-                    <h3 className="text-base font-bold text-primary-dark mb-2">What marketing &amp; branding services are available in {area.name}?</h3>
+                    <h3 className="text-base font-bold text-primary-dark mb-2">
+                      What marketing &amp; branding services are available in{" "}
+                      {area.name}?
+                    </h3>
                     <p className="text-primary-dark/70 text-sm leading-relaxed">
-                      FBS Signs provides end-to-end design, fabrication, and marketing services in {area.name}, IL. This includes custom storefront signs, business print collateral, targeted direct mailing (EDDM), modern web design, and local SEO services tailored to the regional business market.
+                      FBS Signs provides end-to-end design, fabrication, and
+                      marketing services in {area.name}, IL. This includes
+                      custom storefront signs, business print collateral,
+                      targeted direct mailing (EDDM), modern web design, and
+                      local SEO services tailored to the regional business
+                      market.
                     </p>
                   </div>
                   <div className="bg-white/85 p-6 rounded-2xl border border-primary-light/60 shadow-sm hover:shadow-md transition-shadow duration-300">
-                    <h3 className="text-base font-bold text-primary-dark mb-2">How does FBS Signs handle zoning regulations for custom signage in {area.name}?</h3>
+                    <h3 className="text-base font-bold text-primary-dark mb-2">
+                      How does FBS Signs handle zoning regulations for custom
+                      signage in {area.name}?
+                    </h3>
                     <p className="text-primary-dark/70 text-sm leading-relaxed">
-                      We manage the entire commercial sign permit and approval process directly with {area.name}&apos;s building division and zoning board. Our custom exterior signs, channel letters, and monument graphics are engineered to meet all local zoning requirements.
+                      We manage the entire commercial sign permit and approval
+                      process directly with {area.name}&apos;s building division
+                      and zoning board. Our custom exterior signs, channel
+                      letters, and monument graphics are engineered to meet all
+                      local zoning requirements.
                     </p>
                   </div>
                   <div className="bg-white/85 p-6 rounded-2xl border border-primary-light/60 shadow-sm hover:shadow-md transition-shadow duration-300">
-                    <h3 className="text-base font-bold text-primary-dark mb-2">Can I launch target mailers in specific carrier routes in the {area.name} area?</h3>
+                    <h3 className="text-base font-bold text-primary-dark mb-2">
+                      Can I launch target mailers in specific carrier routes in
+                      the {area.name} area?
+                    </h3>
                     <p className="text-primary-dark/70 text-sm leading-relaxed">
-                      Yes. We specialize in planning and executing targeted Every Door Direct Mail (EDDM) campaigns, matching your print collateral to specific postal carrier routes and residential areas in {area.name} to maximize local lead acquisition.
+                      Yes. We specialize in planning and executing targeted
+                      Every Door Direct Mail (EDDM) campaigns, matching your
+                      print collateral to specific postal carrier routes and
+                      residential areas in {area.name} to maximize local lead
+                      acquisition.
                     </p>
                   </div>
                   <div className="bg-white/85 p-6 rounded-2xl border border-primary-light/60 shadow-sm hover:shadow-md transition-shadow duration-300">
-                    <h3 className="text-base font-bold text-primary-dark mb-2">Why is local SEO vital for business growth in {area.county}?</h3>
+                    <h3 className="text-base font-bold text-primary-dark mb-2">
+                      Why is local SEO vital for business growth in{" "}
+                      {area.county}?
+                    </h3>
                     <p className="text-primary-dark/70 text-sm leading-relaxed">
-                      Optimizing your local online footprint ensures that your business ranks at the top of local map packs and regional searches. By integrating structured schema markup, local landing pages, and geographical citations, we build trust with search engines and LLM answer engines.
+                      Optimizing your local online footprint ensures that your
+                      business ranks at the top of local map packs and regional
+                      searches. By integrating structured schema markup, local
+                      landing pages, and geographical citations, we build trust
+                      with search engines and LLM answer engines.
                     </p>
                   </div>
                 </>
@@ -424,7 +484,9 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
                 {area.localSeoContent}
               </p>
 
-              <h3 className="text-lg font-bold text-primary-dark mb-3">Key Locations &amp; Landmarks:</h3>
+              <h3 className="text-lg font-bold text-primary-dark mb-3">
+                Key Locations &amp; Landmarks:
+              </h3>
               <div className="flex flex-wrap gap-2">
                 {area.landmarks.map((landmark) => (
                   <span
@@ -439,7 +501,7 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
             <div className="relative h-[250px] md:h-[350px] rounded-2xl overflow-hidden shadow-md">
               <iframe
                 src={`https://www.google.com/maps?q=${encodeURIComponent(
-                  `${area.name}, ${area.stateCode}, USA`
+                  `${area.name}, ${area.stateCode}, USA`,
                 )}&output=embed`}
                 className="w-full h-full border-0"
                 allowFullScreen={false}
@@ -470,8 +532,12 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
                 <div className="w-12 h-12 rounded-xl bg-primary-light text-primary flex items-center justify-center font-bold text-xl mb-6">
                   ✓
                 </div>
-                <h3 className="text-xl font-bold text-primary-dark mb-3">{point.title}</h3>
-                <p className="text-primary-dark/70 leading-relaxed text-sm">{point.description}</p>
+                <h3 className="text-xl font-bold text-primary-dark mb-3">
+                  {point.title}
+                </h3>
+                <p className="text-primary-dark/70 leading-relaxed text-sm">
+                  {point.description}
+                </p>
               </div>
             ))}
           </div>
@@ -536,7 +602,10 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
             </h2>
           </div>
 
-          <FaqAccordion items={area.faqs} name={`service-area-faq-${area.slug}`} />
+          <FaqAccordion
+            items={area.faqs}
+            name={`service-area-faq-${area.slug}`}
+          />
         </section>
 
         {/* Nearby Cities Matrix */}
@@ -572,7 +641,8 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
               Ready to Grow Your Presence in {area.name}?
             </h2>
             <p className="max-w-2xl mx-auto mt-4 text-base md:text-lg text-primary-light leading-relaxed">
-              Connect with our local experts today. We provide free consultations, local code advice, and detailed quotes.
+              Connect with our local experts today. We provide free
+              consultations, local code advice, and detailed quotes.
             </p>
             <div className="pt-8">
               <Link
@@ -584,7 +654,6 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
             </div>
           </div>
         </section>
-
       </main>
     </>
   );

@@ -37,7 +37,7 @@ export default function PrivacyPage() {
               <div className="max-w-4xl mx-auto text-center space-y-5">
                 <div className="inline-flex items-center gap-3 bg-primary-light text-primary px-5 py-2 rounded-full shadow-lg">
                   <span className="w-2 h-2 bg-primary rounded-full animate-pulse" />
-                  <span className="text-[11px] font-bold uppercase tracking-widest">
+                  <span className="text-[13px] font-bold uppercase tracking-widest">
                     Privacy &amp; Data Use
                   </span>
                 </div>
@@ -45,8 +45,9 @@ export default function PrivacyPage() {
                   Privacy Policy
                 </h1>
                 <p className="text-primary-dark/70 text-base sm:text-lg max-w-3xl mx-auto">
-                  This page explains how FBS Prints handles information submitted
-                  through the website, quote requests, and direct communication.
+                  This page explains how FBS Prints handles information
+                  submitted through the website, quote requests, and direct
+                  communication.
                 </p>
               </div>
             </div>
@@ -74,8 +75,8 @@ export default function PrivacyPage() {
                 Contact regarding privacy questions
               </h2>
               <p className="mt-4 text-primary-light text-base md:text-lg leading-relaxed">
-                For privacy or data-use questions, contact FBS Prints at
-                {" "}info@fbsprints.com or call +1-855-222-1133.
+                For privacy or data-use questions, contact FBS Prints at{" "}
+                info@fbsprints.com or call +1-855-222-1133.
               </p>
             </article>
           </div>

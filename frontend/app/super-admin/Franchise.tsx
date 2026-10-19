@@ -72,9 +72,8 @@ export function FranchiseManagement() {
   const [formError, setFormError] = useState<string | null>(null);
 
   // View modal state
-  const [viewingFranchise, setViewingFranchise] = useState<FranchiseModel | null>(
-    null,
-  );
+  const [viewingFranchise, setViewingFranchise] =
+    useState<FranchiseModel | null>(null);
 
   // Delete modal state
   const [deleteTarget, setDeleteTarget] = useState<FranchiseModel | null>(null);
@@ -112,7 +111,9 @@ export function FranchiseManagement() {
       setFranchises(data);
     } catch (err: any) {
       const msg =
-        err instanceof Error ? err.message : "Unable to load franchise records.";
+        err instanceof Error
+          ? err.message
+          : "Unable to load franchise records.";
       setLoadError(msg);
     } finally {
       setIsLoading(false);
@@ -158,7 +159,8 @@ export function FranchiseManagement() {
       description: franchise.description || "",
       logoFile: null,
       existingLogoUrl: franchise.brandingLogoUrl || null,
-      isActive: franchise.isActive !== undefined ? Boolean(franchise.isActive) : true,
+      isActive:
+        franchise.isActive !== undefined ? Boolean(franchise.isActive) : true,
     });
     setFormErrors({});
     setLogoPreviewUrl(
@@ -337,7 +339,10 @@ export function FranchiseManagement() {
         >
           <div className="flex items-center gap-2.5">
             {notice.type === "success" ? (
-              <CheckCircle2 size={18} className="text-emerald-600 flex-shrink-0" />
+              <CheckCircle2
+                size={18}
+                className="text-emerald-600 flex-shrink-0"
+              />
             ) : (
               <AlertCircle size={18} className="text-rose-600 flex-shrink-0" />
             )}
@@ -349,7 +354,8 @@ export function FranchiseManagement() {
             size="icon-sm"
             onClick={() => setNotice(null)}
             className="text-slate-400 hover:text-slate-700 h-6 w-6"
-           title="Close">
+            title="Close"
+          >
             <X size={14} />
           </Button>
         </div>
@@ -362,7 +368,7 @@ export function FranchiseManagement() {
             <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
               Franchise Management
             </h1>
-            <Badge variant="secondary" className="font-mono text-[11px] px-2">
+            <Badge variant="secondary" className="font-mono text-[13px] px-2">
               {franchises.length} total
             </Badge>
           </div>
@@ -418,7 +424,8 @@ export function FranchiseManagement() {
               size="icon-sm"
               onClick={() => setSearchQuery("")}
               className="absolute right-2.5 top-1/2 -translate-y-1/2 h-6 w-6 text-slate-400 hover:text-slate-600"
-             title="Close">
+              title="Close"
+            >
               <X size={13} />
             </Button>
           )}
@@ -444,7 +451,10 @@ export function FranchiseManagement() {
 
         {isLoading ? (
           <div className="py-20 text-center space-y-3">
-            <Loader2 size={36} className="mx-auto text-indigo-600 animate-spin" />
+            <Loader2
+              size={36}
+              className="mx-auto text-indigo-600 animate-spin"
+            />
             <p className="text-sm font-semibold text-slate-600">
               Loading franchise records...
             </p>
@@ -460,7 +470,9 @@ export function FranchiseManagement() {
             <h3 className="text-base font-bold text-slate-900">
               Failed to load franchises
             </h3>
-            <p className="text-xs text-slate-500 max-w-md mx-auto">{loadError}</p>
+            <p className="text-xs text-slate-500 max-w-md mx-auto">
+              {loadError}
+            </p>
             <Button
               type="button"
               variant="outline"
@@ -477,7 +489,9 @@ export function FranchiseManagement() {
               <Store size={28} />
             </div>
             <h3 className="text-base font-bold text-slate-900">
-              {searchQuery ? "No matching franchises found" : "No franchises yet"}
+              {searchQuery
+                ? "No matching franchises found"
+                : "No franchises yet"}
             </h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
               {searchQuery
@@ -510,10 +524,16 @@ export function FranchiseManagement() {
               <thead className="bg-black/[0.03] text-slate-800 font-semibold text-xs">
                 <tr>
                   <th className="px-5 py-3.5 w-20">Logo</th>
-                  <th className="px-5 py-3.5 font-semibold w-52">Franchise Name</th>
-                  <th className="px-5 py-3.5 font-semibold w-64 md:w-80">Description</th>
+                  <th className="px-5 py-3.5 font-semibold w-52">
+                    Franchise Name
+                  </th>
+                  <th className="px-5 py-3.5 font-semibold w-64 md:w-80">
+                    Description
+                  </th>
                   <th className="px-5 py-3.5 font-semibold w-32">Status</th>
-                  <th className="px-5 py-3.5 text-right font-semibold">Actions</th>
+                  <th className="px-5 py-3.5 text-right font-semibold">
+                    Actions
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-black/10 bg-white">
@@ -542,13 +562,20 @@ export function FranchiseManagement() {
                               alt={f.name}
                               className="w-full h-full object-contain"
                               onError={(e) => {
-                                (e.target as HTMLElement).style.display = "none";
-                                const parent = (e.target as HTMLElement).parentElement;
-                                if (parent && !parent.querySelector(".fallback-icon")) {
+                                (e.target as HTMLElement).style.display =
+                                  "none";
+                                const parent = (e.target as HTMLElement)
+                                  .parentElement;
+                                if (
+                                  parent &&
+                                  !parent.querySelector(".fallback-icon")
+                                ) {
                                   const span = document.createElement("span");
                                   span.className =
                                     "fallback-icon text-slate-400 font-bold text-xs";
-                                  span.textContent = f.name.slice(0, 2).toUpperCase();
+                                  span.textContent = f.name
+                                    .slice(0, 2)
+                                    .toUpperCase();
                                   parent.appendChild(span);
                                 }
                               }}
@@ -570,7 +597,7 @@ export function FranchiseManagement() {
                           </span>
                         </div>
                         {f.createdAt && (
-                          <p className="text-[11px] text-slate-400 font-normal mt-0.5">
+                          <p className="text-[13px] text-slate-400 font-normal mt-0.5">
                             Added {new Date(f.createdAt).toLocaleDateString()}
                           </p>
                         )}
@@ -632,9 +659,11 @@ export function FranchiseManagement() {
                             onClick={() => setDeleteTarget(f)}
                             title="Delete franchise"
                             className="portal-action portal-action-danger"
-                           aria-label="Delete" variant="outline">
-                      <Trash2 size={15} aria-hidden="true" />
-                    </Button>
+                            aria-label="Delete"
+                            variant="outline"
+                          >
+                            <Trash2 size={15} aria-hidden="true" />
+                          </Button>
                         </div>
                       </td>
                     </DetailRow>
@@ -677,7 +706,8 @@ export function FranchiseManagement() {
                 size="icon-sm"
                 onClick={closeFormModal}
                 className="text-slate-400 hover:text-slate-700"
-               title="Close">
+                title="Close"
+              >
                 <X size={18} />
               </Button>
             </div>
@@ -685,7 +715,10 @@ export function FranchiseManagement() {
             {/* Error in modal */}
             {formError && (
               <div className="mt-4 p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5 text-xs text-rose-800">
-                <AlertCircle size={16} className="text-rose-600 flex-shrink-0 mt-0.5" />
+                <AlertCircle
+                  size={16}
+                  className="text-rose-600 flex-shrink-0 mt-0.5"
+                />
                 <div className="flex-1">
                   <p className="font-bold">Operation failed</p>
                   <p className="mt-0.5">{formError}</p>
@@ -700,7 +733,10 @@ export function FranchiseManagement() {
             >
               {/* Franchise Name */}
               <div className="space-y-1.5">
-                <Label htmlFor="franchise-name" className="text-xs font-bold text-slate-700">
+                <Label
+                  htmlFor="franchise-name"
+                  className="text-xs font-bold text-slate-700"
+                >
                   Franchise Name <span className="text-rose-500">*</span>
                 </Label>
                 <Input
@@ -728,7 +764,7 @@ export function FranchiseManagement() {
                   }`}
                 />
                 {formErrors.name && (
-                  <p className="text-[11px] text-rose-600 font-medium">
+                  <p className="text-[13px] text-rose-600 font-medium">
                     {formErrors.name}
                   </p>
                 )}
@@ -802,10 +838,11 @@ export function FranchiseManagement() {
                 ) : (
                   <label
                     htmlFor="logo-file-input"
-                    className={`border-2 border-dashed rounded-xl p-5 flex flex-col items-center justify-center gap-2 cursor-pointer transition text-center ${formErrors.logo
-                      ? "border-rose-300 bg-rose-50/50 hover:bg-rose-50"
-                      : "border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/20"
-                      }`}
+                    className={`border-2 border-dashed rounded-xl p-5 flex flex-col items-center justify-center gap-2 cursor-pointer transition text-center ${
+                      formErrors.logo
+                        ? "border-rose-300 bg-rose-50/50 hover:bg-rose-50"
+                        : "border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/20"
+                    }`}
                   >
                     <div className="w-10 h-10 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center">
                       <Upload size={18} />
@@ -829,7 +866,7 @@ export function FranchiseManagement() {
                 )}
 
                 {formErrors.logo && (
-                  <p className="text-[11px] text-rose-600 font-medium">
+                  <p className="text-[13px] text-rose-600 font-medium">
                     {formErrors.logo}
                   </p>
                 )}
@@ -837,7 +874,10 @@ export function FranchiseManagement() {
 
               {/* Description */}
               <div className="space-y-1.5">
-                <Label htmlFor="franchise-desc" className="text-xs font-bold text-slate-700">
+                <Label
+                  htmlFor="franchise-desc"
+                  className="text-xs font-bold text-slate-700"
+                >
                   Description
                 </Label>
                 <Textarea
@@ -846,7 +886,10 @@ export function FranchiseManagement() {
                   placeholder="Enter details, territory coverage, or contact specifications for this franchise..."
                   value={formData.description}
                   onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, description: e.target.value }))
+                    setFormData((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
                   }
                   className="text-xs resize-none"
                 />
@@ -855,10 +898,13 @@ export function FranchiseManagement() {
               {/* Franchise Status Toggle (Enable / Disable) */}
               <div className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-xl">
                 <div>
-                  <Label htmlFor="franchise-status-toggle" className="text-xs font-bold text-slate-800 cursor-pointer">
+                  <Label
+                    htmlFor="franchise-status-toggle"
+                    className="text-xs font-bold text-slate-800 cursor-pointer"
+                  >
                     Franchise Status
                   </Label>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-[13px] text-slate-500">
                     {formData.isActive
                       ? "Enabled (Active in registration & login)"
                       : "Disabled (Inactive / Hidden)"}
@@ -868,7 +914,10 @@ export function FranchiseManagement() {
                   type="button"
                   id="franchise-status-toggle"
                   onClick={() =>
-                    setFormData((prev) => ({ ...prev, isActive: !prev.isActive }))
+                    setFormData((prev) => ({
+                      ...prev,
+                      isActive: !prev.isActive,
+                    }))
                   }
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/20 ${
                     formData.isActive ? "bg-emerald-600" : "bg-slate-300"
@@ -935,7 +984,8 @@ export function FranchiseManagement() {
                 size="icon-sm"
                 onClick={() => setViewingFranchise(null)}
                 className="text-slate-400 hover:text-slate-700"
-               title="Close">
+                title="Close"
+              >
                 <X size={18} />
               </Button>
             </div>
@@ -985,7 +1035,9 @@ export function FranchiseManagement() {
               {viewingFranchise.createdAt && (
                 <div className="pt-2 flex justify-between items-center text-slate-500">
                   <span className="font-bold">Created Date</span>
-                  <span>{new Date(viewingFranchise.createdAt).toLocaleString()}</span>
+                  <span>
+                    {new Date(viewingFranchise.createdAt).toLocaleString()}
+                  </span>
                 </div>
               )}
             </div>
@@ -1032,7 +1084,7 @@ export function FranchiseManagement() {
                 <h3 className="font-extrabold text-base text-slate-900">
                   Delete Franchise
                 </h3>
-                <p className="text-[11px] text-rose-600 font-semibold">
+                <p className="text-[13px] text-rose-600 font-semibold">
                   Permanent Action Confirmation
                 </p>
               </div>
@@ -1042,8 +1094,9 @@ export function FranchiseManagement() {
               Are you sure you want to delete the franchise{" "}
               <strong className="text-slate-900 font-bold">
                 "{deleteTarget.name}"
-              </strong>?
-              All records, branding references, and associated data will be removed.
+              </strong>
+              ? All records, branding references, and associated data will be
+              removed.
             </div>
 
             <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">

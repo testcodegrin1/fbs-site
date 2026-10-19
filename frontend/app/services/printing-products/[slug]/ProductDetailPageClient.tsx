@@ -119,11 +119,7 @@ const productOptions: Record<
     finishes: ["Tri-Fold", "Bi-Fold", "Z-Fold", "Gate-Fold"],
   },
   "copy-services": {
-    sizes: [
-      'Letter (8.5" x 11")',
-      'Legal (8.5" x 14")',
-      'Tabloid (11" x 17")',
-    ],
+    sizes: ['Letter (8.5" x 11")', 'Legal (8.5" x 14")', 'Tabloid (11" x 17")'],
     materials: [
       "20lb Bond (B&W)",
       "24lb Bright White",
@@ -194,7 +190,11 @@ const productOptions: Record<
       'Museum Poly-Cotton Canvas (Standard Wrap 0.75")',
       'Premium Poly-Cotton Canvas (Gallery Wrap 1.5")',
     ],
-    finishes: ["Image Stretch (Wrap sides)", "Mirrored Borders", "Solid Color Borders"],
+    finishes: [
+      "Image Stretch (Wrap sides)",
+      "Mirrored Borders",
+      "Solid Color Borders",
+    ],
   },
 };
 
@@ -211,7 +211,9 @@ export default function ProductDetailPageClient({
   };
 
   const [selectedSize, setSelectedSize] = useState(options.sizes[0]);
-  const [selectedMaterial, setSelectedMaterial] = useState(options.materials[0]);
+  const [selectedMaterial, setSelectedMaterial] = useState(
+    options.materials[0],
+  );
   const [selectedFinish, setSelectedFinish] = useState(options.finishes[0]);
 
   useEffect(() => {
@@ -276,7 +278,9 @@ export default function ProductDetailPageClient({
                 Printing Services
               </Link>
               <span className="mx-1">&gt;</span>
-              <span className="font-semibold text-primary-dark">{product.name}</span>
+              <span className="font-semibold text-primary-dark">
+                {product.name}
+              </span>
             </p>
             <div className="grid items-center gap-10 sm:gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-20 mt-5">
               <div className="relative lg:hidden" data-aos="fade-left">
@@ -303,7 +307,7 @@ export default function ProductDetailPageClient({
                 <div className="flex justify-center lg:justify-start">
                   <div className="inline-flex items-center gap-2.5 rounded-full border border-primary-light bg-white px-4 py-1.5 shadow-sm sm:gap-3 sm:px-5 sm:py-2">
                     <span className="h-2 w-2 shrink-0 rounded-full bg-primary animate-pulse" />
-                    <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-primary sm:text-[11px] sm:tracking-[0.2em]">
+                    <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-primary sm:text-[13px] sm:tracking-[0.2em]">
                       Premium Printing Product
                     </span>
                   </div>
@@ -330,7 +334,9 @@ export default function ProductDetailPageClient({
                       <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-light text-primary">
                         <Check className="h-4 w-4" />
                       </div>
-                      <p className="text-left text-sm leading-snug text-primary-dark/80">{feature}</p>
+                      <p className="text-left text-sm leading-snug text-primary-dark/80">
+                        {feature}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -364,15 +370,18 @@ export default function ProductDetailPageClient({
                 <h2 className="text-center text-2xl font-bold leading-tight sm:text-3xl md:text-4xl lg:text-left lg:text-5xl">
                   Premium Custom Printing
                   <br />
-                  <span className="text-black hover:text-primary-light">At Competitive Pricing.</span>
+                  <span className="text-black hover:text-primary-light">
+                    At Competitive Pricing.
+                  </span>
                 </h2>
               </div>
 
               <div data-aos="fade-left">
                 <p className="text-center text-sm leading-relaxed text-primary-light sm:text-base md:text-lg lg:text-left">
                   All our products are crafted with high-definition digital
-                  technology and premium substrates to make a lasting impression.
-                  Check options below and get an instantaneous design estimate today.
+                  technology and premium substrates to make a lasting
+                  impression. Check options below and get an instantaneous
+                  design estimate today.
                 </p>
               </div>
             </div>
@@ -455,7 +464,7 @@ export default function ProductDetailPageClient({
             <div data-aos="fade-left">
               <div className="rounded-2xl border border-primary-light bg-white p-5 shadow-xl shadow-primary-light sm:rounded-[28px] sm:p-8">
                 <div className="mb-5 sm:mb-6">
-                  <span className="inline-flex rounded-full bg-primary-light px-3 py-1 text-[10px] font-bold uppercase tracking-[0.15em] text-primary sm:text-[11px] sm:tracking-[0.18em]">
+                  <span className="inline-flex rounded-full bg-primary-light px-3 py-1 text-[10px] font-bold uppercase tracking-[0.15em] text-primary sm:text-[13px] sm:tracking-[0.18em]">
                     Interactive customizer
                   </span>
 
@@ -482,10 +491,11 @@ export default function ProductDetailPageClient({
                           key={size}
                           type="button"
                           onClick={() => setSelectedSize(size)}
-                          className={`min-h-[48px] rounded-xl border px-3 py-2 text-sm font-medium leading-snug transition-all duration-200 ${selectedSize === size
-                            ? "border-primary bg-primary-light text-primary shadow-sm"
-                            : "border-primary-light bg-white text-primary-dark/80 hover:border-primary hover:bg-primary-light/40"
-                            }`}
+                          className={`min-h-[48px] rounded-xl border px-3 py-2 text-sm font-medium leading-snug transition-all duration-200 ${
+                            selectedSize === size
+                              ? "border-primary bg-primary-light text-primary shadow-sm"
+                              : "border-primary-light bg-white text-primary-dark/80 hover:border-primary hover:bg-primary-light/40"
+                          }`}
                         >
                           {size}
                         </button>
@@ -497,14 +507,14 @@ export default function ProductDetailPageClient({
                     {/* Material Selector */}
                     <div className="relative z-20">
                       <FieldSelect
-                      label="Choose Stock / Material"
-                      value={selectedMaterial}
-                      onChange={setSelectedMaterial}
-                      options={options.materials.map((mat) => ({
-                        value: mat,
-                        label: mat,
-                      }))}
-                    />
+                        label="Choose Stock / Material"
+                        value={selectedMaterial}
+                        onChange={setSelectedMaterial}
+                        options={options.materials.map((mat) => ({
+                          value: mat,
+                          label: mat,
+                        }))}
+                      />
                     </div>
 
                     {/* Finish Selector */}
@@ -553,21 +563,21 @@ export default function ProductDetailPageClient({
                   <div className="grid grid-cols-3 gap-2 border-t border-primary-light pt-4 sm:gap-3">
                     <div className="rounded-2xl bg-primary-light/40 px-2 py-3 text-center sm:px-3 sm:py-4">
                       <ShieldCheck className="mx-auto mb-2 h-5 w-5 text-primary" />
-                      <span className="block text-[10px] font-semibold uppercase tracking-wide text-primary-dark/70 sm:text-[11px]">
+                      <span className="block text-[10px] font-semibold uppercase tracking-wide text-primary-dark/70 sm:text-[13px]">
                         100% Quality
                       </span>
                     </div>
 
                     <div className="rounded-2xl bg-primary-light/40 px-2 py-3 text-center sm:px-3 sm:py-4">
                       <Truck className="mx-auto mb-2 h-5 w-5 text-primary" />
-                      <span className="block text-[10px] font-semibold uppercase tracking-wide text-primary-dark/70 sm:text-[11px]">
+                      <span className="block text-[10px] font-semibold uppercase tracking-wide text-primary-dark/70 sm:text-[13px]">
                         Fast Shipping
                       </span>
                     </div>
 
                     <div className="rounded-2xl bg-primary-light/40 px-2 py-3 text-center sm:px-3 sm:py-4">
                       <Check className="mx-auto mb-2 h-5 w-5 text-primary" />
-                      <span className="block text-[10px] font-semibold uppercase tracking-wide text-primary-dark/70 sm:text-[11px]">
+                      <span className="block text-[10px] font-semibold uppercase tracking-wide text-primary-dark/70 sm:text-[13px]">
                         Design Check
                       </span>
                     </div>
@@ -581,7 +591,10 @@ export default function ProductDetailPageClient({
         {/* Section 4: Ordering Process  light card layout with hover-only left-to-right border sweep */}
         <section className="bg-primary-light/40 py-12 sm:py-16 md:py-24">
           <div className="container mx-auto px-4 md:px-6">
-            <div className="mx-auto mb-12 max-w-2xl text-center sm:mb-20" data-aos="fade-up">
+            <div
+              className="mx-auto mb-12 max-w-2xl text-center sm:mb-20"
+              data-aos="fade-up"
+            >
               <span className="mb-2 inline-flex items-center gap-2 rounded-full border border-primary-light bg-white px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-primary shadow-sm sm:text-sm">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                 Our Process
@@ -719,11 +732,16 @@ function ProductQuoteForm({
     const form = e.currentTarget;
 
     // Honeypot check
-    const botcheck = form.elements.namedItem("botcheck") as HTMLInputElement | null;
+    const botcheck = form.elements.namedItem(
+      "botcheck",
+    ) as HTMLInputElement | null;
     if (botcheck?.checked) return;
 
     if (WEB3FORMS_ACCESS_KEY === "YOUR_WEB3FORMS_ACCESS_KEY") {
-      setState({ type: "error", message: "Web3Forms access key is not configured." });
+      setState({
+        type: "error",
+        message: "Web3Forms access key is not configured.",
+      });
       return;
     }
 
@@ -761,8 +779,7 @@ function ProductQuoteForm({
         message?: string;
         body?: { message?: string };
       };
-      const msg =
-        json.body?.message ?? json.message ?? "Something went wrong.";
+      const msg = json.body?.message ?? json.message ?? "Something went wrong.";
 
       if (res.ok && json.success) {
         form.reset();
@@ -815,7 +832,9 @@ function ProductQuoteForm({
             Phone *
           </label>
           <div className="flex items-center rounded-xl border border-primary-light bg-primary-light/60 transition focus-within:border-primary focus-within:bg-white focus-within:ring-2 focus-within:ring-primary-light">
-            <span className="pl-4 text-sm text-primary-dark/45 font-medium select-none">+1</span>
+            <span className="pl-4 text-sm text-primary-dark/45 font-medium select-none">
+              +1
+            </span>
             <input
               id={`${formId}-phone`}
               name="phone"
@@ -867,8 +886,9 @@ function ProductQuoteForm({
       {state.type !== "idle" && (
         <p
           aria-live="polite"
-          className={`text-sm font-medium ${state.type === "success" ? "text-green-600" : "text-red-600"
-            }`}
+          className={`text-sm font-medium ${
+            state.type === "success" ? "text-green-600" : "text-red-600"
+          }`}
         >
           {state.message}
         </p>
@@ -889,9 +909,12 @@ function ProductQuoteForm({
         )}
       </button>
 
-      <p className="text-center text-[11px] text-primary-dark/45">
+      <p className="text-center text-[13px] text-primary-dark/45">
         Or call us directly at{" "}
-        <a href="tel:+18552221133" className="font-semibold text-primary hover:underline">
+        <a
+          href="tel:+18552221133"
+          className="font-semibold text-primary hover:underline"
+        >
           +1-855-222-1133
         </a>
       </p>
@@ -949,22 +972,25 @@ function FieldSelect({
 
   const selectedOption = useMemo(
     () => options.find((o) => o.value === value) || options[0],
-    [options, value]
+    [options, value],
   );
 
   return (
     <div className="space-y-2">
-      <label className="block text-sm font-semibold text-primary-dark">{label}</label>
+      <label className="block text-sm font-semibold text-primary-dark">
+        {label}
+      </label>
 
       <div className="relative" ref={dropdownRef}>
         <button
           ref={buttonRef}
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
-          className={`group flex h-auto min-h-[56px] w-full items-center justify-between gap-3 rounded-2xl border bg-white px-4 py-2.5 text-left transition-all duration-200 ${isOpen
-            ? "border-primary ring-4 ring-primary-light shadow-lg"
-            : "border-primary-light hover:border-primary hover:shadow-sm"
-            }`}
+          className={`group flex h-auto min-h-[56px] w-full items-center justify-between gap-3 rounded-2xl border bg-white px-4 py-2.5 text-left transition-all duration-200 ${
+            isOpen
+              ? "border-primary ring-4 ring-primary-light shadow-lg"
+              : "border-primary-light hover:border-primary hover:shadow-sm"
+          }`}
           aria-haspopup="listbox"
           aria-expanded={isOpen}
         >
@@ -973,14 +999,16 @@ function FieldSelect({
           </span>
 
           <div
-            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-all ${isOpen
-              ? "border-primary-light bg-primary-light text-primary"
-              : "border-primary-light bg-primary-light/40 text-primary-dark/60 group-hover:border-primary-light group-hover:text-primary"
-              }`}
+            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-all ${
+              isOpen
+                ? "border-primary-light bg-primary-light text-primary"
+                : "border-primary-light bg-primary-light/40 text-primary-dark/60 group-hover:border-primary-light group-hover:text-primary"
+            }`}
           >
             <ChevronDown
-              className={`h-4 w-4 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
-                }`}
+              className={`h-4 w-4 transition-transform duration-200 ${
+                isOpen ? "rotate-180" : ""
+              }`}
             />
           </div>
         </button>
@@ -999,13 +1027,16 @@ function FieldSelect({
                         onChange(option.value);
                         setIsOpen(false);
                       }}
-                      className={`flex w-full items-center justify-between gap-2 rounded-xl px-4 py-3 text-left text-sm transition-colors ${active
-                        ? "bg-primary-light font-semibold text-primary"
-                        : "text-primary-dark/80 hover:bg-primary-light/40"
-                        }`}
+                      className={`flex w-full items-center justify-between gap-2 rounded-xl px-4 py-3 text-left text-sm transition-colors ${
+                        active
+                          ? "bg-primary-light font-semibold text-primary"
+                          : "text-primary-dark/80 hover:bg-primary-light/40"
+                      }`}
                     >
                       <span>{option.label}</span>
-                      {active && <Check className="h-4 w-4 shrink-0 text-primary" />}
+                      {active && (
+                        <Check className="h-4 w-4 shrink-0 text-primary" />
+                      )}
                     </button>
                   </li>
                 );
@@ -1017,4 +1048,3 @@ function FieldSelect({
     </div>
   );
 }
-

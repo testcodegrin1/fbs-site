@@ -1,7 +1,18 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { Check, Edit, KeyRound, Plus, RefreshCw, ShieldCheck, Trash2, UserRoundCheck, UserRoundX, X } from "lucide-react";
+import {
+  Check,
+  Edit,
+  KeyRound,
+  Plus,
+  RefreshCw,
+  ShieldCheck,
+  Trash2,
+  UserRoundCheck,
+  UserRoundX,
+  X,
+} from "lucide-react";
 import { ROLE_LABELS } from "@/app/lib/auth/roles";
 import type { AuthRole, AuthUser, UserPayload } from "@/app/lib/auth/types";
 import { authApi } from "@/app/lib/client/auth-api";
@@ -59,7 +70,9 @@ export function UserManagement({
       setUsers(response.users);
     } catch (loadError) {
       setError(
-        loadError instanceof Error ? loadError.message : "Unable to load users.",
+        loadError instanceof Error
+          ? loadError.message
+          : "Unable to load users.",
       );
     } finally {
       setIsLoading(false);
@@ -165,7 +178,11 @@ export function UserManagement({
       setForm((current) => ({ ...current, password: "" }));
       setNotice("Password updated.");
     } catch (resetError) {
-      setError(resetError instanceof Error ? resetError.message : "Failed to reset password.");
+      setError(
+        resetError instanceof Error
+          ? resetError.message
+          : "Failed to reset password.",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -200,7 +217,9 @@ export function UserManagement({
       await loadUsers();
     } catch (deleteError) {
       setError(
-        deleteError instanceof Error ? deleteError.message : "Unable to delete user.",
+        deleteError instanceof Error
+          ? deleteError.message
+          : "Unable to delete user.",
       );
     } finally {
       setIsDeleting(false);
@@ -208,144 +227,208 @@ export function UserManagement({
   }
 
   return (
-    <div className="mx-auto w-full max-w-[1216px] space-y-4">
+    <div className="mr-auto w-full max-w-[1216px] space-y-4">
       {isFormOpen ? (
-      <dialog
-        ref={(dialog) => { if (dialog && !dialog.open) dialog.showModal(); }}
-        className="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-md overflow-visible border-0 bg-transparent p-0 backdrop:bg-slate-950/40"
-        aria-labelledby="account-form-title"
-        onCancel={(event) => {
-          event.preventDefault();
-          if (!isSaving) setIsFormOpen(false);
-        }}
-        onClick={(event) => {
-          if (event.target === event.currentTarget && !isSaving) setIsFormOpen(false);
-        }}
-      >
-      <Card className="max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-lg p-6 shadow-xl">
-        <div className="mb-5 flex items-center gap-2">
-          <ShieldCheck className="text-primary" size={22} />
-          <h2 id="account-form-title" className="flex-1 text-lg font-bold text-primary-dark">
-            {form.id ? "Edit Account" : "Create Account"}
-          </h2>
-          <Button type="button" variant="ghost" size="icon-sm" aria-label="Close account form" title="Close" disabled={isSaving} onClick={() => setIsFormOpen(false)}>
-            <X size={18} />
-          </Button>
-        </div>
-
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="space-y-1.5">
-            <Label>Name</Label>
-            <Input
-              autoFocus
-              value={form.name}
-              onChange={(event) => setForm({ ...form, name: event.target.value })}
-              className="h-11 text-sm"
-              required
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Email</Label>
-            <Input
-              type="email"
-              value={form.email}
-              onChange={(event) => setForm({ ...form, email: event.target.value })}
-              className="h-11 text-sm"
-              required
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Role</Label>
-            <Select
-              value={form.role}
-              onChange={(event) =>
-                setForm({ ...form, role: event.target.value as AuthRole })
-              }
-              className="h-11 text-sm"
-            >
-              <option value="designer">{ROLE_LABELS.designer}</option>
-              <option value="user">{ROLE_LABELS.user}</option>
-              {canManageSuperAdmins ? (
-                <option value="super_admin">{ROLE_LABELS.super_admin}</option>
-              ) : null}
-            </Select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>
-              Password{form.id ? " (leave blank to keep current)" : ""}
-            </Label>
-            <Input
-              type="password"
-              value={form.password}
-              onChange={(event) =>
-                setForm({ ...form, password: event.target.value })
-              }
-              className="h-11 text-sm"
-              required={!form.id}
-              autoComplete="new-password"
-            />
-          </div>
-
-          <Label className="flex items-center gap-3 font-medium cursor-pointer">
-            <Input
-              type="checkbox"
-              disabled={isSaving || (form.id === currentUserId && Boolean(editingUser?.isActive))}
-              checked={form.isActive}
-              onChange={(event) =>
-                setForm({ ...form, isActive: event.target.checked })
-              }
-              className="h-4 w-4 accent-primary shadow-none border-slate-300"
-            />
-            Active account
-          </Label>
-
-          {editingUser ? (
-            <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-4">
-              <Button type="button" variant="outline" size="sm" className="border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100" disabled={isSaving} onClick={() => void resetPassword()}>
-                <KeyRound size={14} /> Reset Pass
-              </Button>
-              <Button type="button" variant="outline" size="sm" disabled={isSaving || (editingUser.id === currentUserId && editingUser.isActive)} onClick={() => void toggleActive(editingUser)}>
-                {editingUser.isActive ? <UserRoundX size={14} /> : <UserRoundCheck size={14} />}
-                {editingUser.isActive ? "Deactivate" : "Activate"}
+        <dialog
+          ref={(dialog) => {
+            if (dialog && !dialog.open) dialog.showModal();
+          }}
+          className="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-md overflow-visible border-0 bg-transparent p-0 backdrop:bg-slate-950/40"
+          aria-labelledby="account-form-title"
+          onCancel={(event) => {
+            event.preventDefault();
+            if (!isSaving) setIsFormOpen(false);
+          }}
+          onClick={(event) => {
+            if (event.target === event.currentTarget && !isSaving)
+              setIsFormOpen(false);
+          }}
+        >
+          <Card className="max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-lg p-6 shadow-xl">
+            <div className="mb-5 flex items-center gap-2">
+              <ShieldCheck className="text-primary" size={22} />
+              <h2
+                id="account-form-title"
+                className="flex-1 text-lg font-bold text-primary-dark"
+              >
+                {form.id ? "Edit Account" : "Create Account"}
+              </h2>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Close account form"
+                title="Close"
+                disabled={isSaving}
+                onClick={() => setIsFormOpen(false)}
+              >
+                <X size={18} />
               </Button>
             </div>
-          ) : null}
 
-          {error ? (
-            <p className="rounded-xl bg-red-50 border border-red-100 px-3 py-2 text-sm text-red-700">
-              {error}
-            </p>
-          ) : null}
+            <form className="space-y-4" onSubmit={handleSubmit}>
+              <div className="space-y-1.5">
+                <Label>Name</Label>
+                <Input
+                  autoFocus
+                  value={form.name}
+                  onChange={(event) =>
+                    setForm({ ...form, name: event.target.value })
+                  }
+                  className="h-11 text-sm"
+                  required
+                />
+              </div>
 
-          {notice ? (
-            <p className="rounded-xl bg-green-50 border border-green-100 px-3 py-2 text-sm text-green-700">
-              {notice}
-            </p>
-          ) : null}
+              <div className="space-y-1.5">
+                <Label>Email</Label>
+                <Input
+                  type="email"
+                  value={form.email}
+                  onChange={(event) =>
+                    setForm({ ...form, email: event.target.value })
+                  }
+                  className="h-11 text-sm"
+                  required
+                />
+              </div>
 
-          <div className="flex gap-2">
-            <Button
-              type="submit"
-              disabled={isSaving}
-              className="flex-1 h-10 bg-primary hover:bg-primary/90 text-sm"
-            >
-              <Plus size={17} />
-              {isSaving ? "Saving..." : form.id ? "Save" : "Create"}
-            </Button>
-              <Button type="button" variant="outline" disabled={isSaving} onClick={() => setIsFormOpen(false)} className="h-10 text-sm">
-                Cancel
-              </Button>
-          </div>
-        </form>
-      </Card>
-      </dialog>
+              <div className="space-y-1.5">
+                <Label>Role</Label>
+                <Select
+                  value={form.role}
+                  onChange={(event) =>
+                    setForm({ ...form, role: event.target.value as AuthRole })
+                  }
+                  className="h-11 text-sm"
+                >
+                  <option value="designer">{ROLE_LABELS.designer}</option>
+                  <option value="user">{ROLE_LABELS.user}</option>
+                  {canManageSuperAdmins ? (
+                    <option value="super_admin">
+                      {ROLE_LABELS.super_admin}
+                    </option>
+                  ) : null}
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>
+                  Password{form.id ? " (leave blank to keep current)" : ""}
+                </Label>
+                <Input
+                  type="password"
+                  value={form.password}
+                  onChange={(event) =>
+                    setForm({ ...form, password: event.target.value })
+                  }
+                  className="h-11 text-sm"
+                  required={!form.id}
+                  autoComplete="new-password"
+                />
+              </div>
+
+              <Label className="flex items-center gap-3 font-medium cursor-pointer">
+                <Input
+                  type="checkbox"
+                  disabled={
+                    isSaving ||
+                    (form.id === currentUserId &&
+                      Boolean(editingUser?.isActive))
+                  }
+                  checked={form.isActive}
+                  onChange={(event) =>
+                    setForm({ ...form, isActive: event.target.checked })
+                  }
+                  className="h-4 w-4 accent-primary shadow-none border-slate-300"
+                />
+                Active account
+              </Label>
+
+              {editingUser ? (
+                <div className="flex flex-wrap gap-2 border-t border-slate-100 pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
+                    disabled={isSaving}
+                    onClick={() => void resetPassword()}
+                  >
+                    <KeyRound size={14} /> Reset Pass
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    disabled={
+                      isSaving ||
+                      (editingUser.id === currentUserId && editingUser.isActive)
+                    }
+                    onClick={() => void toggleActive(editingUser)}
+                  >
+                    {editingUser.isActive ? (
+                      <UserRoundX size={14} />
+                    ) : (
+                      <UserRoundCheck size={14} />
+                    )}
+                    {editingUser.isActive ? "Deactivate" : "Activate"}
+                  </Button>
+                </div>
+              ) : null}
+
+              {error ? (
+                <p className="rounded-xl bg-red-50 border border-red-100 px-3 py-2 text-sm text-red-700">
+                  {error}
+                </p>
+              ) : null}
+
+              {notice ? (
+                <p className="rounded-xl bg-green-50 border border-green-100 px-3 py-2 text-sm text-green-700">
+                  {notice}
+                </p>
+              ) : null}
+
+              <div className="flex gap-2">
+                <Button
+                  type="submit"
+                  disabled={isSaving}
+                  className="flex-1 h-10 bg-primary hover:bg-primary/90 text-sm"
+                >
+                  <Plus size={17} />
+                  {isSaving ? "Saving..." : form.id ? "Save" : "Create"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={isSaving}
+                  onClick={() => setIsFormOpen(false)}
+                  className="h-10 text-sm"
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </dialog>
       ) : null}
 
-      {!isFormOpen && error ? <p role="alert" className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p> : null}
-      {!isFormOpen && notice ? <p role="status" className="rounded-lg border border-green-100 bg-green-50 px-4 py-3 text-sm text-green-700">{notice}</p> : null}
+      {!isFormOpen && error ? (
+        <p
+          role="alert"
+          className="rounded-lg border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
+          {error}
+        </p>
+      ) : null}
+      {!isFormOpen && notice ? (
+        <p
+          role="status"
+          className="rounded-lg border border-green-100 bg-green-50 px-4 py-3 text-sm text-green-700"
+        >
+          {notice}
+        </p>
+      ) : null}
       <Card className="overflow-hidden rounded-lg border border-slate-200 shadow-sm p-0">
         <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 px-6 py-6">
           <div>
@@ -355,20 +438,32 @@ export function UserManagement({
             </p>
           </div>
           <div className="flex items-center gap-3">
-          <Button type="button" variant="outline" className="h-9 rounded-lg px-3 text-xs font-medium" onClick={() => void loadUsers()}>
-            <RefreshCw size={13} />
-            Refresh
-          </Button>
-          <Button type="button" className="h-9 rounded-lg bg-slate-900 px-4 text-xs text-white hover:bg-slate-800" onClick={() => { resetForm(); setIsFormOpen(true); }}>
-            <Plus size={15} />
-            Create Account
-          </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="h-9 rounded-lg px-3 text-xs font-medium"
+              onClick={() => void loadUsers()}
+            >
+              <RefreshCw size={13} />
+              Refresh
+            </Button>
+            <Button
+              type="button"
+              className="h-9 rounded-lg bg-slate-900 px-4 text-xs text-white hover:bg-slate-800"
+              onClick={() => {
+                resetForm();
+                setIsFormOpen(true);
+              }}
+            >
+              <Plus size={15} />
+              Create Account
+            </Button>
           </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] text-left text-[13px]">
-            <thead className="bg-slate-50/70 text-[11px] uppercase text-slate-600">
+            <thead className="bg-slate-50/70 text-[13px] uppercase text-slate-600">
               <tr>
                 <th className="px-6 py-4 font-medium">Name</th>
                 <th className="px-6 py-4 font-medium">Email</th>
@@ -392,33 +487,54 @@ export function UserManagement({
                 </tr>
               ) : (
                 users.map((user) => (
-                  <tr key={user.id} tabIndex={0} aria-label={`View ${user.name}`} className="cursor-pointer transition-colors hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-blue-500" onClick={() => setViewUser(user)} onKeyDown={(event) => {
-                    if (event.target === event.currentTarget && (event.key === "Enter" || event.key === " ")) {
-                      event.preventDefault();
-                      setViewUser(user);
-                    }
-                  }}>
+                  <tr
+                    key={user.id}
+                    tabIndex={0}
+                    aria-label={`View ${user.name}`}
+                    className="cursor-pointer transition-colors hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-blue-500"
+                    onClick={() => setViewUser(user)}
+                    onKeyDown={(event) => {
+                      if (
+                        event.target === event.currentTarget &&
+                        (event.key === "Enter" || event.key === " ")
+                      ) {
+                        event.preventDefault();
+                        setViewUser(user);
+                      }
+                    }}
+                  >
                     <td className="px-6 py-4 font-medium text-primary-dark">
                       {user.name}
                     </td>
-                    <td className="px-6 py-4 font-mono text-[11px] text-slate-500">{user.email}</td>
+                    <td className="px-6 py-4 font-mono text-[13px] text-slate-500">
+                      {user.email}
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-1">
-                      {user.roles.map((role) => (
-                        <span key={role} className={`whitespace-nowrap rounded-md border px-2.5 py-0.5 text-xs ${role === "super_admin" ? "border-slate-900 bg-slate-900 font-semibold text-white" : "border-slate-200 bg-slate-100 text-slate-900"}`}>
-                          {ROLE_LABELS[role] ?? role}
-                        </span>
-                      ))}
+                        {user.roles.map((role) => (
+                          <span
+                            key={role}
+                            className={`whitespace-nowrap rounded-md border px-2.5 py-0.5 text-xs ${role === "super_admin" ? "border-slate-900 bg-slate-900 font-semibold text-white" : "border-slate-200 bg-slate-100 text-slate-900"}`}
+                          >
+                            {ROLE_LABELS[role] ?? role}
+                          </span>
+                        ))}
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <Badge className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-0.5 text-xs font-medium" variant={user.isActive ? "success" : "secondary"}>
+                      <Badge
+                        className="inline-flex items-center gap-1 whitespace-nowrap px-2.5 py-0.5 text-xs font-medium"
+                        variant={user.isActive ? "success" : "secondary"}
+                      >
                         {user.isActive ? <Check size={12} /> : null}
                         {user.isActive ? "Active" : "Inactive"}
                       </Badge>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex justify-end gap-2 [&>button]:h-8 [&>button]:w-8 [&>button]:rounded-md [&>button]:p-0 [&>button]:shadow-none" onClick={(event) => event.stopPropagation()}>
+                      <div
+                        className="flex justify-end gap-2 [&>button]:h-8 [&>button]:w-8 [&>button]:rounded-md [&>button]:p-0 [&>button]:shadow-none"
+                        onClick={(event) => event.stopPropagation()}
+                      >
                         <Button
                           type="button"
                           variant="outline"
@@ -459,22 +575,79 @@ export function UserManagement({
         </div>
       </Card>
       {viewUser ? (
-        <dialog ref={(dialog) => { if (dialog && !dialog.open) dialog.showModal(); }} className="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-lg rounded-lg border border-slate-200 bg-white p-6 text-slate-900 shadow-xl backdrop:bg-slate-950/40" aria-labelledby="user-details-title" onCancel={() => setViewUser(null)} onClick={(event) => { if (event.target === event.currentTarget) { const bounds = event.currentTarget.getBoundingClientRect(); if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) setViewUser(null); } }}>
+        <dialog
+          ref={(dialog) => {
+            if (dialog && !dialog.open) dialog.showModal();
+          }}
+          className="fixed inset-0 m-auto w-[calc(100%-2rem)] max-w-lg rounded-lg border border-slate-200 bg-white p-6 text-slate-900 shadow-xl backdrop:bg-slate-950/40"
+          aria-labelledby="user-details-title"
+          onCancel={() => setViewUser(null)}
+          onClick={(event) => {
+            if (event.target === event.currentTarget) {
+              const bounds = event.currentTarget.getBoundingClientRect();
+              if (
+                event.clientX < bounds.left ||
+                event.clientX > bounds.right ||
+                event.clientY < bounds.top ||
+                event.clientY > bounds.bottom
+              )
+                setViewUser(null);
+            }
+          }}
+        >
           <div className="flex items-center justify-between gap-3 border-b border-slate-100 pb-4">
-            <h2 id="user-details-title" className="text-lg font-bold">User Details</h2>
-            <Button type="button" variant="ghost" size="icon-sm" title="Close" aria-label="Close user details" onClick={() => setViewUser(null)}><X size={18} /></Button>
+            <h2 id="user-details-title" className="text-lg font-bold">
+              User Details
+            </h2>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              title="Close"
+              aria-label="Close user details"
+              onClick={() => setViewUser(null)}
+            >
+              <X size={18} />
+            </Button>
           </div>
           <dl className="grid grid-cols-[100px_minmax(0,1fr)] gap-x-4 gap-y-4 py-5 text-sm [&>dt]:text-slate-500 [&>dd]:break-words">
-            <dt>Name</dt><dd className="font-semibold">{viewUser.name}</dd>
-            <dt>Email</dt><dd>{viewUser.email}</dd>
-            <dt>Role</dt><dd>{viewUser.roles.map((role) => ROLE_LABELS[role] ?? role).join(", ")}</dd>
-            <dt>Status</dt><dd><Badge variant={viewUser.isActive ? "success" : "secondary"}>{viewUser.isActive ? "Active" : "Inactive"}</Badge></dd>
-            <dt>User ID</dt><dd>{viewUser.id}</dd>
-            <dt>Created</dt><dd>{new Date(viewUser.createdAt).toLocaleString()}</dd>
-            <dt>Updated</dt><dd>{new Date(viewUser.updatedAt).toLocaleString()}</dd>
+            <dt>Name</dt>
+            <dd className="font-semibold">{viewUser.name}</dd>
+            <dt>Email</dt>
+            <dd>{viewUser.email}</dd>
+            <dt>Role</dt>
+            <dd>
+              {viewUser.roles
+                .map((role) => ROLE_LABELS[role] ?? role)
+                .join(", ")}
+            </dd>
+            <dt>Status</dt>
+            <dd>
+              <Badge variant={viewUser.isActive ? "success" : "secondary"}>
+                {viewUser.isActive ? "Active" : "Inactive"}
+              </Badge>
+            </dd>
+            <dt>User ID</dt>
+            <dd>{viewUser.id}</dd>
+            <dt>Created</dt>
+            <dd>{new Date(viewUser.createdAt).toLocaleString()}</dd>
+            <dt>Updated</dt>
+            <dd>{new Date(viewUser.updatedAt).toLocaleString()}</dd>
           </dl>
           <div className="flex justify-end border-t border-slate-100 pt-4">
-            <Button type="button" variant="outline" disabled={viewUser.roles.includes("super_admin") && !canManageSuperAdmins} onClick={() => { setViewUser(null); startEdit(viewUser); }}><Edit size={15} /> Edit Account</Button>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={
+                viewUser.roles.includes("super_admin") && !canManageSuperAdmins
+              }
+              onClick={() => {
+                setViewUser(null);
+                startEdit(viewUser);
+              }}
+            >
+              <Edit size={15} /> Edit Account
+            </Button>
           </div>
         </dialog>
       ) : null}

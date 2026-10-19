@@ -191,9 +191,10 @@ export function BannerSubmissionThreadModal({
 
   if (!isOpen || !submissionId) return null;
 
-  const normStatus = (submission?.status || "").toLowerCase().replace(/_/g, " ");
-  const isReadOnly =
-    normStatus === "approved" || normStatus === "completed";
+  const normStatus = (submission?.status || "")
+    .toLowerCase()
+    .replace(/_/g, " ");
+  const isReadOnly = normStatus === "approved" || normStatus === "completed";
 
   const isStaff =
     role === "admin" || role === "designer" || role === "super_admin";
@@ -425,7 +426,7 @@ export function BannerSubmissionThreadModal({
                 {submission.dimensionsLabel}
               </span>
             )}
-            <span className="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 text-[11px]">
+            <span className="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 text-[13px]">
               Qty: {submission?.quantity || 1}
             </span>
             {!isStaff && (
@@ -477,7 +478,6 @@ export function BannerSubmissionThreadModal({
           </div>
         ) : (
           <>
-
             {statusMessage && (
               <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 font-semibold flex items-center gap-2">
                 <CheckCircle2
@@ -494,7 +494,7 @@ export function BannerSubmissionThreadModal({
                 <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-700 flex items-center gap-1.5">
                   <LayoutGrid size={15} /> Photo Tiles ({files.length})
                 </span>
-                <span className="text-[11px] text-slate-400">
+                <span className="text-[13px] text-slate-400">
                   {isReadOnly
                     ? "Viewing submission photos"
                     : "Replace photos requested for change or leave tile-specific replies"}
@@ -513,310 +513,315 @@ export function BannerSubmissionThreadModal({
                   {/* Left Column: Photo Tiles */}
                   <div className="space-y-4">
                     {files.map((file, idx) => {
-                    const tileImgUrl = resolveImageUrl(file.fileUrl);
-                    const isUpdating = replacingFileId === file.id;
-                    const tileMessages = messages.filter(
-                      (m) => m.imageId === file.id,
-                    );
-                    const draft = tileReplies[file.id] || "";
-                    const isSubmittingReply = sendingReplyKey === file.id;
-                    const hasHistory = file.history && file.history.length > 0;
-                    const isHistoryExpanded = !!expandedHistories[file.id];
+                      const tileImgUrl = resolveImageUrl(file.fileUrl);
+                      const isUpdating = replacingFileId === file.id;
+                      const tileMessages = messages.filter(
+                        (m) => m.imageId === file.id,
+                      );
+                      const draft = tileReplies[file.id] || "";
+                      const isSubmittingReply = sendingReplyKey === file.id;
+                      const hasHistory =
+                        file.history && file.history.length > 0;
+                      const isHistoryExpanded = !!expandedHistories[file.id];
 
-                    return (
-                      <div
-                        key={file.id}
-                        className="rounded-2xl bg-white border border-slate-200 p-3.5 flex flex-col shadow-xs hover:shadow-md transition duration-200 space-y-3"
-                      >
-                        {/* Top Card Bar */}
-                        <div className="flex items-center justify-between gap-2 text-xs">
-                          <span
-                            className="font-extrabold text-slate-900 truncate"
-                            title={file.fileName || `Photo #${idx + 1}`}
-                          >
-                            Photo #{idx + 1}:{" "}
-                            {file.fileName || `Image ${idx + 1}`}
-                          </span>
-                          <span className="inline-flex items-center rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-0.5 text-[10px] font-bold font-mono">
-                            v{file.version || 1}
-                          </span>
-                        </div>
-
-                        {/* Image Box */}
-                        <div className="relative aspect-[4/3] w-full bg-slate-950 rounded-xl overflow-hidden group border border-slate-100 flex items-center justify-center">
-                          <img
-                            src={tileImgUrl}
-                            alt={file.fileName || "Tile"}
-                            className="w-full h-full object-contain"
-                          />
-
-
-                          {/* Hover Actions */}
-                          <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2 backdrop-blur-2xs">
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="secondary"
-                              className="h-8 px-2.5 text-xs bg-white/95 hover:bg-white text-slate-800 shadow gap-1"
-                              onClick={() =>
-                                setFullscreenImage({
-                                  url: tileImgUrl,
-                                  title: file.fileName || `Photo #${idx + 1}`,
-                                })
-                              }
-                              title="View Fullscreen"
+                      return (
+                        <div
+                          key={file.id}
+                          className="rounded-2xl bg-white border border-slate-200 p-3.5 flex flex-col shadow-xs hover:shadow-md transition duration-200 space-y-3"
+                        >
+                          {/* Top Card Bar */}
+                          <div className="flex items-center justify-between gap-2 text-xs">
+                            <span
+                              className="font-extrabold text-slate-900 truncate"
+                              title={file.fileName || `Photo #${idx + 1}`}
                             >
-                              <Eye size={13} />
-                              <span>Preview</span>
-                            </Button>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="secondary"
-                              className="h-8 px-2.5 text-xs bg-white/95 hover:bg-white text-slate-800 shadow gap-1"
-                              onClick={() =>
-                                handleDownloadBanner(
-                                  file.fileUrl,
-                                  file.fileName || `photo-${idx + 1}.png`,
-                                )
-                              }
-                              title="Download Photo"
-                            >
-                              <Download size={13} />
-                            </Button>
-                          </div>
-                        </div>
-
-                        {/* Replacement History Accordion */}
-                        {hasHistory && (
-                          <div className="border border-slate-100 bg-slate-50/60 rounded-xl p-2 text-xs">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setExpandedHistories((prev) => ({
-                                  ...prev,
-                                  [file.id]: !prev[file.id],
-                                }))
-                              }
-                              className="w-full flex items-center justify-between text-slate-600 font-semibold hover:text-slate-900 transition cursor-pointer"
-                            >
-                              <span className="flex items-center gap-1.5 text-[11px]">
-                                <History
-                                  size={12}
-                                  className="text-indigo-600"
-                                />
-                                Previous Versions ({file.history!.length})
-                              </span>
-                              {isHistoryExpanded ? (
-                                <ChevronUp size={14} />
-                              ) : (
-                                <ChevronDown size={14} />
-                              )}
-                            </button>
-
-                            {isHistoryExpanded && (
-                              <div className="mt-2 space-y-1.5 pt-1 border-t border-slate-200/60">
-                                {file.history!.map((oldF) => (
-                                  <div
-                                    key={oldF.id}
-                                    className="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-white border border-slate-200/60 text-[11px]"
-                                  >
-                                    <div className="flex items-center gap-2 min-w-0">
-                                      <div className="w-8 h-8 rounded bg-slate-900 overflow-hidden flex-shrink-0">
-                                        <img
-                                          src={resolveImageUrl(oldF.fileUrl)}
-                                          alt="Old version"
-                                          className="w-full h-full object-cover"
-                                        />
-                                      </div>
-                                      <div className="min-w-0">
-                                        <p className="font-mono text-indigo-700 font-bold truncate">
-                                          v{oldF.version || 1} · {oldF.fileName}
-                                        </p>
-                                        <p className="text-[10px] text-slate-400">
-                                          {new Date(
-                                            oldF.createdAt,
-                                          ).toLocaleDateString()}
-                                        </p>
-                                      </div>
-                                    </div>
-                                    <button
-                                      type="button"
-                                      onClick={() =>
-                                        setFullscreenImage({
-                                          url: resolveImageUrl(oldF.fileUrl),
-                                          title: `v${oldF.version} - ${oldF.fileName}`,
-                                        })
-                                      }
-                                      className="text-indigo-600 hover:text-indigo-800 p-1 font-semibold flex-shrink-0 cursor-pointer"
-                                    >
-                                      View
-                                    </button>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        )}
-
-                        {/* Per-photo Comments / Conversation */}
-                        {tileMessages.length > 0 && (
-                          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 space-y-2 text-[11px]">
-                            <span className="font-bold text-[10px] uppercase tracking-wide flex items-center gap-1 text-slate-500">
-                              <MessageSquare
-                                size={11}
-                                className="text-indigo-600"
-                              />
-                              Photo Conversation ({tileMessages.length})
+                              Photo #{idx + 1}:{" "}
+                              {file.fileName || `Image ${idx + 1}`}
                             </span>
-                            <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
-                              {tileMessages.map((msg) => {
-                                const isDesignerOrAdmin =
-                                  msg.senderRole === "designer" ||
-                                  msg.senderRole === "super_admin" ||
-                                  (msg.senderName &&
-                                    msg.senderName
-                                      .toLowerCase()
-                                      .includes("designer")) ||
-                                  (msg.senderName &&
-                                    msg.senderName
-                                      .toLowerCase()
-                                      .includes("admin"));
-                                const authorLabel = isDesignerOrAdmin
-                                  ? "FBS Admin"
-                                  : msg.senderName ||
-                                    submission.userName ||
-                                    "Vendor";
+                            <span className="inline-flex items-center rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-0.5 text-[10px] font-bold font-mono">
+                              v{file.version || 1}
+                            </span>
+                          </div>
 
-                                return (
-                                  <div
-                                    key={msg.id}
-                                    className={`p-2 rounded-lg text-xs leading-snug border ${
-                                      isDesignerOrAdmin
-                                        ? "bg-indigo-50/60 border-indigo-100 text-slate-800"
-                                        : "bg-white border-slate-200 text-slate-800"
-                                    }`}
-                                  >
-                                    <div className="flex items-center justify-between text-[10px] font-bold mb-0.5">
-                                      <span
-                                        className={
-                                          isDesignerOrAdmin
-                                            ? "text-indigo-700"
-                                            : "text-slate-800"
-                                        }
-                                      >
-                                        {authorLabel}
-                                      </span>
-                                      <span className="text-slate-400 font-normal">
-                                        {new Date(
-                                          msg.createdAt,
-                                        ).toLocaleTimeString([], {
-                                          hour: "2-digit",
-                                          minute: "2-digit",
-                                        })}
-                                      </span>
-                                    </div>
-                                    <p className="whitespace-pre-wrap">
-                                      {msg.message}
-                                    </p>
-                                  </div>
-                                );
-                              })}
+                          {/* Image Box */}
+                          <div className="relative aspect-[4/3] w-full bg-slate-950 rounded-xl overflow-hidden group border border-slate-100 flex items-center justify-center">
+                            <img
+                              src={tileImgUrl}
+                              alt={file.fileName || "Tile"}
+                              className="w-full h-full object-contain"
+                            />
+
+                            {/* Hover Actions */}
+                            <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2 backdrop-blur-2xs">
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="secondary"
+                                className="h-8 px-2.5 text-xs bg-white/95 hover:bg-white text-slate-800 shadow gap-1"
+                                onClick={() =>
+                                  setFullscreenImage({
+                                    url: tileImgUrl,
+                                    title: file.fileName || `Photo #${idx + 1}`,
+                                  })
+                                }
+                                title="View Fullscreen"
+                              >
+                                <Eye size={13} />
+                                <span>Preview</span>
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="secondary"
+                                className="h-8 px-2.5 text-xs bg-white/95 hover:bg-white text-slate-800 shadow gap-1"
+                                onClick={() =>
+                                  handleDownloadBanner(
+                                    file.fileUrl,
+                                    file.fileName || `photo-${idx + 1}.png`,
+                                  )
+                                }
+                                title="Download Photo"
+                              >
+                                <Download size={13} />
+                              </Button>
                             </div>
                           </div>
-                        )}
 
-                        {/* Per-Photo Reply Input (if not read-only) */}
-                        {!isReadOnly && (
-                          <div className="space-y-1.5 pt-1">
-                            <Textarea
-                              rows={2}
-                              value={draft}
-                              onChange={(e) =>
-                                setTileReplies((prev) => ({
-                                  ...prev,
-                                  [file.id]: e.target.value,
-                                }))
-                              }
-                              placeholder="Reply to this photo..."
-                              className="w-full text-xs rounded-xl bg-slate-50/60 border-slate-200 focus:bg-white resize-none"
-                            />
-                            <Button
-                              type="button"
-                              size="sm"
-                              disabled={isSubmittingReply || !draft.trim()}
-                              onClick={() => handleSendMessage(file.id)}
-                              className="w-full h-8 text-xs font-bold rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 gap-1"
-                            >
-                              {isSubmittingReply ? (
-                                <Loader2 size={12} className="animate-spin" />
-                              ) : (
-                                <Send size={12} />
+                          {/* Replacement History Accordion */}
+                          {hasHistory && (
+                            <div className="border border-slate-100 bg-slate-50/60 rounded-xl p-2 text-xs">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setExpandedHistories((prev) => ({
+                                    ...prev,
+                                    [file.id]: !prev[file.id],
+                                  }))
+                                }
+                                className="w-full flex items-center justify-between text-slate-600 font-semibold hover:text-slate-900 transition cursor-pointer"
+                              >
+                                <span className="flex items-center gap-1.5 text-[13px]">
+                                  <History
+                                    size={12}
+                                    className="text-indigo-600"
+                                  />
+                                  Previous Versions ({file.history!.length})
+                                </span>
+                                {isHistoryExpanded ? (
+                                  <ChevronUp size={14} />
+                                ) : (
+                                  <ChevronDown size={14} />
+                                )}
+                              </button>
+
+                              {isHistoryExpanded && (
+                                <div className="mt-2 space-y-1.5 pt-1 border-t border-slate-200/60">
+                                  {file.history!.map((oldF) => (
+                                    <div
+                                      key={oldF.id}
+                                      className="flex items-center justify-between gap-2 p-1.5 rounded-lg bg-white border border-slate-200/60 text-[13px]"
+                                    >
+                                      <div className="flex items-center gap-2 min-w-0">
+                                        <div className="w-8 h-8 rounded bg-slate-900 overflow-hidden flex-shrink-0">
+                                          <img
+                                            src={resolveImageUrl(oldF.fileUrl)}
+                                            alt="Old version"
+                                            className="w-full h-full object-cover"
+                                          />
+                                        </div>
+                                        <div className="min-w-0">
+                                          <p className="font-mono text-indigo-700 font-bold truncate">
+                                            v{oldF.version || 1} ·{" "}
+                                            {oldF.fileName}
+                                          </p>
+                                          <p className="text-[10px] text-slate-400">
+                                            {new Date(
+                                              oldF.createdAt,
+                                            ).toLocaleDateString()}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          setFullscreenImage({
+                                            url: resolveImageUrl(oldF.fileUrl),
+                                            title: `v${oldF.version} - ${oldF.fileName}`,
+                                          })
+                                        }
+                                        className="text-indigo-600 hover:text-indigo-800 p-1 font-semibold flex-shrink-0 cursor-pointer"
+                                      >
+                                        View
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
                               )}
-                              <span>Send Photo Reply</span>
-                            </Button>
-                          </div>
-                        )}
+                            </div>
+                          )}
 
-                        {/* Replace Photo Button - Enabled for Admin / Staff */}
-                        {isStaff && !isReadOnly && (
-                          <label
-                            className={`w-full h-8.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition shadow-2xs ${
-                              isUpdating ? "opacity-50 pointer-events-none" : ""
-                            }`}
-                            title="Replace this photo with an updated file"
-                          >
-                            {isUpdating ? (
-                              <Loader2 size={13} className="animate-spin" />
-                            ) : (
-                              <RefreshCw size={13} />
-                            )}
-                            <span>
-                              {isUpdating ? "Replacing..." : "Replace Photo"}
-                            </span>
-                            <input
-                              type="file"
-                              accept="image/png, image/jpeg, image/webp"
-                              className="hidden"
-                              onChange={(e) => {
-                                const f = e.target.files?.[0];
-                                if (f) handleReplacePhoto(file.id, f);
-                              }}
-                            />
-                          </label>
-                        )}
-                      </div>
-                    );
-                  })}
+                          {/* Per-photo Comments / Conversation */}
+                          {tileMessages.length > 0 && (
+                            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 space-y-2 text-[13px]">
+                              <span className="font-bold text-[10px] uppercase tracking-wide flex items-center gap-1 text-slate-500">
+                                <MessageSquare
+                                  size={11}
+                                  className="text-indigo-600"
+                                />
+                                Photo Conversation ({tileMessages.length})
+                              </span>
+                              <div className="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                                {tileMessages.map((msg) => {
+                                  const isDesignerOrAdmin =
+                                    msg.senderRole === "designer" ||
+                                    msg.senderRole === "super_admin" ||
+                                    (msg.senderName &&
+                                      msg.senderName
+                                        .toLowerCase()
+                                        .includes("designer")) ||
+                                    (msg.senderName &&
+                                      msg.senderName
+                                        .toLowerCase()
+                                        .includes("admin"));
+                                  const authorLabel = isDesignerOrAdmin
+                                    ? "FBS Admin"
+                                    : msg.senderName ||
+                                      submission.userName ||
+                                      "Vendor";
+
+                                  return (
+                                    <div
+                                      key={msg.id}
+                                      className={`p-2 rounded-lg text-xs leading-snug border ${
+                                        isDesignerOrAdmin
+                                          ? "bg-indigo-50/60 border-indigo-100 text-slate-800"
+                                          : "bg-white border-slate-200 text-slate-800"
+                                      }`}
+                                    >
+                                      <div className="flex items-center justify-between text-[10px] font-bold mb-0.5">
+                                        <span
+                                          className={
+                                            isDesignerOrAdmin
+                                              ? "text-indigo-700"
+                                              : "text-slate-800"
+                                          }
+                                        >
+                                          {authorLabel}
+                                        </span>
+                                        <span className="text-slate-400 font-normal">
+                                          {new Date(
+                                            msg.createdAt,
+                                          ).toLocaleTimeString([], {
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                          })}
+                                        </span>
+                                      </div>
+                                      <p className="whitespace-pre-wrap">
+                                        {msg.message}
+                                      </p>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Per-Photo Reply Input (if not read-only) */}
+                          {!isReadOnly && (
+                            <div className="space-y-1.5 pt-1">
+                              <Textarea
+                                rows={2}
+                                value={draft}
+                                onChange={(e) =>
+                                  setTileReplies((prev) => ({
+                                    ...prev,
+                                    [file.id]: e.target.value,
+                                  }))
+                                }
+                                placeholder="Reply to this photo..."
+                                className="w-full text-xs rounded-xl bg-slate-50/60 border-slate-200 focus:bg-white resize-none"
+                              />
+                              <Button
+                                type="button"
+                                size="sm"
+                                disabled={isSubmittingReply || !draft.trim()}
+                                onClick={() => handleSendMessage(file.id)}
+                                className="w-full h-8 text-xs font-bold rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 gap-1"
+                              >
+                                {isSubmittingReply ? (
+                                  <Loader2 size={12} className="animate-spin" />
+                                ) : (
+                                  <Send size={12} />
+                                )}
+                                <span>Send Photo Reply</span>
+                              </Button>
+                            </div>
+                          )}
+
+                          {/* Replace Photo Button - Enabled for Admin / Staff */}
+                          {isStaff && !isReadOnly && (
+                            <label
+                              className={`w-full h-8.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition shadow-2xs ${
+                                isUpdating
+                                  ? "opacity-50 pointer-events-none"
+                                  : ""
+                              }`}
+                              title="Replace this photo with an updated file"
+                            >
+                              {isUpdating ? (
+                                <Loader2 size={13} className="animate-spin" />
+                              ) : (
+                                <RefreshCw size={13} />
+                              )}
+                              <span>
+                                {isUpdating ? "Replacing..." : "Replace Photo"}
+                              </span>
+                              <input
+                                type="file"
+                                accept="image/png, image/jpeg, image/webp"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const f = e.target.files?.[0];
+                                  if (f) handleReplacePhoto(file.id, f);
+                                }}
+                              />
+                            </label>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
 
                   {/* Right Column: Submitted Form Fields / Changes */}
-                  {submission.submittedFields && submission.submittedFields.length > 0 && (
-                    <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3 shadow-xs">
-                      <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                        <span className="text-xs font-extrabold uppercase tracking-wide text-slate-800 flex items-center gap-1.5">
-                          <FileText size={14} className="text-indigo-600" />
-                          Submitted Form Fields ({submission.submittedFields.length})
-                        </span>
-                      </div>
+                  {submission.submittedFields &&
+                    submission.submittedFields.length > 0 && (
+                      <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3 shadow-xs">
+                        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                          <span className="text-xs font-extrabold uppercase tracking-wide text-slate-800 flex items-center gap-1.5">
+                            <FileText size={14} className="text-indigo-600" />
+                            Submitted Form Fields (
+                            {submission.submittedFields.length})
+                          </span>
+                        </div>
 
-                      <div className="space-y-2.5">
-                        {submission.submittedFields.map((f, fIdx) => (
-                          <div
-                            key={f.id || fIdx}
-                            className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs space-y-1"
-                          >
-                            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
-                              {f.label}
-                            </label>
-                            <p className="font-semibold text-slate-800 break-words text-xs sm:text-sm">
-                              {String(f.value ?? "-")}
-                            </p>
-                          </div>
-                        ))}
+                        <div className="space-y-2.5">
+                          {submission.submittedFields.map((f, fIdx) => (
+                            <div
+                              key={f.id || fIdx}
+                              className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs space-y-1"
+                            >
+                              <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
+                                {f.label}
+                              </label>
+                              <p className="font-semibold text-slate-800 break-words text-xs sm:text-sm">
+                                {String(f.value ?? "-")}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </div>
               )}
 
@@ -1011,8 +1016,6 @@ export function BannerSubmissionThreadModal({
               */}
             </div>
 
-
-
             {/* ========================================================================= */}
             {/* OVERALL NOTES & CONVERSATION SECTION - COMMENTED OUT FOR BOTH USER & ADMIN */}
             {/* ========================================================================= */}
@@ -1023,7 +1026,7 @@ export function BannerSubmissionThreadModal({
                     <MessageSquare size={14} className="text-indigo-600" /> Overall Notes &
                     Conversation ({overallMessages.length})
                   </span>
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-[13px] text-slate-400">
                     Discussion between Vendor and FBS Admin
                   </span>
                 </div>
@@ -1054,7 +1057,7 @@ export function BannerSubmissionThreadModal({
                               : "bg-white border-slate-200 text-slate-800"
                           }`}
                         >
-                          <div className="flex items-center justify-between text-[11px] font-bold mb-1">
+                          <div className="flex items-center justify-between text-[13px] font-bold mb-1">
                             <span
                               className={
                                 isDesignerOrAdmin ? "text-indigo-700" : "text-slate-800"
@@ -1266,10 +1269,10 @@ export function BannerSubmissionThreadModal({
           <div className="lg:col-span-8 space-y-4">
             <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-4">
               <div className="flex items-center justify-between gap-3">
-                <h3 className="text-[11px] font-bold uppercase tracking-[0.08em] text-indigo-600">
+                <h3 className="text-[13px] font-bold uppercase tracking-[0.08em] text-indigo-600">
                   PROJECT BANNERS ({files.length || 1})
                 </h3>
-                <p className="text-[11px] text-slate-400 font-medium">
+                <p className="text-[13px] text-slate-400 font-medium">
                   Review &amp; approve on each banner
                 </p>
               </div>
@@ -1282,7 +1285,7 @@ export function BannerSubmissionThreadModal({
                       <h4 className="font-extrabold text-[15px] text-slate-900 truncate">
                         {activeFile?.fileName || submission.templateName}
                       </h4>
-                      <span className="text-[11px] text-slate-400 font-mono font-semibold">
+                      <span className="text-[13px] text-slate-400 font-mono font-semibold">
                         v{activeFile?.version || 1}
                       </span>
                     </div>
@@ -1339,7 +1342,7 @@ export function BannerSubmissionThreadModal({
                 {/* Multiple files switcher */}
                 {files.length > 1 && (
                   <div className="space-y-1.5 pt-1">
-                    <span className="text-[11px] font-bold text-slate-600 block">
+                    <span className="text-[13px] font-bold text-slate-600 block">
                       Switch Banner File:
                     </span>
                     <div className="flex items-center gap-2 overflow-x-auto pb-1">
@@ -1367,7 +1370,6 @@ export function BannerSubmissionThreadModal({
                     </div>
                   </div>
                 )}
-
               </div>
             </div>
           </div>
@@ -1386,9 +1388,7 @@ export function BannerSubmissionThreadModal({
               <Textarea
                 rows={3}
                 value={
-                  activeFile
-                    ? tileReplies[activeFile.id] || ""
-                    : overallNote
+                  activeFile ? tileReplies[activeFile.id] || "" : overallNote
                 }
                 onChange={(e) => {
                   if (activeFile) {
@@ -1400,7 +1400,9 @@ export function BannerSubmissionThreadModal({
                     setOverallNote(e.target.value);
                   }
                 }}
-                disabled={isReadOnly || sendingReplyKey !== null || sendingOverallNote}
+                disabled={
+                  isReadOnly || sendingReplyKey !== null || sendingOverallNote
+                }
                 placeholder={
                   isReadOnly
                     ? `This banner proof has already been ${normStatus === "completed" ? "completed" : "approved"}.`
@@ -1412,7 +1414,9 @@ export function BannerSubmissionThreadModal({
               <div className="grid grid-cols-2 gap-2">
                 <Button
                   type="button"
-                  disabled={isReadOnly || sendingReplyKey !== null || sendingOverallNote}
+                  disabled={
+                    isReadOnly || sendingReplyKey !== null || sendingOverallNote
+                  }
                   variant="outline"
                   onClick={() =>
                     handleSendMessage(
@@ -1428,7 +1432,9 @@ export function BannerSubmissionThreadModal({
 
                 <Button
                   type="button"
-                  disabled={isReadOnly || sendingReplyKey !== null || sendingOverallNote}
+                  disabled={
+                    isReadOnly || sendingReplyKey !== null || sendingOverallNote
+                  }
                   onClick={() =>
                     handleSendMessage(
                       activeFile ? activeFile.id : null,
@@ -1575,7 +1581,7 @@ export function BannerSubmissionThreadModal({
                           >
                             {titleText}
                           </span>
-                          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-150 text-slate-700 text-[11px] leading-relaxed">
+                          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-150 text-slate-700 text-[13px] leading-relaxed">
                             {msg.message}
                           </div>
                           <span className="text-[10px] text-slate-400 block">
@@ -1595,12 +1601,12 @@ export function BannerSubmissionThreadModal({
                     <span className="font-bold text-indigo-700 text-xs block">
                       Pending Review
                     </span>
-                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-150 text-slate-700 text-[11px] leading-relaxed">
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-150 text-slate-700 text-[13px] leading-relaxed">
                       Initial banner uploaded
                     </div>
                     <span className="text-[10px] text-slate-400 block">
-                      {new Date(submission.createdAt).toLocaleDateString()},
-                      FBS Admin
+                      {new Date(submission.createdAt).toLocaleDateString()}, FBS
+                      Admin
                     </span>
                   </div>
                 )}

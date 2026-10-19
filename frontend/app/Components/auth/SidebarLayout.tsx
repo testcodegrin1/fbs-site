@@ -5,13 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { LogoutButton } from "./LogoutButton";
 import { Button } from "@/app/Components/ui";
-import {
-  ChevronLeft,
-  ChevronRight,
-  UserCheck,
-  Menu,
-  X,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, UserCheck, Menu, X } from "lucide-react";
 
 export type SidebarNavItem = {
   id: string;
@@ -30,6 +24,7 @@ type SidebarLayoutProps = {
   activeTab: string;
   onTabChange: (tabId: string) => void;
   children: ReactNode;
+  contentAlign?: "left" | "center";
 };
 
 const LOGO_SRC = "/images/brand/fbs-prints-logo.webp";
@@ -44,6 +39,7 @@ export function SidebarLayout({
   activeTab,
   onTabChange,
   children,
+  contentAlign = "center",
 }: SidebarLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -113,9 +109,7 @@ export function SidebarLayout({
             size="icon-sm"
             onClick={() => setCollapsed((v) => !v)}
             className={`hidden lg:inline-flex bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white border border-white/10 ${
-              collapsed
-                ? "static"
-                : "absolute right-2 top-1/2 -translate-y-1/2"
+              collapsed ? "static" : "absolute right-2 top-1/2 -translate-y-1/2"
             }`}
             title={collapsed ? "Expand Sidebar" : "Collapse Sidebar"}
           >
@@ -159,7 +153,10 @@ export function SidebarLayout({
                 } ${collapsed ? "justify-center lg:justify-center" : ""}`}
                 title={collapsed ? item.label : undefined}
               >
-                <Icon size={20} className={isActive ? "text-slate-800" : "text-slate-100/75"} />
+                <Icon
+                  size={20}
+                  className={isActive ? "text-slate-800" : "text-slate-100/75"}
+                />
                 {/* On mobile drawer always show labels; on desktop respect collapse */}
                 <span className={`truncate ${collapsed ? "lg:hidden" : ""}`}>
                   {item.label}
@@ -170,9 +167,7 @@ export function SidebarLayout({
                       isActive
                         ? "bg-slate-900/10 text-slate-900 border-slate-900/10"
                         : "bg-white/10 text-white border-white/15"
-                    } ${
-                      collapsed ? "lg:hidden" : ""
-                    }`}
+                    } ${collapsed ? "lg:hidden" : ""}`}
                   >
                     {item.badge}
                   </span>
@@ -188,15 +183,21 @@ export function SidebarLayout({
 
       {/* User Footer Profile & Logout */}
       <div className="p-3 border-t border-white/10 bg-white/10 space-y-3">
-        <div className={`flex items-center gap-3 overflow-hidden ${collapsed ? "lg:justify-center" : ""}`}>
+        <div
+          className={`flex items-center gap-3 overflow-hidden ${collapsed ? "lg:justify-center" : ""}`}
+        >
           <div className="w-9 h-9 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
             {userName?.charAt(0).toUpperCase() || "U"}
           </div>
-          <div className={`truncate text-left min-w-0 ${collapsed ? "lg:hidden" : ""}`}>
+          <div
+            className={`truncate text-left min-w-0 ${collapsed ? "lg:hidden" : ""}`}
+          >
             <p className="text-sm font-bold text-white truncate">
               {userName || "Authenticated User"}
             </p>
-            <p className="text-xs text-slate-100/70 truncate">{userEmail || roleName}</p>
+            <p className="text-xs text-slate-100/70 truncate">
+              {userEmail || roleName}
+            </p>
           </div>
         </div>
 
@@ -305,7 +306,11 @@ export function SidebarLayout({
         </div>
 
         {/* Content Container - scrollable viewport area */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-5 lg:p-6 xl:p-8 w-full max-w-[1400px] mx-auto">
+        <main
+          className={`flex-1 overflow-y-auto p-4 sm:p-5 lg:p-6 xl:p-8 w-full max-w-[1400px] ${
+            contentAlign === "left" ? "mr-auto" : "mx-auto"
+          }`}
+        >
           {children}
         </main>
       </div>

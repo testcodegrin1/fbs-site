@@ -142,7 +142,7 @@ function getQuickAnswer(item: PortfolioItem) {
 export default function OurWorkDetailClient({ item }: { item: PortfolioItem }) {
   const [activeImage, setActiveImage] = useState(0);
   const relatedItems = PORTFOLIO_ITEMS.filter((portfolioItem) =>
-    item.relatedSlugs.includes(portfolioItem.slug)
+    item.relatedSlugs.includes(portfolioItem.slug),
   );
   const currentImage = item.images[activeImage] || item.images[0];
 
@@ -210,7 +210,7 @@ export default function OurWorkDetailClient({ item }: { item: PortfolioItem }) {
 
               {!!item.idealFor.length && (
                 <div className="mt-4 flex flex-col items-start gap-3 rounded-xl bg-white p-4 shadow-sm sm:mt-6 sm:flex-row sm:flex-wrap sm:items-center sm:gap-6 sm:rounded-2xl sm:p-5">
-                  <span className="shrink-0 text-[11px] font-bold uppercase tracking-widest text-primary-dark">
+                  <span className="shrink-0 text-[13px] font-bold uppercase tracking-widest text-primary-dark">
                     Ideal For
                   </span>
                   <div className="flex min-w-0 flex-wrap gap-2 sm:gap-3">
@@ -284,9 +284,15 @@ export default function OurWorkDetailClient({ item }: { item: PortfolioItem }) {
                 className="scrollbar-hide flex max-w-full gap-4 overflow-x-auto whitespace-nowrap pb-2 pt-1 text-xs text-primary-dark/50 sm:flex-wrap sm:overflow-visible sm:whitespace-normal"
               >
                 {!!item.keyBenefits?.length && <a href="#benefits">Benefits</a>}
-                {!!item.specTable.length && <a href="#specifications">Specifications</a>}
-                {!!item.processSteps.length && <a href="#process">Our Process</a>}
-                {!!item.glossaryTerms?.length && <a href="#glossary">Glossary</a>}
+                {!!item.specTable.length && (
+                  <a href="#specifications">Specifications</a>
+                )}
+                {!!item.processSteps.length && (
+                  <a href="#process">Our Process</a>
+                )}
+                {!!item.glossaryTerms?.length && (
+                  <a href="#glossary">Glossary</a>
+                )}
                 {!!item.testimonials.length && <a href="#reviews">Reviews</a>}
                 {!!item.faqs.length && <a href="#faqs">FAQs</a>}
               </nav>
@@ -329,7 +335,10 @@ export default function OurWorkDetailClient({ item }: { item: PortfolioItem }) {
       )}
 
       {!!item.keyBenefits?.length && (
-        <section id="benefits" className="container scroll-mt-24 pt-10 sm:pt-12 md:pt-16">
+        <section
+          id="benefits"
+          className="container scroll-mt-24 pt-10 sm:pt-12 md:pt-16"
+        >
           <SectionTitle first="Key" highlight="Benefits" />
           <div className="grid gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4">
             {item.keyBenefits.map((benefit, index) => (
@@ -340,7 +349,9 @@ export default function OurWorkDetailClient({ item }: { item: PortfolioItem }) {
                 <div className="mb-4 flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
                   {index + 1}
                 </div>
-                <p className="text-sm leading-relaxed text-primary-dark/80">{benefit}</p>
+                <p className="text-sm leading-relaxed text-primary-dark/80">
+                  {benefit}
+                </p>
               </div>
             ))}
           </div>
@@ -348,7 +359,10 @@ export default function OurWorkDetailClient({ item }: { item: PortfolioItem }) {
       )}
 
       {!!item.specTable.length && (
-        <section id="specifications" className="container scroll-mt-24 pt-10 sm:pt-12 md:pt-16">
+        <section
+          id="specifications"
+          className="container scroll-mt-24 pt-10 sm:pt-12 md:pt-16"
+        >
           <SectionTitle first="Technical" highlight="Specifications" />
           <dl className="grid w-full gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 xl:gap-6">
             {item.specTable.map((specification) => (
@@ -400,7 +414,9 @@ export default function OurWorkDetailClient({ item }: { item: PortfolioItem }) {
           <div className="mx-auto grid max-w-5xl gap-4 md:grid-cols-2 md:gap-6">
             {item.material && (
               <div className="rounded-xl border border-primary-light/50 bg-(--color-primary-light) p-5 sm:rounded-2xl sm:p-6">
-                <h2 className="mb-2 text-lg font-bold text-primary-dark">Materials Used</h2>
+                <h2 className="mb-2 text-lg font-bold text-primary-dark">
+                  Materials Used
+                </h2>
                 <p className="text-sm leading-relaxed text-primary-dark/70">
                   {item.material}
                 </p>
@@ -442,7 +458,10 @@ export default function OurWorkDetailClient({ item }: { item: PortfolioItem }) {
       )}
 
       {!!item.processSteps.length && (
-        <section id="process" className="container scroll-mt-24 py-12 sm:py-16 md:py-20 lg:py-24">
+        <section
+          id="process"
+          className="container scroll-mt-24 py-12 sm:py-16 md:py-20 lg:py-24"
+        >
           <SectionTitle first="How" highlight="It Works" />
           <ol className="grid gap-5 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4 xl:gap-8">
             {item.processSteps.map((step) => (
@@ -466,12 +485,20 @@ export default function OurWorkDetailClient({ item }: { item: PortfolioItem }) {
       )}
 
       {!!item.glossaryTerms?.length && (
-        <section id="glossary" className="container scroll-mt-24 py-12 sm:py-16 md:py-20 lg:py-24">
+        <section
+          id="glossary"
+          className="container scroll-mt-24 py-12 sm:py-16 md:py-20 lg:py-24"
+        >
           <SectionTitle first="Terms Worth Knowing" small />
           <div className="mx-auto max-w-3xl space-y-4">
             {item.glossaryTerms.map((term) => (
-              <div key={term.term} className="rounded-xl bg-white p-5 shadow-sm sm:rounded-2xl sm:p-6">
-                <h3 className="mb-1 font-bold text-primary-dark">{term.term}</h3>
+              <div
+                key={term.term}
+                className="rounded-xl bg-white p-5 shadow-sm sm:rounded-2xl sm:p-6"
+              >
+                <h3 className="mb-1 font-bold text-primary-dark">
+                  {term.term}
+                </h3>
                 <p className="text-sm leading-relaxed text-primary-dark/70">
                   {term.definition}
                 </p>
@@ -482,7 +509,10 @@ export default function OurWorkDetailClient({ item }: { item: PortfolioItem }) {
       )}
 
       {!!item.testimonials.length && (
-        <section id="reviews" className="container scroll-mt-24 py-12 sm:py-16 md:py-20 lg:py-24">
+        <section
+          id="reviews"
+          className="container scroll-mt-24 py-12 sm:py-16 md:py-20 lg:py-24"
+        >
           <SectionTitle first="What Clients" highlight="Say" />
           <div className="grid gap-5 md:grid-cols-2 md:gap-6 xl:grid-cols-3 xl:gap-8">
             {item.testimonials.map((testimonial) => (
@@ -502,8 +532,12 @@ export default function OurWorkDetailClient({ item }: { item: PortfolioItem }) {
                   </p>
                 </div>
                 <footer className="mt-6 border-t border-primary-dark/10 pt-4">
-                  <p className="font-semibold text-primary-dark">{testimonial.author}</p>
-                  <p className="text-sm text-primary-dark/60">{testimonial.role}</p>
+                  <p className="font-semibold text-primary-dark">
+                    {testimonial.author}
+                  </p>
+                  <p className="text-sm text-primary-dark/60">
+                    {testimonial.role}
+                  </p>
                 </footer>
               </article>
             ))}
@@ -512,7 +546,10 @@ export default function OurWorkDetailClient({ item }: { item: PortfolioItem }) {
       )}
 
       {!!item.faqs.length && (
-        <section id="faqs" className="container scroll-mt-24 py-12 sm:py-16 md:py-20 lg:py-24">
+        <section
+          id="faqs"
+          className="container scroll-mt-24 py-12 sm:py-16 md:py-20 lg:py-24"
+        >
           <SectionTitle first="Frequently Asked" highlight="Questions" />
           <FaqAccordion
             items={item.faqs.map((faq) => ({
@@ -527,7 +564,9 @@ export default function OurWorkDetailClient({ item }: { item: PortfolioItem }) {
       {!!relatedItems.length && (
         <section className="container py-12 sm:py-16 md:py-20 lg:py-24">
           <div className="mb-8 flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between">
-            <h2 className="text-2xl font-bold text-primary-dark sm:text-3xl">Related Work</h2>
+            <h2 className="text-2xl font-bold text-primary-dark sm:text-3xl">
+              Related Work
+            </h2>
             <Link
               href="/our-work"
               className="text-sm font-semibold text-primary hover:underline"
@@ -553,7 +592,9 @@ export default function OurWorkDetailClient({ item }: { item: PortfolioItem }) {
                   />
                 </div>
                 <div className="flex min-w-0 w-full flex-col justify-center p-5 sm:p-6 md:w-3/5 md:p-8">
-                  <h3 className="mb-3 text-xl font-bold text-primary">{related.title}</h3>
+                  <h3 className="mb-3 text-xl font-bold text-primary">
+                    {related.title}
+                  </h3>
                   <p className="mb-4 line-clamp-3 text-[15px] leading-relaxed text-primary-dark/80">
                     {related.description}
                   </p>

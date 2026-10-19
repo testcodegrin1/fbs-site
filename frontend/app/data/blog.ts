@@ -119,8 +119,10 @@ export const blogPosts: BlogPost[] = [...(blogData as BlogDataItem[])]
   })
   .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-export const getBlogPost = (slug: string) =>
-  blogPosts.find((post) => post.slug === slug);
+export const getBlogPost = (slug: string) => {
+  const normalized = slug.replace(/24\/7/g, "24-7");
+  return blogPosts.find((post) => post.slug === slug || post.slug === normalized);
+};
 
 export const getRelatedPosts = (post: BlogPost, limit = 2) =>
   blogPosts

@@ -363,10 +363,7 @@ export function resolveBaseUrl(host: string | null | undefined, protocol?: strin
     return siteConfig.url;
   }
 
-  const normalizedProtocol =
-    protocol === "http" || protocol === "https"
-      ? protocol
-      : "http";
+  const normalizedProtocol = protocol === "http" || protocol === "https" ? protocol : "http";
 
   return `${normalizedProtocol}://${normalizedHost}`;
 }

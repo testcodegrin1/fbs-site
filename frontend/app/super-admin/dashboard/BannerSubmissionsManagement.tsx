@@ -12,13 +12,7 @@ import {
 } from "@/app/lib/client/banner-template-api";
 import { franchiseApi, type FranchiseModel } from "@/app/lib/client/franchise";
 import { BannerSubmissionThreadModal } from "@/app/user/dashboard/BannerSubmissionThreadModal";
-import {
-  Card,
-  CardHeader,
-  Button,
-  Input,
-  Badge,
-} from "@/app/Components/ui";
+import { Card, CardHeader, Button, Input, Badge } from "@/app/Components/ui";
 import {
   Search,
   RefreshCw,
@@ -119,7 +113,9 @@ export interface ClientBannerSubmissionsGroup {
 }
 
 export function BannerSubmissionsManagement() {
-  const [submissions, setSubmissions] = useState<BannerSubmissionListItem[]>([]);
+  const [submissions, setSubmissions] = useState<BannerSubmissionListItem[]>(
+    [],
+  );
   const [franchises, setFranchises] = useState<FranchiseModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -127,7 +123,9 @@ export function BannerSubmissionsManagement() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [franchiseFilter, setFranchiseFilter] = useState("all");
   const [viewMode, setViewMode] = useState<"canvas" | "table">("table");
-  const [expandedClients, setExpandedClients] = useState<Record<number, boolean>>({});
+  const [expandedClients, setExpandedClients] = useState<
+    Record<number, boolean>
+  >({});
 
   function toggleClientExpand(userId: number) {
     setExpandedClients((prev) => ({
@@ -137,15 +135,30 @@ export function BannerSubmissionsManagement() {
   }
 
   // Selected Submission Workspace State
-  const [selectedSubmissionId, setSelectedSubmissionId] = useState<number | null>(null);
-  const [selectedSubmissionFiles, setSelectedSubmissionFiles] = useState<BannerSubmissionFile[]>([]);
-  const [threadSubmissionId, setThreadSubmissionId] = useState<number | null>(null);
-  const [detailData, setDetailData] = useState<BannerSubmissionDetail | null>(null);
+  const [selectedSubmissionId, setSelectedSubmissionId] = useState<
+    number | null
+  >(null);
+  const [selectedSubmissionFiles, setSelectedSubmissionFiles] = useState<
+    BannerSubmissionFile[]
+  >([]);
+  const [threadSubmissionId, setThreadSubmissionId] = useState<number | null>(
+    null,
+  );
+  const [detailData, setDetailData] = useState<BannerSubmissionDetail | null>(
+    null,
+  );
   const [loadingDetail, setLoadingDetail] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [statusChoice, setStatusChoice] = useState<string>("Pending");
-  const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
-  const [fullscreenImage, setFullscreenImage] = useState<{ url: string; name: string; version?: number } | null>(null);
+  const [statusMessage, setStatusMessage] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+  const [fullscreenImage, setFullscreenImage] = useState<{
+    url: string;
+    name: string;
+    version?: number;
+  } | null>(null);
 
   async function loadData(isRefresh = false) {
     if (isRefresh) setRefreshing(true);
@@ -156,7 +169,8 @@ export function BannerSubmissionsManagement() {
         bannerTemplateApi.getBannerSubmissions({
           search: search || undefined,
           status: statusFilter !== "all" ? statusFilter : undefined,
-          franchiseId: franchiseFilter !== "all" ? Number(franchiseFilter) : undefined,
+          franchiseId:
+            franchiseFilter !== "all" ? Number(franchiseFilter) : undefined,
         }),
         franchiseApi.getFranchises().catch(() => []),
       ]);
@@ -167,7 +181,10 @@ export function BannerSubmissionsManagement() {
 
       // If in canvas view and nothing selected yet or selected id not in list, select first
       if (fetchedSubs.length > 0) {
-        if (!selectedSubmissionId || !fetchedSubs.some((s) => s.id === selectedSubmissionId)) {
+        if (
+          !selectedSubmissionId ||
+          !fetchedSubs.some((s) => s.id === selectedSubmissionId)
+        ) {
           openSubmissionDetail(fetchedSubs[0].id);
         }
       }
@@ -219,12 +236,20 @@ export function BannerSubmissionsManagement() {
     setStatusMessage(null);
 
     try {
-      await bannerTemplateApi.updateBannerSubmissionStatus(selectedSubmissionId, newStatus);
+      await bannerTemplateApi.updateBannerSubmissionStatus(
+        selectedSubmissionId,
+        newStatus,
+      );
       setStatusChoice(newStatus);
-      setStatusMessage({ type: "success", text: `Status updated to ${newStatus}` });
+      setStatusMessage({
+        type: "success",
+        text: `Status updated to ${newStatus}`,
+      });
 
       setSubmissions((prev) =>
-        prev.map((s) => (s.id === selectedSubmissionId ? { ...s, status: newStatus } : s)),
+        prev.map((s) =>
+          s.id === selectedSubmissionId ? { ...s, status: newStatus } : s,
+        ),
       );
       if (detailData) {
         setDetailData({ ...detailData, status: newStatus });
@@ -254,7 +279,10 @@ export function BannerSubmissionsManagement() {
 
   const filteredSubmissions = useMemo(() => {
     return submissions.filter((sub) => {
-      if (statusFilter !== "all" && sub.status.toLowerCase() !== statusFilter.toLowerCase()) {
+      if (
+        statusFilter !== "all" &&
+        sub.status.toLowerCase() !== statusFilter.toLowerCase()
+      ) {
         return false;
       }
       if (
@@ -271,7 +299,9 @@ export function BannerSubmissionsManagement() {
         const matchesUser = sub.userName.toLowerCase().includes(q);
         const matchesEmail = sub.userEmail.toLowerCase().includes(q);
         const matchesFran = (sub.franchiseName || "").toLowerCase().includes(q);
-        return matchesId || matchesTpl || matchesUser || matchesEmail || matchesFran;
+        return (
+          matchesId || matchesTpl || matchesUser || matchesEmail || matchesFran
+        );
       }
       return true;
     });
@@ -307,7 +337,11 @@ export function BannerSubmissionsManagement() {
   }, [filteredSubmissions]);
 
   const selectedSubmission = useMemo(() => {
-    return filteredSubmissions.find((s) => s.id === selectedSubmissionId) || submissions.find((s) => s.id === selectedSubmissionId) || null;
+    return (
+      filteredSubmissions.find((s) => s.id === selectedSubmissionId) ||
+      submissions.find((s) => s.id === selectedSubmissionId) ||
+      null
+    );
   }, [filteredSubmissions, submissions, selectedSubmissionId]);
 
   return (
@@ -340,7 +374,9 @@ export function BannerSubmissionsManagement() {
                 onClick={() => setViewMode("canvas")}
                 title="Canvas Split View"
                 className={`h-8 w-8 rounded-lg cursor-pointer ${
-                  viewMode === "canvas" ? "bg-slate-900 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
+                  viewMode === "canvas"
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 <LayoutGrid size={14} />
@@ -351,7 +387,9 @@ export function BannerSubmissionsManagement() {
                 onClick={() => setViewMode("table")}
                 title="Table List View"
                 className={`h-8 w-8 rounded-lg cursor-pointer ${
-                  viewMode === "table" ? "bg-slate-900 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
+                  viewMode === "table"
+                    ? "bg-slate-900 text-white shadow-xs"
+                    : "text-slate-600 hover:text-slate-900"
                 }`}
               >
                 <List size={14} />
@@ -398,7 +436,9 @@ export function BannerSubmissionsManagement() {
             >
               <RefreshCw
                 size={14}
-                className={refreshing ? "animate-spin text-indigo-600" : "text-slate-500"}
+                className={
+                  refreshing ? "animate-spin text-indigo-600" : "text-slate-500"
+                }
               />
               <span>Refresh</span>
             </Button>
@@ -410,7 +450,9 @@ export function BannerSubmissionsManagement() {
       {loading ? (
         <Card className="p-16 text-center space-y-3 bg-white border-slate-200/80">
           <Loader2 size={26} className="animate-spin mx-auto text-indigo-600" />
-          <p className="text-xs font-semibold text-slate-600">Loading banner submissions...</p>
+          <p className="text-xs font-semibold text-slate-600">
+            Loading banner submissions...
+          </p>
         </Card>
       ) : filteredSubmissions.length === 0 ? (
         <Card className="p-16 text-center space-y-3 bg-white border-slate-200/80">
@@ -418,7 +460,9 @@ export function BannerSubmissionsManagement() {
             <Inbox size={24} />
           </div>
           <div className="space-y-1">
-            <p className="text-sm font-bold text-slate-800">No Banner Submissions Found</p>
+            <p className="text-sm font-bold text-slate-800">
+              No Banner Submissions Found
+            </p>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
               {search || statusFilter !== "all" || franchiseFilter !== "all"
                 ? "No submissions matched your search or filter criteria. Try clearing filters."
@@ -435,7 +479,9 @@ export function BannerSubmissionsManagement() {
           <div className="lg:col-span-4 space-y-3.5 max-h-[calc(100vh-220px)] overflow-y-auto pr-1">
             {groupedSubmissions.map((group) => {
               const isExpanded = Boolean(expandedClients[group.userId]);
-              const containsSelected = group.orders.some((o) => o.id === selectedSubmissionId);
+              const containsSelected = group.orders.some(
+                (o) => o.id === selectedSubmissionId,
+              );
 
               return (
                 <Card
@@ -455,7 +501,9 @@ export function BannerSubmissionsManagement() {
                   >
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
                       <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-extrabold text-xs flex items-center justify-center flex-shrink-0 shadow-2xs">
-                        {group.userName ? group.userName.charAt(0).toUpperCase() : "C"}
+                        {group.userName
+                          ? group.userName.charAt(0).toUpperCase()
+                          : "C"}
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 flex-wrap">
@@ -463,12 +511,15 @@ export function BannerSubmissionsManagement() {
                             {group.userName}
                           </h3>
                         </div>
-                        <p className="text-[11px] text-slate-500 truncate">
+                        <p className="text-[13px] text-slate-500 truncate">
                           {group.userEmail}
                         </p>
                         {group.franchiseName && (
                           <p className="text-[10px] text-slate-400 truncate flex items-center gap-1 font-medium mt-0.5">
-                            <Building2 size={10} className="text-slate-400 flex-shrink-0" />
+                            <Building2
+                              size={10}
+                              className="text-slate-400 flex-shrink-0"
+                            />
                             <span>{group.franchiseName}</span>
                           </p>
                         )}
@@ -476,10 +527,23 @@ export function BannerSubmissionsManagement() {
                     </div>
 
                     <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/70 shadow-2xs">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[13px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200/70 shadow-2xs">
                         <Layers size={11} className="text-indigo-500" />
-                        <span>{group.totalOrders} {group.totalOrders === 1 ? "Order" : "Orders"}</span>
-                        {isExpanded ? <ChevronUp size={13} className="text-indigo-500 ml-0.5" /> : <ChevronDown size={13} className="text-indigo-500 ml-0.5" />}
+                        <span>
+                          {group.totalOrders}{" "}
+                          {group.totalOrders === 1 ? "Order" : "Orders"}
+                        </span>
+                        {isExpanded ? (
+                          <ChevronUp
+                            size={13}
+                            className="text-indigo-500 ml-0.5"
+                          />
+                        ) : (
+                          <ChevronDown
+                            size={13}
+                            className="text-indigo-500 ml-0.5"
+                          />
+                        )}
                       </span>
                     </div>
                   </div>
@@ -510,7 +574,10 @@ export function BannerSubmissionsManagement() {
                                     className="w-full h-full object-cover"
                                   />
                                 ) : (
-                                  <FileImage size={16} className="text-slate-400" />
+                                  <FileImage
+                                    size={16}
+                                    className="text-slate-400"
+                                  />
                                 )}
                               </div>
 
@@ -527,9 +594,13 @@ export function BannerSubmissionsManagement() {
                                     {order.widthPx} × {order.heightPx} px
                                   </span>
                                   <span className="text-slate-300">·</span>
-                                  <span className="capitalize">{order.orientation}</span>
+                                  <span className="capitalize">
+                                    {order.orientation}
+                                  </span>
                                   <span className="text-slate-300">·</span>
-                                  <span className="font-bold text-indigo-600">Qty: {order.quantity || 1}</span>
+                                  <span className="font-bold text-indigo-600">
+                                    Qty: {order.quantity || 1}
+                                  </span>
                                 </div>
                               </div>
                             </div>
@@ -539,7 +610,9 @@ export function BannerSubmissionsManagement() {
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 {getStatusBadge(order.status)}
                                 <span className="text-slate-400 text-[10px]">
-                                  {new Date(order.updatedAt || order.createdAt).toLocaleDateString()}
+                                  {new Date(
+                                    order.updatedAt || order.createdAt,
+                                  ).toLocaleDateString()}
                                 </span>
                               </div>
 
@@ -581,7 +654,8 @@ export function BannerSubmissionsManagement() {
                   <CardHeader className="p-4 sm:p-5 space-y-0">
                     <div className="flex items-center gap-2.5 flex-wrap">
                       <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">
-                        {detailData?.templateName || selectedSubmission.templateName}
+                        {detailData?.templateName ||
+                          selectedSubmission.templateName}
                       </h2>
                       {detailData && getStatusBadge(detailData.status)}
                     </div>
@@ -596,11 +670,11 @@ export function BannerSubmissionsManagement() {
                       {selectedSubmissionFiles.length > 0
                         ? selectedSubmissionFiles.length
                         : selectedSubmission.previewImageUrl
-                        ? 1
-                        : 0}
+                          ? 1
+                          : 0}
                       )
                     </h3>
-                    <span className="text-[11px] text-slate-400">
+                    <span className="text-[13px] text-slate-400">
                       {selectedSubmissionFiles.length > 0
                         ? `${selectedSubmissionFiles.length} photo tile${selectedSubmissionFiles.length > 1 ? "s" : ""} uploaded`
                         : "Main proof banner"}
@@ -609,8 +683,13 @@ export function BannerSubmissionsManagement() {
 
                   {loadingDetail ? (
                     <div className="py-16 text-center space-y-3">
-                      <Loader2 size={24} className="animate-spin mx-auto text-indigo-600" />
-                      <p className="text-xs font-semibold text-slate-500">Loading banners...</p>
+                      <Loader2
+                        size={24}
+                        className="animate-spin mx-auto text-indigo-600"
+                      />
+                      <p className="text-xs font-semibold text-slate-500">
+                        Loading banners...
+                      </p>
                     </div>
                   ) : selectedSubmissionFiles.length > 0 ? (
                     /* Grid of individual photo tiles/banners */
@@ -641,7 +720,8 @@ export function BannerSubmissionsManagement() {
                                   onClick={() =>
                                     setFullscreenImage({
                                       url: thumb,
-                                      name: file.fileName || `Photo #${idx + 1}`,
+                                      name:
+                                        file.fileName || `Photo #${idx + 1}`,
                                       version: versionNum,
                                     })
                                   }
@@ -652,7 +732,7 @@ export function BannerSubmissionsManagement() {
                               </div>
 
                               {/* Version Badge (Matching Screenshot) */}
-                              <span className="absolute top-2 right-2 bg-slate-900/85 text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded-md backdrop-blur-sm shadow">
+                              <span className="absolute top-2 right-2 bg-slate-900/85 text-white text-[12px] font-mono font-bold px-2 py-0.5 rounded-md backdrop-blur-sm shadow">
                                 v{versionNum}
                               </span>
                             </div>
@@ -660,7 +740,7 @@ export function BannerSubmissionsManagement() {
                             {/* Tile Title & Status */}
                             <div className="flex items-center justify-between pt-1">
                               <span
-                                className="font-extrabold text-slate-900 text-xs truncate"
+                                className="font-extrabold text-slate-900 text-[14px] truncate"
                                 title={file.fileName || `Photo #${idx + 1}`}
                               >
                                 {file.fileName || `Photo #${idx + 1}`}
@@ -668,29 +748,40 @@ export function BannerSubmissionsManagement() {
                               {detailData && getStatusBadge(detailData.status)}
                             </div>
 
-                            <div className="space-y-1 text-[11px] text-slate-500 pt-1">
+                            <div className="space-y-1 text-[14px] text-slate-500 pt-1">
                               <div>
                                 Client:{" "}
                                 <strong className="text-slate-800">
-                                  {detailData?.userName || selectedSubmission.userName}
+                                  {detailData?.userName ||
+                                    selectedSubmission.userName}
                                 </strong>
-                                {(detailData?.userEmail || selectedSubmission.userEmail) && (
+                                {(detailData?.userEmail ||
+                                  selectedSubmission.userEmail) && (
                                   <span className="text-slate-400 ml-1">
-                                    ({detailData?.userEmail || selectedSubmission.userEmail})
+                                    (
+                                    {detailData?.userEmail ||
+                                      selectedSubmission.userEmail}
+                                    )
                                   </span>
                                 )}
                               </div>
                               {selectedSubmission.franchiseName && (
                                 <div className="flex items-center gap-1">
-                                  <Building2 size={11} className="text-slate-400" />
+                                  <Building2
+                                    size={11}
+                                    className="text-slate-400"
+                                  />
                                   <span>Franchise: </span>
-                                  <strong className="text-slate-700">{selectedSubmission.franchiseName}</strong>
+                                  <strong className="text-slate-700">
+                                    {selectedSubmission.franchiseName}
+                                  </strong>
                                 </div>
                               )}
                               <div>
                                 Dimensions:{" "}
                                 <span className="font-mono text-indigo-600 font-bold">
-                                  {selectedSubmission.widthPx} × {selectedSubmission.heightPx} px
+                                  {selectedSubmission.widthPx} ×{" "}
+                                  {selectedSubmission.heightPx} px
                                 </span>
                               </div>
                               <div>
@@ -702,9 +793,6 @@ export function BannerSubmissionsManagement() {
                                     : "Banner"}
                                 </strong>
                               </div>
-                              <div>
-                                Uploaded by: <strong className="text-slate-600">{file.uploadedBy || "Client"}</strong>
-                              </div>
                             </div>
 
                             {/* Bottom Actions - Button */}
@@ -712,7 +800,9 @@ export function BannerSubmissionsManagement() {
                               <Button
                                 size="sm"
                                 className="h-8 gap-1.5 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-2xs cursor-pointer"
-                                onClick={() => setThreadSubmissionId(selectedSubmission.id)}
+                                onClick={() =>
+                                  setThreadSubmissionId(selectedSubmission.id)
+                                }
                               >
                                 <Edit3 size={13} /> View / Edit Banner
                               </Button>
@@ -727,7 +817,9 @@ export function BannerSubmissionsManagement() {
                       <Card className="p-3.5 space-y-3 rounded-2xl bg-white border-slate-200 transition hover:shadow-md hover:border-slate-300 group">
                         <div className="aspect-[4/3] bg-slate-50 rounded-xl overflow-hidden relative group border border-slate-100 flex items-center justify-center">
                           <img
-                            src={resolveImageUrl(selectedSubmission.previewImageUrl)}
+                            src={resolveImageUrl(
+                              selectedSubmission.previewImageUrl,
+                            )}
                             alt={selectedSubmission.templateName}
                             className="w-full h-full object-contain bg-white"
                           />
@@ -738,7 +830,9 @@ export function BannerSubmissionsManagement() {
                               className="bg-white/95 hover:bg-white shadow text-xs font-bold gap-1.5 rounded-lg"
                               onClick={() =>
                                 setFullscreenImage({
-                                  url: resolveImageUrl(selectedSubmission.previewImageUrl),
+                                  url: resolveImageUrl(
+                                    selectedSubmission.previewImageUrl,
+                                  ),
                                   name: selectedSubmission.templateName,
                                   version: 1,
                                 })
@@ -759,15 +853,20 @@ export function BannerSubmissionsManagement() {
                           {detailData && getStatusBadge(detailData.status)}
                         </div>
 
-                        <div className="space-y-1 text-[11px] text-slate-500 pt-1">
+                        <div className="space-y-1 text-[13px] text-slate-500 pt-1">
                           <div>
                             Client:{" "}
                             <strong className="text-slate-800">
-                              {detailData?.userName || selectedSubmission.userName}
+                              {detailData?.userName ||
+                                selectedSubmission.userName}
                             </strong>
-                            {(detailData?.userEmail || selectedSubmission.userEmail) && (
+                            {(detailData?.userEmail ||
+                              selectedSubmission.userEmail) && (
                               <span className="text-slate-400 ml-1">
-                                ({detailData?.userEmail || selectedSubmission.userEmail})
+                                (
+                                {detailData?.userEmail ||
+                                  selectedSubmission.userEmail}
+                                )
                               </span>
                             )}
                           </div>
@@ -775,13 +874,16 @@ export function BannerSubmissionsManagement() {
                             <div className="flex items-center gap-1">
                               <Building2 size={11} className="text-slate-400" />
                               <span>Franchise: </span>
-                              <strong className="text-slate-700">{selectedSubmission.franchiseName}</strong>
+                              <strong className="text-slate-700">
+                                {selectedSubmission.franchiseName}
+                              </strong>
                             </div>
                           )}
                           <div>
                             Dimensions:{" "}
                             <span className="font-mono text-indigo-600 font-bold">
-                              {selectedSubmission.widthPx} × {selectedSubmission.heightPx} px
+                              {selectedSubmission.widthPx} ×{" "}
+                              {selectedSubmission.heightPx} px
                             </span>
                           </div>
                           <div>
@@ -800,7 +902,9 @@ export function BannerSubmissionsManagement() {
                           <Button
                             size="sm"
                             className="h-8 gap-1.5 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-2xs cursor-pointer"
-                            onClick={() => setThreadSubmissionId(selectedSubmission.id)}
+                            onClick={() =>
+                              setThreadSubmissionId(selectedSubmission.id)
+                            }
                           >
                             <Edit3 size={13} /> View / Edit Banner
                           </Button>
@@ -810,19 +914,25 @@ export function BannerSubmissionsManagement() {
                   ) : (
                     <div className="py-16 text-center text-slate-400 space-y-2 border border-dashed border-slate-200 rounded-2xl">
                       <FileImage size={36} className="mx-auto text-slate-300" />
-                      <p className="text-sm font-semibold text-slate-600">No banners yet</p>
-                      <p className="text-xs">No proof or photo files attached yet.</p>
+                      <p className="text-sm font-semibold text-slate-600">
+                        No banners yet
+                      </p>
+                      <p className="text-xs">
+                        No proof or photo files attached yet.
+                      </p>
                     </div>
                   )}
                 </Card>
-
-
               </>
             ) : (
               <div className="py-20 text-center text-slate-400 space-y-2 border border-dashed border-slate-200 rounded-2xl bg-white">
                 <Inbox size={32} className="mx-auto text-slate-300" />
-                <p className="text-sm font-semibold text-slate-700">Select a submission</p>
-                <p className="text-xs">Choose a banner submission from the left to view banners.</p>
+                <p className="text-sm font-semibold text-slate-700">
+                  Select a submission
+                </p>
+                <p className="text-xs">
+                  Choose a banner submission from the left to view banners.
+                </p>
               </div>
             )}
           </div>
@@ -835,7 +945,7 @@ export function BannerSubmissionsManagement() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse text-xs">
               <thead>
-                <tr className="bg-slate-50/75 border-b border-slate-200/80 text-slate-600 font-bold uppercase tracking-wider text-[11px]">
+                <tr className="bg-slate-50/75 border-b border-slate-200/80 text-slate-600 font-bold uppercase tracking-wider text-[13px]">
                   <th className="py-3.5 px-4">ID</th>
                   <th className="py-3.5 px-4">Preview</th>
                   <th className="py-3.5 px-4">Banner Template</th>
@@ -850,37 +960,15 @@ export function BannerSubmissionsManagement() {
                 {groupedSubmissions.map((group) => {
                   return (
                     <Fragment key={group.userId}>
-                      {/* Client Section Header Row */}
-                      <tr className="bg-slate-50/90 border-t-2 border-b border-slate-200">
-                        <td colSpan={8} className="py-2.5 px-4">
-                          <div className="flex items-center justify-between gap-3 flex-wrap">
-                            <div className="flex items-center gap-2.5">
-                              <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-700 font-extrabold text-[10px] flex items-center justify-center shadow-2xs">
-                                {group.userName ? group.userName.charAt(0).toUpperCase() : "C"}
-                              </div>
-                              <span className="font-extrabold text-slate-900 text-xs">{group.userName}</span>
-                              <span className="text-slate-400 text-xs">({group.userEmail})</span>
-                              {group.franchiseName && (
-                                <span className="inline-flex items-center gap-1 text-[11px] text-slate-600 bg-white px-2 py-0.5 rounded-md border border-slate-200">
-                                  <Building2 size={10} className="text-slate-400" />
-                                  {group.franchiseName}
-                                </span>
-                              )}
-                            </div>
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
-                              <Layers size={10} className="text-indigo-500" />
-                              {group.totalOrders} {group.totalOrders === 1 ? "Order" : "Orders"}
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-
                       {/* Orders for this client */}
                       {group.orders.map((sub) => (
                         <DetailRow
                           key={sub.id}
                           aria-label={`View ${sub.templateName} submission ${sub.id}`}
-                          onClick={() => { openSubmissionDetail(sub.id); setViewMode("canvas"); }}
+                          onClick={() => {
+                            openSubmissionDetail(sub.id);
+                            setViewMode("canvas");
+                          }}
                           className="hover:bg-slate-50/50 transition duration-150 group"
                         >
                           <td className="py-3.5 px-4 font-mono font-bold text-slate-700">
@@ -896,7 +984,10 @@ export function BannerSubmissionsManagement() {
                                   className="w-full h-full object-cover"
                                 />
                               ) : (
-                                <ImageIcon size={18} className="text-slate-400" />
+                                <ImageIcon
+                                  size={18}
+                                  className="text-slate-400"
+                                />
                               )}
                             </div>
                           </td>
@@ -905,14 +996,18 @@ export function BannerSubmissionsManagement() {
                             <div className="font-bold text-slate-900 text-xs">
                               {sub.templateName}
                             </div>
-                            <div className="text-[11px] text-slate-400 font-normal">
+                            <div className="text-[13px] text-slate-400 font-normal">
                               {sub.widthPx} × {sub.heightPx} px
                             </div>
                           </td>
 
                           <td className="py-3.5 px-4">
-                            <div className="font-semibold text-slate-800">{sub.userName}</div>
-                            <div className="text-[11px] text-slate-400">{sub.userEmail}</div>
+                            <div className="font-semibold text-slate-800">
+                              {sub.userName}
+                            </div>
+                            <div className="text-[13px] text-slate-400">
+                              {sub.userEmail}
+                            </div>
                           </td>
 
                           <td className="py-3.5 px-4">
@@ -946,18 +1041,22 @@ export function BannerSubmissionsManagement() {
                                   setViewMode("canvas");
                                 }}
                                 className="portal-action"
-                               title="Canvas View" aria-label="Canvas View">
-                      <Eye size={15} aria-hidden="true" />
-                    </Button>
+                                title="Canvas View"
+                                aria-label="Canvas View"
+                              >
+                                <Eye size={15} aria-hidden="true" />
+                              </Button>
 
                               <Button
                                 variant="outline"
                                 size="icon-sm"
                                 onClick={() => setThreadSubmissionId(sub.id)}
                                 className="portal-action"
-                               title="Revisions" aria-label="Revisions">
-                      <Edit3 size={15} aria-hidden="true" />
-                    </Button>
+                                title="Revisions"
+                                aria-label="Revisions"
+                              >
+                                <Edit3 size={15} aria-hidden="true" />
+                              </Button>
 
                               {sub.previewImageUrl && (
                                 <Button

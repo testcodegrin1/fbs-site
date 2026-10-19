@@ -59,7 +59,7 @@ export default function Home() {
                 >
                   <div className="flex justify-center lg:justify-start">
                     <div className="inline-flex items-center gap-3 bg-primary-light text-primary px-5 py-2 rounded-full shadow-lg">
-                      <span className="text-[11px] font-bold uppercase tracking-widest">
+                      <span className="text-[13px] font-bold uppercase tracking-widest">
                         Printing &amp; Branding Experts
                       </span>
                     </div>
@@ -69,15 +69,18 @@ export default function Home() {
                     className="font-semibold text-primary-dark leading-tight tracking-tight
                       text-4xl sm:text-5xl md:text-6xl lg:text-5xl xl:text-7xl"
                   >
-                    Signage &amp; Printing{" "}
-                    <br />
+                    Signage &amp; Printing <br />
                     <span className="text-primary">
                       For Illinois Businesses
                     </span>
                   </h1>
 
                   <p className="text-primary-dark/70 text-base sm:text-lg max-w-xl mx-auto lg:mx-0">
-                    FBS Prints provides custom printing, business signage, large-format printing, direct mail, web design, and SEO services for businesses in Illinois. From printed marketing materials and custom signs to direct mail , FBS helps businesses build consistent and visible brands. 
+                    FBS Prints provides custom printing, business signage,
+                    large-format printing, direct mail, web design, and SEO
+                    services for businesses in Illinois. From printed marketing
+                    materials and custom signs to direct mail , FBS helps
+                    businesses build consistent and visible brands.
                   </p>
 
                   <div className="flex justify-center lg:justify-start pt-4">
@@ -236,17 +239,18 @@ export default function Home() {
               <div className="space-y-5 mt-6">
                 <p className="text-primary-dark/70 text-base sm:text-xl font-semibold">
                   Over the years, FBS Signs has turned countless ideas into
-                  high-quality prints and signage that leave a lasting impression.
-                  From small local businesses to large franchise rollouts across
-                  Illinois, our team blends creativity with precision to deliver
-                  outstanding results every time.
+                  high-quality prints and signage that leave a lasting
+                  impression. From small local businesses to large franchise
+                  rollouts across Illinois, our team blends creativity with
+                  precision to deliver outstanding results every time.
                 </p>
                 <p className="text-primary-dark/70 text-base sm:text-xl font-semibold max-w-4xl mx-auto lg:mx-0">
                   With over 25 years of experience and a passion for excellence,
                   we have completed more than 150 projects for clients across
                   industries including QSR restaurants, hospitality, retail, and
                   professional services. Every design, every print, and every
-                  sign reflects our commitment to quality and customer satisfaction.
+                  sign reflects our commitment to quality and customer
+                  satisfaction.
                 </p>
               </div>
             </div>
@@ -275,11 +279,11 @@ export default function Home() {
                 Business Goals
               </h2>
               <p className="text-sm sm:text-base md:text-lg pt-4 text-primary-dark/80">
-                We create tailored printing and signage solutions designed to make your
-                brand stand out and your message clear. From eye-catching
-                designs to premium materials, every print and sign is crafted to support
-                your marketing goals, engage your audience, and drive real
-                results for your business.
+                We create tailored printing and signage solutions designed to
+                make your brand stand out and your message clear. From
+                eye-catching designs to premium materials, every print and sign
+                is crafted to support your marketing goals, engage your
+                audience, and drive real results for your business.
               </p>
               <div className="pt-6 flex justify-center md:justify-start">
                 <div className="w-16 h-[3px] bg-primary rounded-full"></div>

@@ -14,6 +14,35 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: process.cwd(),
   },
+  async redirects() {
+    return [
+      {
+        source: "/blog/led-sign-displays-for-24/7-visibility-westmont",
+        destination: "/blog/led-sign-displays-for-24-7-visibility-westmont",
+        permanent: true,
+      },
+      {
+        source: "/blog/led-sign-displays-for-24/7-visibility-montgomery",
+        destination: "/blog/led-sign-displays-for-24-7-visibility-montgomery",
+        permanent: true,
+      },
+      {
+        source: "/blog/led-sign-displays-for-24/7-visibility-naperville",
+        destination: "/blog/led-sign-displays-for-24-7-visibility-naperville",
+        permanent: true,
+      },
+      {
+        source: "/blog/led-sign-displays-for-24/7-visibility-aurora",
+        destination: "/blog/led-sign-displays-for-24-7-visibility-aurora",
+        permanent: true,
+      },
+      {
+        source: "/blog/led-sign-displays-for-24/7-visibility-rockford",
+        destination: "/blog/led-sign-displays-for-24-7-visibility-rockford",
+        permanent: true,
+      },
+    ];
+  },
   async rewrites() {
     // Proxy browser `/api/*` calls to the standalone backend so the
     // session cookie can stay on the frontend origin during local dev.

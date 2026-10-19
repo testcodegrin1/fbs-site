@@ -149,7 +149,9 @@ export default function DirectMailingPage() {
                 Home
               </Link>
               <span className="mx-2">&gt;</span>
-              <span className="font-semibold text-primary-dark">Direct Mailing</span>
+              <span className="font-semibold text-primary-dark">
+                Direct Mailing
+              </span>
             </p>
             <div className="grid items-center gap-10 sm:gap-12 lg:grid-cols-2 lg:gap-20 mt-10 lg:mt-0">
               {/* Left Content */}
@@ -159,7 +161,7 @@ export default function DirectMailingPage() {
               >
                 <div className="flex justify-center lg:justify-start">
                   <div className="inline-flex items-center gap-2 sm:gap-3 rounded-full border border-primary-light bg-white px-4 py-1.5 sm:px-5 sm:py-2 shadow-sm">
-                    <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] text-primary">
+                    <span className="text-[10px] sm:text-[13px] font-bold uppercase tracking-[0.15em] sm:tracking-[0.2em] text-primary">
                       Print & Post Solutions
                     </span>
                   </div>
@@ -171,7 +173,13 @@ export default function DirectMailingPage() {
                 </h1>
 
                 <p className="mx-auto max-w-2xl text-sm text-primary-dark/70 sm:text-lg lg:mx-0">
-               FBS Prints provides direct mailing services that help businesses reach targeted customers through professionally printed and mailed materials. From direct mail design and printing to addressing, mailing lists, postage, and delivery preparation, we manage the mailing process from start to finish. Our direct mailing solutions can be tailored to different campaigns, audiences, and business requirements.
+                  FBS Prints provides direct mailing services that help
+                  businesses reach targeted customers through professionally
+                  printed and mailed materials. From direct mail design and
+                  printing to addressing, mailing lists, postage, and delivery
+                  preparation, we manage the mailing process from start to
+                  finish. Our direct mailing solutions can be tailored to
+                  different campaigns, audiences, and business requirements.
                 </p>
 
                 <div className="flex flex-col sm:flex-row justify-center lg:justify-start gap-3 sm:gap-4">
@@ -243,7 +251,10 @@ export default function DirectMailingPage() {
 
         {/* Section 2: Core Strategy Cards (Why Direct Mail Works) */}
         <section className="container py-10 sm:py-14 md:py-20 bg-white">
-          <div className="mx-auto mb-10 sm:mb-16 max-w-3xl text-center" data-aos="fade-up">
+          <div
+            className="mx-auto mb-10 sm:mb-16 max-w-3xl text-center"
+            data-aos="fade-up"
+          >
             <span className="mb-2 block text-xs sm:text-sm font-semibold uppercase tracking-widest text-primary">
               Marketing Intelligence
             </span>
@@ -251,8 +262,9 @@ export default function DirectMailingPage() {
               Why Direct Mail Delivers Results
             </h2>
             <p className="mt-3 text-sm sm:text-base text-primary-dark/70">
-              In a highly saturated digital ecosystem, physical mail stands out, legitimizes brands,
-              and achieves incredible response rates when backed by targeted data.
+              In a highly saturated digital ecosystem, physical mail stands out,
+              legitimizes brands, and achieves incredible response rates when
+              backed by targeted data.
             </p>
           </div>
 
@@ -265,12 +277,16 @@ export default function DirectMailingPage() {
               <div className="mb-5 flex h-9 w-9 items-center justify-center rounded-xl bg-primary-light text-primary">
                 <Target className="h-5 w-5" />
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-primary-dark mb-3">Hyper-Targeted Data</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-primary-dark mb-3">
+                Hyper-Targeted Data
+              </h3>
               <p className="text-sm leading-relaxed text-primary-dark/70">
-                Maximize conversion rates by targeting recipients based on exact demographic criteria
-                such as household income, age, marital status, and homeownership. Alternatively, Every Door
-                Direct Mail (EDDM) lets you target specific neighborhood carrier routes to achieve 100%
-                geographic saturation. Precision targeting guarantees your mail reaches high-intent local audiences.
+                Maximize conversion rates by targeting recipients based on exact
+                demographic criteria such as household income, age, marital
+                status, and homeownership. Alternatively, Every Door Direct Mail
+                (EDDM) lets you target specific neighborhood carrier routes to
+                achieve 100% geographic saturation. Precision targeting
+                guarantees your mail reaches high-intent local audiences.
               </p>
             </div>
 
@@ -282,12 +298,16 @@ export default function DirectMailingPage() {
               <div className="mb-5 flex h-9 w-9 items-center justify-center rounded-xl bg-primary-light text-primary">
                 <Sparkles className="h-5 w-5" />
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-primary-dark mb-3">Tactile & Tangible Impact</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-primary-dark mb-3">
+                Tactile & Tangible Impact
+              </h3>
               <p className="text-sm leading-relaxed text-primary-dark/70">
-                In a saturated digital environment, physical mail stands out in a crowded mailbox. The
-                tactile sensation of handling a premium paper stock creates a psychological connection
-                and trust that digital screens cannot match. Enhancing your pieces with custom coatings,
-                die-cut shapes, or soft-touch laminates ensures your brand leaves a lasting, positive impression.
+                In a saturated digital environment, physical mail stands out in
+                a crowded mailbox. The tactile sensation of handling a premium
+                paper stock creates a psychological connection and trust that
+                digital screens cannot match. Enhancing your pieces with custom
+                coatings, die-cut shapes, or soft-touch laminates ensures your
+                brand leaves a lasting, positive impression.
               </p>
             </div>
 
@@ -299,12 +319,16 @@ export default function DirectMailingPage() {
               <div className="mb-5 flex h-9 w-9 items-center justify-center rounded-xl bg-primary-light text-primary">
                 <TrendingUp className="h-5 w-5" />
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-primary-dark mb-3">Omnichannel ROI Boost</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-primary-dark mb-3">
+                Omnichannel ROI Boost
+              </h3>
               <p className="text-sm leading-relaxed text-primary-dark/70">
-                Direct mail campaigns achieve maximum ROI when integrated into an omnichannel marketing
-                strategy. By incorporating custom landing page URLs, unique QR codes, and coordinated digital
-                re-targeting ads, you can increase response rates by over 28%. Combining physical print and
-                digital touchpoints creates a seamless path to buy.
+                Direct mail campaigns achieve maximum ROI when integrated into
+                an omnichannel marketing strategy. By incorporating custom
+                landing page URLs, unique QR codes, and coordinated digital
+                re-targeting ads, you can increase response rates by over 28%.
+                Combining physical print and digital touchpoints creates a
+                seamless path to buy.
               </p>
             </div>
           </div>
@@ -326,15 +350,17 @@ export default function DirectMailingPage() {
                   Direct Mail Performance Metrics
                 </h2>
                 <p className="mt-4 text-sm text-primary-light/80 leading-relaxed">
-                  Official industry data shows that print marketing delivers a tactile reliability
-                  and conversion power that digital channels struggle to replicate.
+                  Official industry data shows that print marketing delivers a
+                  tactile reliability and conversion power that digital channels
+                  struggle to replicate.
                 </p>
                 <div className="mt-6 border-t border-primary-light/20 pt-4">
-                  <span className="block text-[11px] font-semibold uppercase tracking-widest text-primary">
+                  <span className="block text-[13px] font-semibold uppercase tracking-widest text-primary">
                     Sources & Attribution
                   </span>
                   <span className="mt-1 block text-xs text-primary-light/80 leading-relaxed">
-                    USPS Delivers, Association of National Advertisers (ANA), and Lob State of Direct Mail Reports.
+                    USPS Delivers, Association of National Advertisers (ANA),
+                    and Lob State of Direct Mail Reports.
                   </span>
                 </div>
               </div>
@@ -342,34 +368,55 @@ export default function DirectMailingPage() {
               {/* Grid of stats */}
               <div className="grid gap-4 sm:gap-6 grid-cols-2">
                 <div className="rounded-2xl border border-primary-light/20 bg-primary-dark/40 p-4 sm:p-6 backdrop-blur-sm">
-                  <div className="text-2xl sm:text-4xl font-extrabold text-primary md:text-5xl">90%</div>
-                  <h4 className="mt-2 text-xs sm:text-sm font-bold text-white">Household Open Rate</h4>
+                  <div className="text-2xl sm:text-4xl font-extrabold text-primary md:text-5xl">
+                    90%
+                  </div>
+                  <h4 className="mt-2 text-xs sm:text-sm font-bold text-white">
+                    Household Open Rate
+                  </h4>
                   <p className="mt-2 hidden sm:block text-xs leading-relaxed text-primary-light/70">
-                    Over 90% of direct mail is opened and reviewed by recipients, compared to average email open rates of just 20%.
+                    Over 90% of direct mail is opened and reviewed by
+                    recipients, compared to average email open rates of just
+                    20%.
                   </p>
                 </div>
 
                 <div className="rounded-2xl border border-primary-light/20 bg-primary-dark/40 p-4 sm:p-6 backdrop-blur-sm">
-                  <div className="text-2xl sm:text-4xl font-extrabold text-primary md:text-5xl">17 Days</div>
-                  <h4 className="mt-2 text-xs sm:text-sm font-bold text-white">Average Household Lifespan</h4>
+                  <div className="text-2xl sm:text-4xl font-extrabold text-primary md:text-5xl">
+                    17 Days
+                  </div>
+                  <h4 className="mt-2 text-xs sm:text-sm font-bold text-white">
+                    Average Household Lifespan
+                  </h4>
                   <p className="mt-2 hidden sm:block text-xs leading-relaxed text-primary-light/70">
-                    Physical mailers are kept in households for an average of 17 days, offering continuous brand impressions.
+                    Physical mailers are kept in households for an average of 17
+                    days, offering continuous brand impressions.
                   </p>
                 </div>
 
                 <div className="rounded-2xl border border-primary-light/20 bg-primary-dark/40 p-4 sm:p-6 backdrop-blur-sm">
-                  <div className="text-2xl sm:text-4xl font-extrabold text-primary md:text-5xl">9.0%</div>
-                  <h4 className="mt-2 text-xs sm:text-sm font-bold text-white">Warm List Response Rate</h4>
+                  <div className="text-2xl sm:text-4xl font-extrabold text-primary md:text-5xl">
+                    9.0%
+                  </div>
+                  <h4 className="mt-2 text-xs sm:text-sm font-bold text-white">
+                    Warm List Response Rate
+                  </h4>
                   <p className="mt-2 hidden sm:block text-xs leading-relaxed text-primary-light/70">
-                    Warm house lists yield response rates up to 9% (and acquisition campaigns average 5%), beating email by 10x.
+                    Warm house lists yield response rates up to 9% (and
+                    acquisition campaigns average 5%), beating email by 10x.
                   </p>
                 </div>
 
                 <div className="rounded-2xl border border-primary-light/20 bg-primary-dark/40 p-4 sm:p-6 backdrop-blur-sm">
-                  <div className="text-2xl sm:text-4xl font-extrabold text-primary md:text-5xl">112%</div>
-                  <h4 className="mt-2 text-xs sm:text-sm font-bold text-white">Median Campaign ROI</h4>
+                  <div className="text-2xl sm:text-4xl font-extrabold text-primary md:text-5xl">
+                    112%
+                  </div>
+                  <h4 className="mt-2 text-xs sm:text-sm font-bold text-white">
+                    Median Campaign ROI
+                  </h4>
                   <p className="mt-2 hidden sm:block text-xs leading-relaxed text-primary-light/70">
-                    Direct mail offers a median return on investment of 112% when combined with digital retargeting tactics.
+                    Direct mail offers a median return on investment of 112%
+                    when combined with digital retargeting tactics.
                   </p>
                 </div>
               </div>
@@ -380,7 +427,10 @@ export default function DirectMailingPage() {
         {/* Section 3: Direct Mail Format Examples  now sourced from JSON + linked to /[slug] */}
         <section className="bg-primary-light/40 py-10 sm:py-16 md:py-24">
           <div className="container">
-            <div className="mx-auto mb-10 sm:mb-16 max-w-3xl text-center" data-aos="fade-up">
+            <div
+              className="mx-auto mb-10 sm:mb-16 max-w-3xl text-center"
+              data-aos="fade-up"
+            >
               <span className="mb-2 block text-xs sm:text-sm font-semibold uppercase tracking-widest text-primary">
                 Production Formats
               </span>
@@ -388,8 +438,9 @@ export default function DirectMailingPage() {
                 Popular Direct Mail Formats
               </h2>
               <p className="mt-3 text-sm sm:text-base text-primary-dark/70">
-                We custom print and process several major mail styles. Tailor dimensions,
-                paper weights, and folding specifications for your unique branding goals.
+                We custom print and process several major mail styles. Tailor
+                dimensions, paper weights, and folding specifications for your
+                unique branding goals.
               </p>
             </div>
 
@@ -405,12 +456,14 @@ export default function DirectMailingPage() {
                   <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-primary-light text-primary">
                     <FileText className="h-5 w-5" />
                   </div>
-                  <h3 className="text-lg font-bold text-primary-dark">{format.title}</h3>
+                  <h3 className="text-lg font-bold text-primary-dark">
+                    {format.title}
+                  </h3>
                   <p className="mt-2 text-sm leading-relaxed text-primary-dark/70 flex-grow">
                     {format.description}
                   </p>
                   <div className="mt-4 flex items-center justify-between gap-3 border-t border-primary-light pt-3">
-                    <span className="block text-[11px] font-semibold uppercase tracking-wider text-primary-dark/45">
+                    <span className="block text-[13px] font-semibold uppercase tracking-wider text-primary-dark/45">
                       {format.detailsLabel}: {format.detailsValue}
                     </span>
                     <ChevronRight className="h-4 w-4 shrink-0 text-primary opacity-0 -translate-x-1 transition duration-300 group-hover:opacity-100 group-hover:translate-x-0" />
@@ -443,8 +496,10 @@ export default function DirectMailingPage() {
                 Post-Office Ready Logistics
               </h2>
               <p className="text-sm sm:text-base text-primary-dark/70 leading-relaxed">
-                Avoid logistics stress. We coordinate with the postal authorities, process lists,
-                and optimize bundle configurations to qualify your campaign for the lowest possible automation postage rates.
+                Avoid logistics stress. We coordinate with the postal
+                authorities, process lists, and optimize bundle configurations
+                to qualify your campaign for the lowest possible automation
+                postage rates.
               </p>
 
               <div className="space-y-4">
@@ -453,9 +508,12 @@ export default function DirectMailingPage() {
                     <Check className="h-4 w-4" />
                   </div>
                   <div>
-                    <h4 className="text-sm sm:text-base font-bold text-primary-dark">List Cleansing & NCOA</h4>
+                    <h4 className="text-sm sm:text-base font-bold text-primary-dark">
+                      List Cleansing & NCOA
+                    </h4>
                     <p className="text-sm text-primary-dark/70">
-                      We process lists against the National Change of Address database (NCOA) to prevent delivery failures.
+                      We process lists against the National Change of Address
+                      database (NCOA) to prevent delivery failures.
                     </p>
                   </div>
                 </div>
@@ -465,9 +523,12 @@ export default function DirectMailingPage() {
                     <Check className="h-4 w-4" />
                   </div>
                   <div>
-                    <h4 className="text-sm sm:text-base font-bold text-primary-dark">Mailing Permit & Sorting</h4>
+                    <h4 className="text-sm sm:text-base font-bold text-primary-dark">
+                      Mailing Permit & Sorting
+                    </h4>
                     <p className="text-sm text-primary-dark/70">
-                      Utilize our permit or inject your custom permit indicators to enjoy bulk commercial rate discounts.
+                      Utilize our permit or inject your custom permit indicators
+                      to enjoy bulk commercial rate discounts.
                     </p>
                   </div>
                 </div>
@@ -477,9 +538,12 @@ export default function DirectMailingPage() {
                     <Check className="h-4 w-4" />
                   </div>
                   <div>
-                    <h4 className="text-sm sm:text-base font-bold text-primary-dark">EDDM Setup (Every Door Direct Mail)</h4>
+                    <h4 className="text-sm sm:text-base font-bold text-primary-dark">
+                      EDDM Setup (Every Door Direct Mail)
+                    </h4>
                     <p className="text-sm text-primary-dark/70">
-                      Target local zip code maps route-by-route. The USPS delivers a mail piece to every address on the chosen path.
+                      Target local zip code maps route-by-route. The USPS
+                      delivers a mail piece to every address on the chosen path.
                     </p>
                   </div>
                 </div>
@@ -516,7 +580,10 @@ export default function DirectMailingPage() {
 
             <div className="relative z-10 grid max-w-5xl items-center gap-8 rounded-3xl border border-white/15 bg-primary-dark/85 p-6 shadow-2xl backdrop-blur-sm sm:p-8 lg:grid-cols-[auto_1fr] lg:gap-10">
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/25 ring-1 ring-white/20 sm:h-20 sm:w-20">
-                <ShieldCheck className="h-8 w-8 sm:h-10 sm:w-10" aria-hidden="true" />
+                <ShieldCheck
+                  className="h-8 w-8 sm:h-10 sm:w-10"
+                  aria-hidden="true"
+                />
               </div>
 
               <div>
@@ -543,7 +610,10 @@ export default function DirectMailingPage() {
         {/* Section 6: Industries we serve */}
         <section className="bg-linear-to-br from-primary-light via-white to-primary-light py-10 sm:py-16 md:py-24">
           <div className="container">
-            <div className="mx-auto mb-10 sm:mb-16 max-w-3xl text-center" data-aos="fade-up">
+            <div
+              className="mx-auto mb-10 sm:mb-16 max-w-3xl text-center"
+              data-aos="fade-up"
+            >
               <span className="mb-2 block text-xs sm:text-sm font-semibold uppercase tracking-widest text-primary">
                 Target Industries
               </span>
@@ -551,7 +621,8 @@ export default function DirectMailingPage() {
                 Who Benefits From Direct Mail?
               </h2>
               <p className="mt-3 text-sm sm:text-base text-primary-dark/70">
-                Across dozens of business sectors, print marketing represents a primary acquisition channel with excellent ROI.
+                Across dozens of business sectors, print marketing represents a
+                primary acquisition channel with excellent ROI.
               </p>
             </div>
 
@@ -606,34 +677,39 @@ export default function DirectMailingPage() {
           <div className="grid items-start gap-8 lg:grid-cols-2 lg:gap-12">
             {/* Left Column: Information Card */}
             <div data-aos="fade-right" className="space-y-5 sm:space-y-6">
-              <span className="inline-flex rounded-full bg-primary-light px-3 py-1 text-[11px] font-bold uppercase tracking-[0.18em] text-primary">
+              <span className="inline-flex rounded-full bg-primary-light px-3 py-1 text-[13px] font-bold uppercase tracking-[0.18em] text-primary">
                 Campaign Calculator
               </span>
               <h2 className="text-2xl sm:text-3xl font-bold text-primary">
                 Direct Mail Budget Estimator
               </h2>
               <p className="text-sm sm:text-base leading-relaxed text-primary-dark/75">
-                Select your mailing format, list logistics, and quantity targets to get an instant
-                project projection. We help you fine-tune these dimensions to match your postage discount goals.
+                Select your mailing format, list logistics, and quantity targets
+                to get an instant project projection. We help you fine-tune
+                these dimensions to match your postage discount goals.
               </p>
 
               <div className="rounded-2xl border border-primary-light bg-primary-light/40/50 p-5 sm:p-6 space-y-4">
                 <div className="flex gap-3">
                   <ShieldCheck className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                   <p className="text-sm text-primary-dark/80">
-                    <strong>Lowest Postage Rates:</strong> We execute full postal presorts, automation grouping, and tray packaging.
+                    <strong>Lowest Postage Rates:</strong> We execute full
+                    postal presorts, automation grouping, and tray packaging.
                   </p>
                 </div>
                 <div className="flex gap-3">
                   <Truck className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                   <p className="text-sm text-primary-dark/80">
-                    <strong>Full Mail Drop:</strong> Ship direct to regional hubs or drop off at local post offices to match target drop dates.
+                    <strong>Full Mail Drop:</strong> Ship direct to regional
+                    hubs or drop off at local post offices to match target drop
+                    dates.
                   </p>
                 </div>
                 <div className="flex gap-3">
                   <Clock className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                   <p className="text-sm text-primary-dark/80">
-                    <strong>Fast Processing:</strong> Typically printed, sorted, and delivered to post office hubs in 3-5 business days.
+                    <strong>Fast Processing:</strong> Typically printed, sorted,
+                    and delivered to post office hubs in 3-5 business days.
                   </p>
                 </div>
               </div>
@@ -647,7 +723,8 @@ export default function DirectMailingPage() {
                     Build Your Campaign Specs
                   </h3>
                   <p className="mt-2 text-sm text-primary-dark/70">
-                    Adjust fields below to update direct mail pricing estimation.
+                    Adjust fields below to update direct mail pricing
+                    estimation.
                   </p>
                 </div>
 
@@ -668,10 +745,11 @@ export default function DirectMailingPage() {
                           key={m.val}
                           type="button"
                           onClick={() => setSelectedMailer(m.val)}
-                          className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${selectedMailer === m.val
-                            ? "border-primary bg-primary-light text-primary"
-                            : "border-primary-light bg-white text-primary-dark/80 hover:border-primary"
-                            }`}
+                          className={`rounded-xl border px-3 py-2 text-xs font-semibold transition ${
+                            selectedMailer === m.val
+                              ? "border-primary bg-primary-light text-primary"
+                              : "border-primary-light bg-white text-primary-dark/80 hover:border-primary"
+                          }`}
                         >
                           {m.label}
                         </button>
@@ -686,18 +764,28 @@ export default function DirectMailingPage() {
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                       {[
-                        { val: "eddm", label: "EDDM (Target Entire Postal Routes)" },
-                        { val: "targeted", label: "Targeted Demographics List" },
-                        { val: "full-service", label: "Premium Cleansed List Drop" },
+                        {
+                          val: "eddm",
+                          label: "EDDM (Target Entire Postal Routes)",
+                        },
+                        {
+                          val: "targeted",
+                          label: "Targeted Demographics List",
+                        },
+                        {
+                          val: "full-service",
+                          label: "Premium Cleansed List Drop",
+                        },
                       ].map((s) => (
                         <button
                           key={s.val}
                           type="button"
                           onClick={() => setSelectedService(s.val)}
-                          className={`rounded-xl border px-4 py-2.5 text-xs font-semibold text-left transition ${selectedService === s.val
-                            ? "border-primary bg-primary-light text-primary"
-                            : "border-primary-light bg-white text-primary-dark/80 hover:border-primary"
-                            }`}
+                          className={`rounded-xl border px-4 py-2.5 text-xs font-semibold text-left transition ${
+                            selectedService === s.val
+                              ? "border-primary bg-primary-light text-primary"
+                              : "border-primary-light bg-white text-primary-dark/80 hover:border-primary"
+                          }`}
                         >
                           {s.label}
                         </button>
@@ -716,10 +804,11 @@ export default function DirectMailingPage() {
                           key={q}
                           type="button"
                           onClick={() => setSelectedQuantity(q)}
-                          className={`rounded-xl border py-2 text-xs font-semibold transition ${selectedQuantity === q
-                            ? "border-primary bg-primary-light text-primary"
-                            : "border-primary-light bg-white text-primary-dark/80 hover:border-primary"
-                            }`}
+                          className={`rounded-xl border py-2 text-xs font-semibold transition ${
+                            selectedQuantity === q
+                              ? "border-primary bg-primary-light text-primary"
+                              : "border-primary-light bg-white text-primary-dark/80 hover:border-primary"
+                          }`}
                         >
                           {parseInt(q).toLocaleString()}
                         </button>
@@ -743,7 +832,11 @@ export default function DirectMailingPage() {
                         Estimated Total Budget
                       </span>
                       <span className="text-lg sm:text-xl font-bold text-primary">
-                        ${totalCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        $
+                        {totalCost.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </span>
                     </div>
                   </div>
@@ -760,14 +853,14 @@ export default function DirectMailingPage() {
 
                     <a
                       href={`mailto:info@fbsprints.com?subject=${encodeURIComponent(
-                        `Direct Mail Campaign Request`
+                        `Direct Mail Campaign Request`,
                       )}&body=${encodeURIComponent(
                         `I would like to inquire about a direct mail campaign with the following configurations:\n\n` +
-                        `- Mailer Format: ${selectedMailer}\n` +
-                        `- Mailing Service: ${selectedService}\n` +
-                        `- Target Quantity: ${qty}\n` +
-                        `- Estimated Pricing: $${totalCost.toFixed(2)}\n\n` +
-                        `Please contact me to discuss finalizing the list processing and file requirements.`
+                          `- Mailer Format: ${selectedMailer}\n` +
+                          `- Mailing Service: ${selectedService}\n` +
+                          `- Target Quantity: ${qty}\n` +
+                          `- Estimated Pricing: $${totalCost.toFixed(2)}\n\n` +
+                          `Please contact me to discuss finalizing the list processing and file requirements.`,
                       )}`}
                       className="flex h-14 w-full items-center justify-center gap-2.5 rounded-2xl border border-primary-light bg-primary-light/40 px-4 sm:px-6 text-center text-xs sm:text-sm font-bold text-primary transition duration-300 hover:scale-[1.01] hover:bg-primary-light"
                     >
@@ -791,7 +884,8 @@ export default function DirectMailingPage() {
               Direct Mail FAQ
             </h2>
             <p className="mt-4 text-base font-medium text-primary-dark/70 sm:text-lg">
-              Answers to common questions about direct mail printing, postage rates, and delivery logistics.
+              Answers to common questions about direct mail printing, postage
+              rates, and delivery logistics.
             </p>
           </div>
 

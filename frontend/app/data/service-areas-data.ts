@@ -35,70 +35,66 @@ export const serviceAreas: ServiceAreaCity[] = [
     state: "Illinois",
     stateCode: "IL",
     county: "DuPage and Will Counties",
-    introduction: "Naperville, Illinois, is a thriving western Chicago suburb with a vibrant downtown and diverse business community. FBS Signs provides custom business signage, commercial printing, direct mail, web design, and local SEO services for businesses throughout Naperville, IL. From storefront signs and printed marketing materials to targeted direct mail campaigns and search optimization, we help Naperville businesses build a consistent and professional presence across physical and digital channels.",
-    servicesDescription: "We provide comprehensive business solutions in Naperville, including custom exterior and interior signage, commercial printing products like brochures and business cards, targeted Every Door Direct Mail (EDDM) campaigns, custom web design, and SEO services. Whether you operate a retail shop on Jefferson Avenue, a medical facility near Edward Hospital, or a business office along the I-88 corridor, our local printing and design workflow is tailored to deliver professional results.",
-    whyChooseTitle: "Why Choose FBS Signs in Naperville",
+    introduction: "As a premier sign company serving Naperville, Illinois, FBS Signs designs, fabricates, and installs custom business signage engineered for maximum street visibility and strict municipal code compliance. Whether your storefront faces the bustling pedestrian traffic of Downtown Naperville along Jefferson Avenue and Main Street, anchors a high-speed commercial retail plaza along the Route 59 corridor, or occupies a corporate headquarters in the I-88 technology center, our custom signs, vehicle wraps, and commercial printing elevate your brand presence across DuPage and Will Counties.",
+    servicesDescription: "We provide comprehensive commercial signage and marketing solutions built around Naperville's unique commercial landscape: front-lit and halo-lit LED channel letters for shopping centers, architectural masonry monument signs for office parks, pedestrian-friendly blade signs for historic downtown boutiques, commercial fleet wraps for local contractors, and targeted Every Door Direct Mail (EDDM) saturation campaigns.",
+    whyChooseTitle: "Why Naperville Businesses Choose FBS Signs",
     whyChooseUs: [
       {
-        title: "Custom Signage for Naperville Businesses",
-        description: "FBS Signs creates custom business signage for storefronts, restaurants, offices, retail locations, and commercial properties throughout Naperville. From channel letters and monument signs to window graphics and banners, we help businesses create clear and professional brand visibility."
+        title: "City of Naperville Code & Permit Mastery",
+        description: "We handle the entire municipal permitting process through the City of Naperville Transportation, Engineering & Development (TED) Department, guaranteeing your channel letters, monument setbacks, and raceway mounts meet local zoning ordinances."
       },
       {
-        title: "One Partner for Print & Digital Marketing",
-        description: "FBS Signs brings signage, commercial printing, direct mail, web design, and local SEO together under one roof. This allows Naperville businesses to maintain consistent branding across their physical marketing and digital presence."
+        title: "Downtown Historic District & Retail Expertise",
+        description: "From Main Street and Washington Street to Jefferson Avenue, we design dimensional letters, carved wooden plaques, and pedestrian blade signs that honor Downtown Naperville's architectural charm while capturing customer foot traffic."
       },
       {
-        title: "Local Marketing Built Around Your Business",
-        description: "Whether you operate in Downtown Naperville, along Route 59, or in another commercial area, FBS Signs can tailor marketing materials and digital services to your business needs. Our goal is to help local businesses present their brand professionally and reach customers through both traditional and digital channels."
+        title: "Route 59 & I-88 Commercial Scale",
+        description: "For high-speed arterials like Route 59, 75th Street, and Ogden Avenue, we fabricate large-format illuminated monument signs and high-intensity LED channel letters visible from hundreds of feet away."
       }
     ],
-    localSeoContent: "Our service coverage spans all of Naperville, including the historic Downtown Naperville shopping area, the Route 59 commercial corridor, South Naperville, and the northern business parks near Warrenville. We design marketing materials that appeal to local residents throughout the DuPage and Will county regions, utilizing geographical terms and neighborhood targeting to boost your brand's prominence in local search queries.",
-    landmarks: ["Naperville Riverwalk", "Centennial Beach", "Naper Settlement", "North Central College", "Route 59 Corridor"],
-    quickAnswersTitle: "Local Quick Answers: Services in Naperville, IL",
+    localSeoContent: "Our local signage and SEO coverage encompasses all of Naperville, including Downtown Naperville shopping districts, Route 59 retail centers, South Naperville near 95th Street, and the corporate research parks along the Reagan Memorial Tollway (I-88). We combine physical storefront branding with local search authority so your business dominates local search results across 60540, 60563, 60564, and 60565.",
+    landmarks: ["Naperville Riverwalk", "Centennial Beach", "Naper Settlement", "North Central College", "Route 59 Corridor", "Main Street Historic District"],
+    quickAnswersTitle: "Naperville Signage & Commercial FAQs",
     quickAnswers: [
       {
-        question: "What signage and printing services does FBS Signs offer in Naperville?",
-        answer: "FBS Signs provides storefront signs, LED channel letters, monument signs, vehicle graphics, banners, business cards, brochures, menus, and other branded materials for Naperville businesses."
+        question: "Do I need a sign permit for an exterior sign in Naperville, IL?",
+        answer: "Yes. Exterior signage in Naperville requires a permit approved by the City of Naperville TED Department. We prepare scaled architectural drawings, engineering specifications, and handle all inspection submissions on your behalf."
       },
       {
-        question: "Does FBS Signs provide custom business signs in Naperville?",
-        answer: "Yes. We create custom signage for businesses across Downtown Naperville, Route 59, Ogden Avenue, and other commercial areas."
+        question: "What types of storefront signs are approved in Downtown Naperville?",
+        answer: "Downtown Naperville emphasizes pedestrian-friendly signage including projecting blade signs, halo-lit reverse channel letters, pin-mounted dimensional letters, and window graphics that fit the downtown design guidelines."
       },
       {
-        question: "Can FBS Signs help with direct mail campaigns in Naperville?",
-        answer: "Yes. We coordinate printed mailers, addressing, mailing lists, and postage, including EDDM campaigns targeting selected Naperville carrier routes."
+        question: "Can FBS Signs build monument signs for Route 59 commercial plazas?",
+        answer: "Yes. We build custom brick, stone, and aluminum monument signs with changeable tenant panels and internal LED illumination suited for Route 59, 75th Street, and Ogden Avenue traffic."
       },
       {
-        question: "Does FBS Signs provide local SEO services for Naperville businesses?",
-        answer: "Yes. Our local SEO services focus on location-based pages, website optimization, local search visibility, and other strategies for Naperville businesses."
+        question: "Do you install vehicle wraps for Naperville service contractors?",
+        answer: "Yes. We design and install full vehicle wraps, partial wraps, and vinyl truck lettering using premium cast vinyl that withstands harsh Illinois winters and road salts."
       }
     ],
-    faqTitle: "Frequently Asked Questions",
+    faqTitle: "Frequently Asked Questions About Signage in Naperville",
     faqs: [
       {
-        question: "Do you provide custom business signs in Naperville?",
-        answer: "Yes. FBS Signs provides custom business signage for storefronts, offices, restaurants, retail locations, and commercial properties in Naperville."
+        question: "Why hire a dedicated sign company serving Naperville instead of an online vendor?",
+        answer: "Local physical sign companies ensure proper on-site laser surveys, wind-load engineering, landlord criteria review, local code compliance, and bucket-truck installation by licensed technicians."
       },
       {
-        question: "What types of signage can FBS Signs create?",
-        answer: "FBS Signs offers options such as channel letters, monument signs, pylon signs, window graphics, banners, vehicle graphics, and other custom signage solutions."
+        question: "How long does custom channel letter fabrication take in Naperville?",
+        answer: "Once the City of Naperville permit is approved, fabrication and installation typically take 2 to 4 weeks, depending on whether raceway mounting or direct facade installation is required."
       },
       {
-        question: "Can FBS Signs handle commercial printing for Naperville businesses?",
-        answer: "Yes. FBS Signs provides commercial printing for business cards, brochures, menus, banners, flyers, and other branded marketing materials."
+        question: "Can you assist with shopping center landlord sign criteria in Naperville?",
+        answer: "Yes. Plazas along Route 59 and 75th Street often have rigid landlord sign criteria for letter height, acrylic colors, and return depth. We guarantee our proofs match your lease terms."
       },
       {
-        question: "Does FBS Signs provide direct mail services in Naperville?",
-        answer: "Yes. FBS Signs can coordinate printed materials, addressing, mailing lists, and postal requirements for direct mail campaigns serving Naperville businesses and local audiences."
-      },
-      {
-        question: "Does FBS Signs offer local SEO services in Naperville?",
-        answer: "Yes. FBS Signs provides local SEO services focused on website optimization, local search visibility, location-based content, and other strategies that help businesses reach customers searching for their services."
+        question: "What direct mail and printing services do you offer for Naperville businesses?",
+        answer: "We print business cards, takeout menus, brochures, and execute targeted EDDM campaigns mapped to specific Naperville postal carrier routes for high-ROI neighborhood reach."
       }
     ],
-    nearbyCities: ["Lisle", "Downers Grove", "Aurora", "Bolingbrook", "Oswego"],
-    nearbyCitySlugs: ["lisle", "downers-grove", "aurora", "bolingbrook", "oswego"],
-    updatedAt: "2026-10-13"
+    nearbyCities: ["Lisle", "Downers Grove", "Aurora", "Bolingbrook", "Oswego", "Plainfield"],
+    nearbyCitySlugs: ["lisle", "downers-grove", "aurora", "bolingbrook", "oswego", "plainfield"],
+    updatedAt: "2026-10-14"
   },
   {
     slug: "schaumburg",
@@ -106,70 +102,66 @@ export const serviceAreas: ServiceAreaCity[] = [
     state: "Illinois",
     stateCode: "IL",
     county: "Cook County",
-    introduction: "Schaumburg, Illinois, is a major northwest Chicago suburb with a vibrant retail, office, and business community. FBS Signs provides custom business signage, commercial printing, direct mail, web design, and local SEO services for businesses throughout Schaumburg. From storefront signs and printed marketing materials to targeted direct mail campaigns and search optimization, we help Schaumburg businesses build a consistent and professional presence across physical and digital channels.",
-    servicesDescription: "Our team serves Schaumburg businesses with premium custom signage (LED channel letters, pylon signs, and vehicle wraps), professional printing services (sales sheets, catalogs, and packaging), targeted direct mail campaigns, high-performance web design, and local SEO services. We help retailers, service companies, and logistics firms around the Woodfield corridor and adjacent business parks engage local audiences.",
-    whyChooseTitle: "Why Choose FBS Signs in Schaumburg",
+    introduction: "As the commercial and retail hub of Chicago's northwest suburbs, Schaumburg demands high-impact, professional business signage to stand out among intense competition. FBS Signs is a trusted sign company serving Schaumburg, IL, specializing in custom LED channel letters, shopping center pylon signs, architectural monuments, fleet wraps, and trade show displays for businesses surrounding Woodfield Mall, the Golf Road retail corridor, and the Higgins Road corporate district.",
+    servicesDescription: "We engineer turn-key commercial signage solutions built for Schaumburg's high-traffic roads: high-efficiency front-lit and halo-lit channel letters, monument signs for corporate parks, pylon sign tenant inserts, convention exhibits for the Schaumburg Convention Center, and high-converting commercial print collateral.",
+    whyChooseTitle: "Why Schaumburg Businesses Partner With FBS Signs",
     whyChooseUs: [
       {
-        title: "Custom Signage for Schaumburg Businesses",
-        description: "FBS Signs creates custom signage for storefronts, restaurants, offices, retail locations, and commercial properties throughout Schaumburg."
+        title: "Village of Schaumburg Permitting & Zoning Experts",
+        description: "We handle municipal sign applications through the Village of Schaumburg Community Development Department, ensuring strict adherence to facade ratio limitations, setback rules, and illumination criteria."
       },
       {
-        title: "One Partner for Print & Digital Marketing",
-        description: "From signage and commercial printing to direct mail, web design, and local SEO, FBS Signs brings multiple marketing services together under one roof."
+        title: "Woodfield & Golf Road Commercial Dominance",
+        description: "In major retail corridors like Route 58 (Golf Road), Higgins Road, and Meacham Road, our ultra-bright LED channel letters and cabinet signs maximize daytime clarity and nighttime roadside impact."
       },
       {
-        title: "Marketing for Schaumburg's Business Community",
-        description: "Whether your business is near Woodfield, Golf Road, Higgins Road, or another commercial area, FBS Signs can help build a consistent and professional brand presence."
+        title: "Convention Center Trade Show & Event Signage",
+        description: "Located minutes from the Schaumburg Convention Center, we provide rapid-turnaround tension fabric displays, branded table throws, and retractable banners for visiting and local exhibitors."
       }
     ],
-    localSeoContent: "We specialize in local SEO and GEO optimization for Schaumburg businesses. Our strategies are designed to help you rank in local map packs and organic searches across Cook County, targeting major pathways like Higgins Road, Roselle Road, and the Jane Addams Memorial Tollway (I-90).",
-    landmarks: ["Woodfield Mall", "Legoland Discovery Center", "Schaumburg Convention Center", "Wintrust Field", "Golf Road Corridor"],
-    quickAnswersTitle: "Local Quick Answers: Services in Schaumburg, IL",
+    localSeoContent: "Our Schaumburg service area covers the Woodfield Mall commercial perimeter, Higgins Road corporate corridor, Roselle Road, Martingale Road business complexes, and industrial parks along the Jane Addams Memorial Tollway (I-90). We unite physical exterior signage with targeted local SEO to help Schaumburg businesses dominate local map packs and organic searches.",
+    landmarks: ["Woodfield Mall", "Schaumburg Convention Center", "Legoland Discovery Center", "Wintrust Field", "Golf Road Commercial Corridor", "Higgins Road Corporate Centers"],
+    quickAnswersTitle: "Schaumburg Signage & Branding FAQs",
     quickAnswers: [
       {
-        question: "What marketing and branding services are available for Schaumburg businesses?",
-        answer: "FBS Signs provides custom signage, commercial printing, direct mail, web design, and local SEO for businesses across Schaumburg."
+        question: "What permits are required for storefront signage in Schaumburg, IL?",
+        answer: "The Village of Schaumburg requires commercial sign permits for all new exterior wall signs, monument signs, and pylon modifications. FBS Signs handles all technical drawings, electrical specs, and inspection scheduling."
       },
       {
-        question: "How can businesses near Woodfield Mall improve their local visibility?",
-        answer: "FBS Signs combines physical branding and local SEO to help businesses build stronger visibility across Schaumburg's retail and commercial market."
+        question: "Can you update existing multi-tenant pylon sign panels in Schaumburg?",
+        answer: "Yes. We fabricate and install replacement acrylic and polycarbonate sign faces for shopping plaza pylon signs along Golf Road and Higgins Road without requiring costly structural replacements."
       },
       {
-        question: "Can I target specific Schaumburg neighborhoods with EDDM?",
-        answer: "Yes. FBS Signs can plan EDDM campaigns around selected carrier routes and residential areas to reach targeted local households."
+        question: "What signs work best for restaurants near Woodfield Mall?",
+        answer: "Illuminated front-lit channel letters mounted on raceways combined with vibrant frosted or perforated window graphics give restaurants maximum visibility from busy plaza parking lots."
       },
       {
-        question: "How can local SEO help a Schaumburg business reach nearby customers?",
-        answer: "Our local SEO services focus on location-based pages, on-page optimization, local search targeting, and other factors that support Schaumburg visibility."
+        question: "Do you supply trade show displays for the Schaumburg Convention Center?",
+        answer: "Yes. We produce premium trade show booth backdrops, pull-up banner stands, and commercial marketing brochures for conventions, corporate conferences, and expos in Schaumburg."
       }
     ],
-    faqTitle: "Schaumburg Service FAQs",
+    faqTitle: "Frequently Asked Questions About Signage in Schaumburg",
     faqs: [
       {
-        question: "What signage services does FBS Signs offer in Schaumburg?",
-        answer: "FBS Signs provides custom storefront signs, channel letters, monument signs, pylon signs, window graphics, and vehicle graphics for local businesses."
+        question: "How long does sign installation take for a Schaumburg retail location?",
+        answer: "Following Village of Schaumburg permit approval, custom fabrication and certified installation typically take between 2 to 3 weeks."
       },
       {
-        question: "Does FBS Signs provide commercial printing in Schaumburg?",
-        answer: "Yes. We provide business cards, brochures, flyers, menus, banners, and other printed marketing materials for Schaumburg businesses."
+        question: "Do you offer energy-efficient LED retrofits for older cabinet signs in Schaumburg?",
+        answer: "Yes. We replace outdated fluorescent ballasts with modern UL-listed high-output LED modules, significantly lowering energy bills while boosting brightness."
       },
       {
-        question: "Can FBS Signs help with direct mail in Schaumburg?",
-        answer: "Yes. We provide printed mail pieces, mailing lists, addressing, and postage support for targeted Schaumburg campaigns."
+        question: "Can you design signs that comply with shopping center master sign plans in Schaumburg?",
+        answer: "Yes. We coordinate with property managers across Schaumburg commercial plazas to ensure all dimensions, fonts, and colors conform with the property's Master Sign Plan."
       },
       {
-        question: "Does FBS Signs offer web design in Schaumburg?",
-        answer: "Yes. We create professional websites for Schaumburg businesses that want to strengthen their online presence and customer reach."
-      },
-      {
-        question: "Does FBS Signs provide local SEO in Schaumburg?",
-        answer: "Yes. Our local SEO services help Schaumburg businesses improve visibility in relevant local searches and reach nearby customers."
+        question: "Can FBS Signs manage direct mail and local printing for Schaumburg businesses?",
+        answer: "Yes. We handle end-to-end commercial printing, menu manufacturing, and EDDM saturation mailings targeting northwest suburban postal routes."
       }
     ],
-    nearbyCities: ["Hoffman Estates", "Des Plaines", "Elmhurst", "Lombard", "West Chicago"],
-    nearbyCitySlugs: ["hoffman-estates", "des-plaines", "elmhurst", "lombard", "west-chicago"],
-    updatedAt: "2026-10-13"
+    nearbyCities: ["Hoffman Estates", "Des Plaines", "Elmhurst", "Lombard", "West Chicago", "Elk Grove Village"],
+    nearbyCitySlugs: ["hoffman-estates", "des-plaines", "elmhurst", "lombard", "west-chicago", "elk-grove-village"],
+    updatedAt: "2026-10-14"
   },
   {
     slug: "aurora",
@@ -177,70 +169,66 @@ export const serviceAreas: ServiceAreaCity[] = [
     state: "Illinois",
     stateCode: "IL",
     county: "Kane and DuPage Counties",
-    introduction: "Aurora, Illinois, is a major Fox Valley business market with a mix of retail, manufacturing, professional services, and growing commercial areas. FBS Signs provides custom business signage, commercial printing, direct mail, web design, and local SEO services in Aurora, IL. From storefront signs and vehicle graphics to printed marketing materials and local search optimization, we help Aurora businesses build a consistent presence across physical and digital channels.",
-    servicesDescription: "We provide complete business services in Aurora, including design and fabrication of architectural signs, historic building sign solutions, vehicle wraps, commercial printing, direct mailing, web design, and SEO. Whether your business is located in the historic downtown district, near the Chicago Premium Outlets, or along the Eola Road corridor, we help you reach local customers effectively.",
-    whyChooseTitle: "Why Choose FBS Signs in Aurora",
+    introduction: "As the City of Lights and Illinois' second-largest city, Aurora features a dynamic mix of major retail hubs, industrial corridors, and a revitalized downtown riverfront. FBS Signs is a trusted sign company serving Aurora, IL, providing custom illuminated channel letters, shopping center monument signs, vehicle wraps, and commercial printing for businesses surrounding Fox Valley Mall, the Orchard Road industrial hub, and the historic downtown river district.",
+    servicesDescription: "We engineer turn-key commercial signage and branding solutions for Aurora's unique commercial corridors: UL-listed LED channel letters for shopping plazas, historic facade projecting blade signs along Stolp Island, large-format distribution center signs along I-88 and Orchard Road, commercial fleet graphics, and targeted Every Door Direct Mail (EDDM).",
+    whyChooseTitle: "Why Aurora Businesses Choose FBS Signs",
     whyChooseUs: [
       {
-        title: "Custom Signage for Aurora Businesses",
-        description: "FBS Signs creates custom storefront signs, channel letters, monument signs, pylon signs, window graphics, and vehicle graphics for businesses across Aurora."
+        title: "City of Aurora Permitting & Historic District Expertise",
+        description: "We manage sign applications through the City of Aurora Division of Building and Permits and Historic Preservation Commission, ensuring all dimensional letters, setbacks, and electrical specifications comply with municipal ordinances."
       },
       {
-        title: "Local Marketing for Aurora's Business Community",
-        description: "From Downtown Aurora and the Fox River area to the Route 59 and Eola Road corridors, FBS Signs helps businesses build a professional and consistent local presence."
+        title: "Fox Valley & Route 59 Retail Dominance",
+        description: "For high-traffic retail centers near Fox Valley Mall and Route 59, we fabricate vibrant front-lit and halo-lit channel letters that stand out day and night against busy commercial thoroughfares."
       },
       {
-        title: "Local Search Visibility for Aurora Businesses",
-        description: "FBS Signs helps Aurora businesses strengthen their local SEO and search visibility through location-focused content, website optimization, and other local search strategies."
+        title: "Orchard Road & I-88 Logistics Signage",
+        description: "We equip distribution centers and manufacturing plants along Orchard Road with high-durability reflective exterior building signs, loading dock bay markers, and DOT-compliant commercial vehicle lettering."
       }
     ],
-    localSeoContent: "We help Aurora businesses build regional authority. Our GEO-optimized campaigns focus on local terms, school districts, and neighborhoods such as Fox Valley, downtown Stolp Island, and the Far East Side near the Naperville border.",
-    landmarks: ["Paramount Theatre", "Stolp Island Historic District", "Chicago Premium Outlets", "Aurora University", "Fox River Bike Trail"],
-    quickAnswersTitle: "Quick Answers: Services in Aurora, IL",
+    localSeoContent: "Our Aurora service area covers Downtown Aurora and Stolp Island, Fox Valley Mall commercial plazas, the Eola Road and Route 59 corridors, Chicago Premium Outlets perimeter, and the Orchard Road logistics centers. We combine physical outdoor signage with localized SEO to ensure your business ranks prominently across Kane and DuPage county searches.",
+    landmarks: ["Paramount Theatre", "Stolp Island Historic District", "Chicago Premium Outlets", "Fox Valley Mall", "Aurora University", "Orchard Road Industrial Corridor"],
+    quickAnswersTitle: "Aurora Signage & Commercial FAQs",
     quickAnswers: [
       {
-        question: "What signage options work best for Aurora retail and commercial properties?",
-        answer: "FBS Signs provides storefront signs, channel letters, monument signs, pylon signs, window graphics, and vehicle graphics for businesses across Aurora's commercial areas."
+        question: "Do I need a permit for an exterior sign in Aurora, IL?",
+        answer: "Yes. The City of Aurora requires sign permits for all exterior business signage. FBS Signs provides full architectural proofs, electrical engineering schematics, and coordinates all city approvals on your behalf."
       },
       {
-        question: "Can businesses in Aurora use EDDM to target specific neighborhoods?",
-        answer: "Yes. FBS Signs can coordinate EDDM campaigns using selected postal routes and neighborhoods to help Aurora businesses reach nearby households with targeted mailers."
+        question: "What signs are best for historic storefronts in Downtown Aurora?",
+        answer: "Downtown Aurora and Stolp Island favor pedestrian-scaled projecting blade signs, dimensional letters, and frosted or gold-leaf window lettering that harmonize with historic brick and stone architecture."
       },
       {
-        question: "How can local SEO help an Aurora business reach customers nearby?",
-        answer: "FBS Signs uses local SEO strategies such as location-focused content, on-page optimization, and local search targeting to improve visibility for Aurora-related searches."
+        question: "Can FBS Signs build monument signs for Aurora commercial plazas?",
+        answer: "Yes. We design and install durable brick, stone, and aluminum monument signs with changeable tenant panels and internal LED backlighting for retail and medical complexes."
       },
       {
-        question: "What marketing materials do Aurora businesses commonly need?",
-        answer: "FBS Signs provides business cards, brochures, menus, flyers, banners, sales materials, and other printed products for Aurora retailers, restaurants, offices, and service businesses."
+        question: "Do you install vehicle wraps for Aurora contractors and delivery fleets?",
+        answer: "Yes. We wrap commercial vans, box trucks, and trailers using commercial cast vinyl with protective overlaminates designed to resist harsh winter road conditions."
       }
     ],
-    faqTitle: "Aurora Service FAQs",
+    faqTitle: "Frequently Asked Questions About Signage in Aurora",
     faqs: [
       {
-        question: "What signage services does FBS Signs provide in Aurora, IL?",
-        answer: "FBS Signs provides custom storefront signs, channel letters, monument signs, pylon signs, window graphics, and vehicle graphics for Aurora businesses."
+        question: "How long does custom channel letter fabrication take in Aurora?",
+        answer: "Once City of Aurora permits are approved, custom fabrication and certified bucket-truck installation typically take 2 to 3 weeks."
       },
       {
-        question: "Which Aurora areas does FBS Signs serve?",
-        answer: "FBS Signs serves businesses across Aurora, including Downtown Aurora, the Route 59 corridor, Eola Road, Ogden Avenue, and the Fox Valley area."
+        question: "Can you retrofit existing neon or fluorescent signs in Aurora with LEDs?",
+        answer: "Yes. Our technicians replace aging fluorescent tubes and ballasts with high-efficiency commercial LED modules, cutting power consumption while dramatically boosting brightness."
       },
       {
-        question: "Can Aurora businesses use EDDM to reach local customers?",
-        answer: "Yes. FBS Signs can coordinate EDDM campaigns using selected carrier routes to target households in Aurora and surrounding service areas."
+        question: "Can FBS Signs coordinate direct mail campaigns across Aurora neighborhoods?",
+        answer: "Yes. We provide complete commercial print manufacturing and EDDM route saturation mailings targeting residential zip codes across Aurora, North Aurora, and Montgomery."
       },
       {
-        question: "How can local SEO help a business in Aurora, IL?",
-        answer: "FBS Signs uses local SEO strategies such as location-focused content and website optimization to help Aurora businesses improve visibility in relevant local searches."
-      },
-      {
-        question: "What marketing services can an Aurora business get from FBS Signs?",
-        answer: "FBS Signs provides signage, commercial printing, direct mail, web design, and local SEO to help Aurora businesses build a consistent local marketing presence."
+        question: "Can you fabricate signs matching plaza landlord sign criteria in Aurora?",
+        answer: "Yes. We review shopping center lease agreements to ensure return depths, raceway paint matching, and electrical disconnect specifications comply with landlord rules."
       }
     ],
-    nearbyCities: ["North Aurora", "Montgomery", "Oswego", "Naperville", "Plainfield"],
-    nearbyCitySlugs: ["north-aurora", "montgomery", "oswego", "naperville", "plainfield"],
-    updatedAt: "2026-10-13"
+    nearbyCities: ["North Aurora", "Montgomery", "Oswego", "Naperville", "Plainfield", "Batavia"],
+    nearbyCitySlugs: ["north-aurora", "montgomery", "oswego", "naperville", "plainfield", "batavia"],
+    updatedAt: "2026-10-14"
   },
   {
     slug: "des-plaines",
@@ -428,49 +416,49 @@ export const serviceAreas: ServiceAreaCity[] = [
     state: "Illinois",
     stateCode: "IL",
     county: "Will County",
-    introduction: "Joliet, Illinois, is a major Will County business and commercial center with a mix of retail, professional services, manufacturing, logistics, and downtown businesses. FBS Signs provides custom business signage, commercial printing, direct mail, web design, and local SEO services in Joliet, IL. From storefront signs and vehicle graphics to printed marketing materials and local search optimization, we help Joliet businesses build a consistent and professional brand presence.",
-    servicesDescription: "We provide comprehensive marketing and brand production services in Joliet. This includes commercial signage (monument signs, outdoor flags, LED sign boards), high-volume print production, targeted direct mail campaigns, responsive web design, and SEO. We support local automotive centers, retail corridors, historic downtown venues, and Will County manufacturing parks.",
-    whyChooseTitle: "Why Choose FBS Signs in Joliet",
+    introduction: "As the county seat of Will County and a premier transportation and logistics gateway in the Midwest, Joliet requires industrial-grade commercial signage, large-format warehouse signs, and high-impact retail displays. FBS Signs is a trusted sign company serving Joliet, IL, specializing in heavy-duty distribution center building numbers, multi-tenant shopping center pylon signs, and illuminated storefront channel letters along Plainfield Road, Route 59, and Larkin Avenue.",
+    servicesDescription: "We deliver full-scale sign fabrication and installation for Joliet's distinct commercial landscape: reflective warehouse and loading dock safety signs for distribution hubs along I-80 and I-55, illuminated channel letters and cabinet signs for retail shopping centers, fleet truck lettering, and high-volume commercial print collateral.",
+    whyChooseTitle: "Why Joliet Businesses Choose FBS Signs",
     whyChooseUs: [
       {
-        title: "Custom Signage for Joliet Businesses",
-        description: "FBS Signs provides storefront signs, pylon signs, banners, vehicle graphics, and other custom signage for businesses across Joliet's retail, commercial, and industrial areas."
+        title: "I-80 & I-55 Logistics & Industrial Hub Specialists",
+        description: "We manufacture heavy-gauge aluminum exterior warehouse numbers, illuminated directional bay markers, and OSHA-compliant safety signs engineered for Joliet's vast distribution centers."
       },
       {
-        title: "Marketing Support for Local Businesses",
-        description: "From printed marketing materials and direct mail to EDDM campaigns, FBS Signs helps Joliet businesses promote their services and reach customers across the local market."
+        title: "Plainfield Road & Route 59 Retail Presence",
+        description: "For shopping centers near the Louis Joliet Mall and high-traffic arterial intersections, we fabricate large-format illuminated monument signs and front-lit LED channel letters."
       },
       {
-        title: "Digital Services for Joliet Businesses",
-        description: "FBS Signs provides responsive web design and local SEO services to help Joliet businesses build a stronger online presence and improve visibility for relevant local searches."
+        title: "City of Joliet Zoning & Permitting Compliance",
+        description: "We handle municipal sign permits and structural calculations through the City of Joliet Community Development Department, ensuring code compliance and seamless inspection sign-offs."
       }
     ],
-    localSeoContent: "Our SEO and GEO strategies optimize your business listings for searches across Joliet, Lockport, and Crest Hill, targeting local searchers looking for trusted providers in Will County.",
-    landmarks: ["Rialto Square Theatre", "Joliet Slate Arena", "Harrah's Joliet", "Plainfield Road Corridor", "Chicagoland Speedway area"],
-    quickAnswersTitle: "Local Quick Answers: Services in Joliet, IL",
+    localSeoContent: "Our Joliet coverage area spans the Plainfield Road retail corridor, Larkin Avenue, Downtown Joliet and the Rialto Square district, Route 59, and the vast logistics parks bordering Crest Hill, Rockdale, and Shorewood. We combine outdoor signage with local search optimization to ensure Joliet commercial providers rank at the top of local search queries.",
+    landmarks: ["Rialto Square Theatre", "Louis Joliet Mall", "Harrah's Joliet", "Plainfield Road Commercial Corridor", "Chicagoland Speedway area", "I-80 & I-55 Logistics Parks"],
+    quickAnswersTitle: "Joliet Commercial Signage FAQs",
     quickAnswers: [
       {
-        question: "What marketing and branding services are available in Joliet?",
-        answer: "FBS Signs provides custom signage, commercial printing, direct mail, web design, and local SEO for businesses across Joliet's retail, office, and commercial areas."
+        question: "Do I need a sign permit in Joliet, IL?",
+        answer: "Yes. All commercial exterior signage in Joliet requires approval from the City of Joliet Building Services Division. FBS Signs prepares scaled engineering drawings and manages municipal permit filings."
       },
       {
-        question: "What signage services are suitable for Joliet businesses?",
-        answer: "FBS Signs provides storefront signs, channel letters, monument signs, pylon signs, window graphics, and vehicle graphics for businesses along Plainfield Road, Larkin Avenue, Route 59, and other commercial areas."
+        question: "What signage do you manufacture for Joliet warehouses and logistics centers?",
+        answer: "We fabricate high-visibility reflective aluminum building markers, overhead loading dock bay numbers, interior clearance signs, and heavy-duty forklift traffic floor graphics."
       },
       {
-        question: "Can I target specific Joliet neighborhoods with EDDM?",
-        answer: "Yes. FBS Signs can coordinate EDDM campaigns using selected carrier routes to reach households in targeted Joliet neighborhoods and nearby service areas."
+        question: "Can you build illuminated pylon signs along Route 59 or Plainfield Road?",
+        answer: "Yes. We engineer tall, wind-resistant freestanding pylon and pole signs with illuminated cabinet headers and interchangeable tenant panels for multi-tenant retail centers."
       },
       {
-        question: "How can local SEO help a business in Joliet and Will County?",
-        answer: "FBS Signs uses local SEO strategies including location-focused content and website optimization to help businesses improve visibility for relevant Joliet and Will County searches."
+        question: "Do you provide commercial vehicle wraps and truck lettering in Joliet?",
+        answer: "Yes. We design and install full vehicle wraps, box truck graphics, and USDOT compliant lettering for transportation and service fleets throughout Will County."
       }
     ],
-    faqTitle: "Joliet Service FAQs",
+    faqTitle: "Frequently Asked Questions About Signage in Joliet",
     faqs: [
       {
-        question: "What signage services does FBS Signs provide in Joliet, IL?",
-        answer: "FBS Signs provides storefront signs, channel letters, monument signs, pylon signs, window graphics, and vehicle graphics for Joliet businesses."
+        question: "How long does custom sign fabrication take in Joliet?",
+        answer: "Following City of Joliet permit approval, custom fabrication and certified crane or bucket-truck installation typically take between 2 to 3 weeks."
       },
       {
         question: "Which Joliet areas does FBS Signs serve?",
@@ -481,17 +469,17 @@ export const serviceAreas: ServiceAreaCity[] = [
         answer: "Yes. FBS Signs can coordinate EDDM campaigns using selected carrier routes to reach households in Joliet and nearby service areas."
       },
       {
-        question: "How can local SEO help a business in Joliet, IL?",
-        answer: "FBS Signs uses location-focused content and website optimization to help Joliet businesses improve visibility in relevant local searches."
+        question: "What commercial printing services do you provide in Joliet?",
+        answer: "We handle high-volume bulk signage printing, marketing flyers, business cards, presentation folders, and EDDM direct mailers targeted to Will County carrier routes."
       },
       {
-        question: "What marketing services can a Joliet business get from FBS Signs?",
-        answer: "FBS Signs provides signage, commercial printing, direct mail, web design, and local SEO to support a consistent local marketing presence."
+        question: "Can you retrofit older parking lot and cabinet signs in Joliet with LEDs?",
+        answer: "Yes. We replace aged ballasts and fluorescent lamps with high-output commercial LED modules to boost brightness and cut energy costs."
       }
     ],
-    nearbyCities: ["Crest Hill", "Romeoville", "Plainfield", "Bolingbrook", "Westmont"],
-    nearbyCitySlugs: ["crest-hill", "romeoville", "plainfield", "bolingbrook", "westmont"],
-    updatedAt: "2026-10-13"
+    nearbyCities: ["Crest Hill", "Romeoville", "Plainfield", "Bolingbrook", "Shorewood", "Lockport"],
+    nearbyCitySlugs: ["crest-hill", "romeoville", "plainfield", "bolingbrook", "shorewood", "lockport"],
+    updatedAt: "2026-10-14"
   },
   {
     slug: "crest-hill",
@@ -679,37 +667,66 @@ export const serviceAreas: ServiceAreaCity[] = [
     state: "Illinois",
     stateCode: "IL",
     county: "DuPage County",
-    introduction: "Westmont, Illinois, is a charming, business-friendly community in DuPage County's eastern corporate corridor. Nestled near major highways and boasting a busy commercial district along Ogden Avenue, Westmont is famous for its 'auto mile' and a diverse mix of family businesses, local dining, and professional service offices. Succeeding in Westmont requires high-impact physical signage and targeted online marketing.",
-    servicesDescription: "We offer comprehensive branding and printing services in Westmont, including automotive dealership signage, storefront window graphics, business stationery, direct mail campaigns, web design, and local search engine optimization. We support the auto row, local retailers, and dental/legal offices along Cass Avenue.",
+    introduction: "FBS Signs is a premier sign company serving Westmont, Illinois, delivering custom commercial signs, vehicle wraps, and architectural branding engineered for the village's distinct business corridors. From high-visibility auto dealership lot signage and pylon signs along the famous Ogden Avenue 'Auto Mile' to pedestrian storefront blade signs along Cass Avenue and warehouse identification in the Ty Warner and Pasquinelli Drive corporate parks, we handle every stage from site survey to certified installation.",
+    servicesDescription: "We provide commercial signage and branding solutions tailored to Westmont's business landscape: illuminated exterior channel letters, low-profile architectural monument signs conforming to village design guidance, car dealership pylon signs, restaurant neon LED signage, commercial fleet graphics, and targeted direct mail marketing.",
+    whyChooseTitle: "Why Westmont Businesses Choose FBS Signs",
     whyChooseUs: [
       {
-        title: "Automotive & Retail Signage Specialists",
-        description: "We design, build, and install large-format banners, lot flags, and window displays optimized for auto dealerships and retail plazas."
+        title: "Ogden Avenue 'Auto Mile' Specialists",
+        description: "We engineer heavy-duty outdoor banners, lot flags, tall freestanding pylon signs, and showroom window graphics built to capture high-speed commuter traffic along Route 34."
       },
       {
-        title: "Ogden Avenue Corridor Reach",
-        description: "We help physical storefronts capture drive-by traffic with illuminated signs and exterior dimensional letters."
+        title: "Cass Avenue Downtown & Hospitality Branding",
+        description: "For restaurants, cafes, and boutique retailers near the Westmont Metra station, we build pedestrian-scale projecting blade signs, faux-neon LED interior signs, and custom frosted window lettering."
       },
       {
-        title: "Local Search Optimization",
-        description: "We optimize websites to rank for competitive DuPage County service terms, ensuring local residents find you first."
+        title: "Pasquinelli Drive & Ty Warner Corporate Parks",
+        description: "We fabricate multi-tenant monument signs, industrial warehouse loading dock identification, and OSHA-compliant interior wayfinding plaques for eastern DuPage corporate centers."
       }
     ],
-    localSeoContent: "Our local SEO campaigns for Westmont focus on optimizing search visibility along Ogden Avenue, Cass Avenue, and the adjacent communities of Oak Brook, Hinsdale, and Clarendon Hills.",
-    landmarks: ["Westmont Auto Mile", "Ty Warner Park", "Cass Avenue Downtown", "Ogden Avenue Commercial Strip", "Westmont Metra Station"],
+    localSeoContent: "Our Westmont service coverage spans the Ogden Avenue Auto Mile, the Downtown Cass Avenue commercial district, Ty Warner Industrial Park, Pasquinelli Drive business centers, and the 63rd Street retail corridor. We combine high-impact exterior signage with local SEO to ensure Westmont businesses dominate local search queries across Oak Brook, Hinsdale, Clarendon Hills, and Downers Grove.",
+    landmarks: ["Westmont Auto Mile", "Ty Warner Park", "Cass Avenue Downtown Commercial District", "Ogden Avenue Corridor", "Westmont Metra Station", "Pasquinelli Drive Business Park"],
+    quickAnswersTitle: "Westmont Signage & Permit FAQs",
+    quickAnswers: [
+      {
+        question: "Do I need a permit for a business sign in Westmont, IL?",
+        answer: "Yes. The Village of Westmont requires sign permits for all exterior wall signs, monument signs, and promotional banners. FBS Signs prepares technical drawings, wind-load specs, and handles municipal submissions with the Westmont Community Development Department."
+      },
+      {
+        question: "What are the rules for low-profile monument signs in Westmont?",
+        answer: "Westmont's commercial design guidance specifies low-profile monument signs with brick or stone bases matching the primary building architecture, avoiding excessive height while maximizing street-level identification."
+      },
+      {
+        question: "Do you design outdoor lot signage and banners for Westmont auto dealerships?",
+        answer: "Yes. We supply heavy-duty UV-resistant lot banners, pole flags, showroom window graphics, and illuminated pylon signs engineered for the Ogden Avenue automotive corridor."
+      },
+      {
+        question: "Can you produce custom vehicle wraps for service fleets in Westmont?",
+        answer: "Yes. We design and install commercial vehicle wraps, van graphics, and truck lettering using premium cast vinyl suited for winter road conditions."
+      }
+    ],
+    faqTitle: "Frequently Asked Questions About Signage in Westmont",
     faqs: [
       {
-        question: "Do you design outdoor banners and lot signage for auto dealers in Westmont?",
-        answer: "Yes, we produce custom flags, high-impact banners, window graphics, and vehicle branding optimized for auto dealerships."
+        question: "How long does custom channel letter installation take in Westmont?",
+        answer: "Following Village of Westmont permit review, fabrication and certified bucket-truck installation typically require 2 to 3 weeks."
       },
       {
-        question: "Can we print local restaurant menus and flyers in Westmont?",
-        answer: "Absolutely. We provide high-quality print services for Westmont restaurants, including dine-in menus, takeout menus, and direct mailers."
+        question: "Can you retrofit existing sign cabinets in Westmont with LED lighting?",
+        answer: "Yes. We replace aged neon and fluorescent tubes with high-lumen, energy-efficient commercial LED modules, cutting energy costs by up to 70%."
+      },
+      {
+        question: "Can you print custom menus and direct mailers for Westmont restaurants?",
+        answer: "Yes. We provide complete commercial printing including waterproof dine-in menus, takeout menus, and EDDM direct mailers targeted to local Westmont carrier routes."
+      },
+      {
+        question: "Do you manufacture warehouse safety and directional signs in Westmont?",
+        answer: "Yes. We manufacture reflective aluminum exterior signs, loading dock bay identifiers, and floor graphics for distribution centers in Ty Warner Industrial Park."
       }
     ],
-    nearbyCities: ["Downers Grove", "Lisle", "Lombard", "Elmhurst", "Chicago"],
-    nearbyCitySlugs: ["downers-grove", "lisle", "lombard", "elmhurst", "chicago"],
-    updatedAt: "2026-07-06"
+    nearbyCities: ["Downers Grove", "Lisle", "Lombard", "Elmhurst", "Oak Brook", "Clarendon Hills"],
+    nearbyCitySlugs: ["downers-grove", "lisle", "lombard", "elmhurst", "oak-brook", "clarendon-hills"],
+    updatedAt: "2026-10-14"
   },
   {
     slug: "downers-grove",
@@ -717,70 +734,66 @@ export const serviceAreas: ServiceAreaCity[] = [
     state: "Illinois",
     stateCode: "IL",
     county: "DuPage County",
-    introduction: "Downers Grove, Illinois, is a DuPage County business community with an active downtown, professional offices, and retail corridors along Ogden Avenue and Butterfield Road. FBS Signs provides custom business signage, commercial printing, direct mail, web design, and local SEO services in Downers Grove, IL to help businesses maintain a consistent brand presence across physical and digital channels.",
-    servicesDescription: "FBS Signs provides Downers Grove businesses with high-end exterior signage, window graphics, trade show displays, corporate print collateral (brochures, presentation folders), direct mail marketing, custom web design, and SEO. We support retail boutiques downtown, medical suites, and offices along the I-355 corridor.",
-    whyChooseTitle: "Why Choose FBS Signs in Downers Grove",
+    introduction: "FBS Signs is a trusted commercial sign company serving Downers Grove, Illinois, designing and installing custom storefront signs, LED channel letters, architectural monument signs, and vehicle wraps. Whether you operate a historic retail storefront along Main Street in Downtown Downers Grove, an automotive dealership on the Ogden Avenue commercial strip, or an executive corporate suite along Butterfield Road and the I-355 corridor, our signage solutions are engineered for durability, code compliance, and maximum customer engagement.",
+    servicesDescription: "We provide end-to-end commercial signage and print services across Downers Grove: front-lit and halo-lit channel letters for shopping centers, masonry monument signs for office parks, projecting blade signs for historic retail districts, commercial vehicle wraps for local contractors, and targeted direct mail campaigns.",
+    whyChooseTitle: "Why Downers Grove Businesses Choose FBS Signs",
     whyChooseUs: [
       {
-        title: "Signage for Retail and Professional Spaces",
-        description: "Promote your business with storefront signs, window graphics, lobby signs, banners, and other custom signage suited to your location and brand."
+        title: "Village of Downers Grove Sign Ordinance Mastery",
+        description: "We navigate the Village of Downers Grove Community Development Department sign codes, ensuring full compliance with square-footage maximums, setback minimums, and illumination guidelines."
       },
       {
-        title: "Printing and Direct Mail for Customer Outreach",
-        description: "Use brochures, postcards, flyers, and other printed materials to introduce services, share offers, and support local campaigns."
+        title: "Downtown Historic Main Street & Retail Charm",
+        description: "For boutiques, restaurants, and professional offices near the Tivoli Theatre and Main Street Metra station, we build dimensional letters, projecting blade signs, and frosted glass graphics that complement historic facade architecture."
       },
       {
-        title: "Web Design and Local SEO Services",
-        description: "FBS Signs provides website design and local SEO services to help Downers Grove businesses strengthen their online presence and visibility in relevant local searches."
+        title: "Ogden Avenue & Butterfield Road Arterials",
+        description: "Along high-traffic commercial corridors like Ogden Avenue (Route 34) and Butterfield Road, we build large-scale illuminated channel letters, multi-tenant monument signs, and roadside pylon displays."
       }
     ],
-    localSeoContent: "We focus on local SEO campaigns that leverage Downers Grove's geographic placement along I-355 and Ogden Avenue to capture searches from neighboring Oak Brook, Woodridge, and Westmont.",
-    landmarks: ["Downtown Downers Grove", "Tivoli Theatre", "Lyman Woods", "Ogden Avenue Corridor", "Butterfield Road Business District"],
-    quickAnswersTitle: "Local Quick Answers: Services in Downers Grove, IL",
+    localSeoContent: "Our Downers Grove service area covers Downtown Downers Grove, the Ogden Avenue commercial strip, Butterfield Road corporate corridor, Finley Road retail centers, and the Ellsworth Industrial Park along I-355. We align physical signage with local SEO to ensure Downers Grove businesses dominate local search queries across DuPage County.",
+    landmarks: ["Downtown Downers Grove & Main Street", "Tivoli Theatre", "Lyman Woods", "Ogden Avenue Commercial Corridor", "Butterfield Road Business District", "Ellsworth Industrial Park"],
+    quickAnswersTitle: "Downers Grove Signage & Permit FAQs",
     quickAnswers: [
       {
-        question: "What signage options are available for Downers Grove businesses?",
-        answer: "FBS Signs provides storefront signs, channel letters, monument signs, banners, window graphics, and vehicle graphics for retail stores, offices, and commercial properties."
+        question: "Do I need a sign permit in Downers Grove, IL?",
+        answer: "Yes. All commercial exterior signs in Downers Grove require a sign permit issued by the Village of Downers Grove Community Development Department. FBS Signs prepares scaled drawings, electrical schematics, and manages the entire permit review."
       },
       {
-        question: "Can Downers Grove businesses order commercial printing and direct mail?",
-        answer: "Yes. FBS Signs provides business cards, brochures, flyers, postcards, and direct mail campaign support for businesses promoting their services and offers."
+        question: "What signage is permitted in Downtown Downers Grove?",
+        answer: "Downtown Downers Grove emphasizes pedestrian-oriented signage including projecting blade signs, wall-mounted dimensional letters, and window graphics adhering to historic downtown aesthetic criteria."
       },
       {
-        question: "Can EDDM help businesses reach households in Downers Grove?",
-        answer: "Every Door Direct Mail (EDDM) allows businesses to target households along selected postal routes. Route selection should reflect the intended audience and campaign goals."
+        question: "Can FBS Signs build monument signs for Butterfield Road corporate offices?",
+        answer: "Yes. We build architectural monument signs incorporating masonry bases, routed aluminum faces, and energy-efficient LED backlighting suited for corporate campuses and medical centers."
       },
       {
-        question: "How can local SEO help a Downers Grove business attract customers?",
-        answer: "Local SEO helps businesses improve visibility for relevant local searches through website optimization, location-focused content, and other local search activities."
+        question: "Can you install vehicle wraps for Downers Grove service contractors?",
+        answer: "Yes. We design, print, and install full vehicle wraps, partial wraps, and commercial van lettering using high-performance 3M and Avery Dennison cast vinyl."
       }
     ],
-    faqTitle: "Downers Grove Service FAQs",
+    faqTitle: "Frequently Asked Questions About Signage in Downers Grove",
     faqs: [
       {
-        question: "What types of business signs can I get in Downers Grove?",
-        answer: "Options include storefront signs, channel letters, monument signs, banners, window graphics, and vehicle graphics, depending on your project requirements."
+        question: "How long does custom channel letter fabrication take in Downers Grove?",
+        answer: "Once Village of Downers Grove permits are approved, custom fabrication and certified installation typically take between 2 to 3 weeks."
       },
       {
-        question: "Can FBS Signs provide lobby signs for professional offices?",
-        answer: "Yes. Custom lobby signage can display your business name and logo in reception areas and other professional spaces."
+        question: "Can you build signs that match landlord criteria in Downers Grove retail plazas?",
+        answer: "Yes. We review shopping center lease addendums to ensure letter heights, raceway paint matching, and electrical disconnect specifications comply with landlord rules."
       },
       {
-        question: "Can I use EDDM to promote my business in Downers Grove?",
-        answer: "Yes. EDDM can help you reach households along selected postal routes with postcards and other eligible mail pieces."
+        question: "What commercial printing services do you provide in Downers Grove?",
+        answer: "We produce premium business cards, presentation folders, brochures, marketing flyers, and targeted EDDM postcards for local direct mail marketing."
       },
       {
-        question: "Do commercial signs in Downers Grove require permits?",
-        answer: "Requirements vary by sign type and location. Check with the Village of Downers Grove before installing a new exterior sign."
-      },
-      {
-        question: "Can FBS Signs help improve local search visibility?",
-        answer: "Yes. FBS Signs offers local SEO services, including website optimization and location-focused content."
+        question: "Can you replace or retrofit older signs along Ogden Avenue?",
+        answer: "Yes. We perform ballast retrofits to convert existing cabinet and pylon signs to energy-saving LEDs and replace damaged sign faces with durable polycarbonate."
       }
     ],
-    nearbyCities: ["Westmont", "Lisle", "Lombard", "Elmhurst", "Naperville"],
-    nearbyCitySlugs: ["westmont", "lisle", "lombard", "elmhurst", "naperville"],
-    updatedAt: "2026-10-13"
+    nearbyCities: ["Westmont", "Lisle", "Lombard", "Elmhurst", "Naperville", "Oak Brook"],
+    nearbyCitySlugs: ["westmont", "lisle", "lombard", "elmhurst", "naperville", "oak-brook"],
+    updatedAt: "2026-10-14"
   },
   {
     slug: "lisle",
