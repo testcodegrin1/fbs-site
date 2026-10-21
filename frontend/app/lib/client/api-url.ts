@@ -1,9 +1,9 @@
 const DEFAULT_API_ORIGIN = "http://localhost:4000";
 
 /**
- * Returns the backend origin without an API route prefix.
- * Request paths already start with `/api`, so both an origin-only setting and
- * a setting ending in `/api` resolve to a URL containing exactly one `/api`.
+ * Returns the configured backend base URL without trailing slashes.
+ * The base may intentionally include a reverse-proxy prefix such as `/api`;
+ * request paths separately include the Express `/api` route prefix.
  */
 export function getApiBaseUrl(): string {
   const configured =
@@ -11,7 +11,7 @@ export function getApiBaseUrl(): string {
     process.env.NEXT_PUBLIC_API_URL ||
     DEFAULT_API_ORIGIN;
 
-  return configured.trim().replace(/\/+$/, "").replace(/\/api$/i, "");
+  return configured.trim().replace(/\/+$/, "");
 }
 
 export function buildApiUrl(path: string): string {
