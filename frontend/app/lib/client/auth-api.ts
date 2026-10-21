@@ -13,6 +13,7 @@ import {
   setStoredToken,
   setStoredUser,
 } from "@/app/lib/auth/token";
+import { buildApiUrl } from "@/app/lib/client/api-url";
 
 type RoleResponse = {
   roles: {
@@ -39,10 +40,7 @@ class ApiClientError extends Error {
 }
 
 function apiUrl(path: string) {
-  const base =
-    process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ??
-    "http://localhost:4000";
-  return `${base}${path}`;
+  return buildApiUrl(path);
 }
 
 async function request<T>(

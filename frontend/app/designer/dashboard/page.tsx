@@ -1,6 +1,7 @@
 "use client";
 import { BlueprintLibrary } from "@/app/Components/auth/BlueprintLibrary";
 import { DetailRow } from "@/app/Components/ui/detail-row";
+import { getApiBaseUrl } from "@/app/lib/client/api-url";
 
 import { useEffect, useState } from "react";
 import { AuthGuard } from "@/app/Components/auth/AuthGuard";
@@ -184,8 +185,7 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
     onConfirm: async () => {},
   });
 
-  const backendHost =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+  const backendHost = getApiBaseUrl();
   const baseUrl =
     typeof window !== "undefined"
       ? window.location.origin

@@ -1,5 +1,6 @@
 "use client";
 import { BlueprintLibrary } from "@/app/Components/auth/BlueprintLibrary";
+import { getApiBaseUrl } from "@/app/lib/client/api-url";
 
 import { useEffect, useState } from "react";
 import { AuthGuard } from "@/app/Components/auth/AuthGuard";
@@ -131,8 +132,7 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
     date?: string;
   } | null>(null);
 
-  const backendHost =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+  const backendHost = getApiBaseUrl();
 
   // ESC Key listener
   useEffect(() => {

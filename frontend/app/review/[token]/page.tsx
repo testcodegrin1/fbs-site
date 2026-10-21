@@ -26,6 +26,7 @@ import {
   Maximize2,
 } from "lucide-react";
 import { getStoredUser, getDashboardPathFromToken } from "@/app/lib/auth/token";
+import { getApiBaseUrl } from "@/app/lib/client/api-url";
 
 export default function SecureCanvasReviewPage() {
   const params = useParams();
@@ -59,8 +60,7 @@ export default function SecureCanvasReviewPage() {
     null,
   );
 
-  const backendHost =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+  const backendHost = getApiBaseUrl();
 
   async function loadReviewData() {
     if (!token) return;

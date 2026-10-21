@@ -15,6 +15,7 @@ import {
   StatusBadge,
 } from "@/app/Components/ui";
 import { canvasApi, type ProjectModel } from "@/app/lib/client/canvas-api";
+import { getApiBaseUrl } from "@/app/lib/client/api-url";
 import {
   FolderKanban,
   Eye,
@@ -370,8 +371,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
     }
   }
 
-  const backendHost =
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+  const backendHost = getApiBaseUrl();
 
   const userFranchiseId = clientUser?.franchiseId;
 

@@ -2,6 +2,12 @@
 "use client";
 
 import { getStoredToken } from "@/app/lib/auth/token";
+import {
+  buildApiUrl,
+  getApiBaseUrl,
+} from "@/app/lib/client/api-url";
+
+export { getApiBaseUrl } from "@/app/lib/client/api-url";
 
 export interface BannerTemplateImage {
   id?: number;
@@ -87,14 +93,6 @@ export interface FranchiseOption {
   id: number;
   name: string;
   brandingLogoUrl?: string | null;
-}
-
-export function getApiBaseUrl(): string {
-  const url =
-    process.env.NEXT_PUBLIC_API_BASE_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    "http://localhost:4000";
-  return url.replace(/\/+$/, "");
 }
 
 /**
@@ -305,7 +303,7 @@ function normalizeTemplate(raw: any): BannerTemplateModel {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const token = getStoredToken();
   const base = getApiBaseUrl();
-  const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
+  const url = buildApiUrl(path);
 
   const headers: Record<string, string> = {
     ...(init?.headers as Record<string, string>),

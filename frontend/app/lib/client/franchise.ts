@@ -1,6 +1,12 @@
 "use client";
 
 import { getStoredToken } from "@/app/lib/auth/token";
+import {
+  buildApiUrl,
+  getApiBaseUrl,
+} from "@/app/lib/client/api-url";
+
+export { getApiBaseUrl } from "@/app/lib/client/api-url";
 
 export type FranchiseModel = {
   id: number;
@@ -12,14 +18,6 @@ export type FranchiseModel = {
   createdAt?: string;
   updatedAt?: string;
 };
-
-export function getApiBaseUrl(): string {
-  const url =
-    process.env.NEXT_PUBLIC_API_BASE_URL ||
-    process.env.NEXT_PUBLIC_API_URL ||
-    "http://localhost:4000";
-  return url.replace(/\/+$/, "");
-}
 
 export function resolveImageUrl(path?: string | null): string {
   if (!path) return "";
@@ -71,7 +69,7 @@ function normalizeFranchise(raw: any): FranchiseModel {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const token = getStoredToken();
   const base = getApiBaseUrl();
-  const url = `${base}${path.startsWith("/") ? path : `/${path}`}`;
+  const url = buildApiUrl(path);
 
   const headers: Record<string, string> = {
     ...(init?.headers as Record<string, string>),

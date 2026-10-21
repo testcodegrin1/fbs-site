@@ -1,10 +1,10 @@
 "use client";
 
 import { getStoredToken } from "@/app/lib/auth/token";
+import { buildApiUrl } from "@/app/lib/client/api-url";
 
 function apiUrl(path: string) {
-  const base = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "http://localhost:4000";
-  return `${base}${path}`;
+  return buildApiUrl(path);
 }
 
 export type ClientModel = {
