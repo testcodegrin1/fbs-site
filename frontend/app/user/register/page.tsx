@@ -1,9 +1,9 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Building2, Mail, Lock, User as UserIcon, Loader2 } from "lucide-react";
+import { Mail, Lock, User as UserIcon, Loader2 } from "lucide-react";
 import { authApi } from "@/app/lib/client/auth-api";
 import { Button, Card, Input, Label } from "@/app/Components/ui";
 
@@ -13,31 +13,8 @@ export function UserRegistrationForm({ redirectTo = "/user/dashboard", loginPath
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [franchises, setFranchises] = useState<Array<{ id: number; name: string }>>([]);
-  const [selectedFranchiseId, setSelectedFranchiseId] = useState("");
-  const [isLoadingFranchises, setIsLoadingFranchises] = useState(false);
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  useEffect(() => {
-    setIsLoadingFranchises(true);
-    authApi
-      .listFranchises()
-      .then((res) => {
-        if (Array.isArray(res.franchises)) {
-          setFranchises(res.franchises);
-          if (res.franchises.length === 1) {
-            setSelectedFranchiseId(String(res.franchises[0].id));
-          }
-        }
-      })
-      .catch(() => {
-        setError("Unable to load franchises right now.");
-      })
-      .finally(() => {
-        setIsLoadingFranchises(false);
-      });
-  }, []);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -48,18 +25,12 @@ export function UserRegistrationForm({ redirectTo = "/user/dashboard", loginPath
       return;
     }
 
-    if (!selectedFranchiseId) {
-      setError("Please select a franchise to continue.");
-      return;
-    }
-
     setIsSubmitting(true);
     try {
       const response = await authApi.register(
         name,
         email,
         password,
-        Number(selectedFranchiseId),
       );
       if (response.token) {
         router.push(redirectTo);
@@ -68,7 +39,7 @@ export function UserRegistrationForm({ redirectTo = "/user/dashboard", loginPath
       }
       setError(
         response.message ||
-          "Your franchise access request has been submitted for approval.",
+          "Your account has been created successfully.",
       );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed.");
@@ -170,35 +141,6 @@ export function UserRegistrationForm({ redirectTo = "/user/dashboard", loginPath
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="reg-franchise" className="text-xs font-bold text-slate-700">
-              Select Franchise <span className="text-red-500">*</span>
-            </Label>
-            <div className="relative">
-              <Building2
-                size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none"
-              />
-              <select
-                id="reg-franchise"
-                value={selectedFranchiseId}
-                onChange={(e) => setSelectedFranchiseId(e.target.value)}
-                className="w-full h-11 pl-9 pr-3 text-sm bg-white border border-slate-200 rounded-xl focus:border-slate-400 focus:ring-slate-400/20 text-slate-900 outline-none transition-colors"
-                required
-              >
-                <option value="">
-                  {isLoadingFranchises
-                    ? "Loading franchises..."
-                    : "-- Select your Franchise --"}
-                </option>
-                {franchises.map((franchise) => (
-                  <option key={franchise.id} value={franchise.id}>
-                    {franchise.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
 
           {error ? (
             <p className="rounded-xl bg-slate-100 border border-slate-200 px-3 py-2 text-xs font-medium text-red-600">

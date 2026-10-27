@@ -51,7 +51,6 @@ import {
   type BannerTemplateModel,
   type BannerSubmissionListItem,
 } from "@/app/lib/client/banner-template-api";
-import { franchiseApi, type FranchiseModel } from "@/app/lib/client/franchise";
 import { BannerSubmissionThreadModal } from "./BannerSubmissionThreadModal";
 
 export default function ClientDashboardPage() {
@@ -121,7 +120,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
     "card" | "list"
   >("list");
 
-  // Banner Templates state for the user's selected franchise
+  // Banner Templates state
   const [bannerTemplates, setBannerTemplates] = useState<BannerTemplateModel[]>(
     [],
   );
@@ -339,7 +338,6 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
 
       const res = await bannerTemplateApi.submitBannerCustomization({
         templateId: viewingTemplate.id,
-        franchiseId: userFranchiseId ? Number(userFranchiseId) : undefined,
         quantity: customizationQuantity,
         values: {
           ...customFieldValues,
@@ -373,41 +371,6 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
 
   const backendHost = getApiBaseUrl();
 
-  const userFranchiseId = clientUser?.franchiseId;
-
-  const activeFranchiseName = clientUser?.franchiseName || "Assigned Franchise";
-
-  // Franchise detail state for user
-  const [franchiseDetail, setFranchiseDetail] = useState<FranchiseModel | null>(
-    null,
-  );
-  const [loadingFranchise, setLoadingFranchise] = useState(false);
-
-  useEffect(() => {
-    let isMounted = true;
-    async function fetchFranchiseInfo() {
-      if (!userFranchiseId) return;
-      setLoadingFranchise(true);
-      try {
-        const data = await franchiseApi.getFranchiseById(
-          Number(userFranchiseId),
-        );
-        if (isMounted && data) {
-          setFranchiseDetail(data);
-        }
-      } catch (err) {
-        console.warn("Could not fetch full franchise profile:", err);
-      } finally {
-        if (isMounted) setLoadingFranchise(false);
-      }
-    }
-
-    fetchFranchiseInfo();
-    return () => {
-      isMounted = false;
-    };
-  }, [userFranchiseId]);
-
   const totalBannerImages = useMemo(() => {
     return bannerTemplates.reduce(
       (sum, t) => sum + (t.images && t.images.length > 0 ? t.images.length : 1),
@@ -421,11 +384,6 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
       label: "My Design Proofs",
       icon: FolderKanban,
       badge: projects.length,
-    },
-    {
-      id: "my-franchise",
-      label: "My Franchise",
-      icon: Building2,
     },
     {
       id: "banner-templates",
@@ -453,23 +411,17 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
     }
   }
 
-  async function loadFranchiseBanners(
-    targetFranchiseId?: number,
-    isSilent = false,
-  ) {
+  async function loadBannerTemplates(isSilent = false) {
     if (!isSilent) {
       setLoadingBanners(true);
     } else {
       setRefreshingBanners(true);
     }
     try {
-      const fId = targetFranchiseId ?? userFranchiseId;
-      const data = await bannerTemplateApi.getBannerTemplates(
-        fId ? Number(fId) : undefined,
-      );
+      const data = await bannerTemplateApi.getBannerTemplates();
       setBannerTemplates(data);
     } catch (err) {
-      console.error("Failed to load franchise banner templates:", err);
+      console.error("Failed to load banner templates:", err);
     } finally {
       setLoadingBanners(false);
       setRefreshingBanners(false);
@@ -478,7 +430,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
 
   useEffect(() => {
     loadClientProjects();
-    loadFranchiseBanners(clientUser?.franchiseId);
+    loadBannerTemplates();
     loadMySubmissions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectSearch]);
@@ -508,15 +460,6 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
   // Filter banner templates based on search & orientation
   const filteredBanners = useMemo(() => {
     return bannerTemplates.filter((item) => {
-      // If user has a specific franchise, filter to ensure it belongs to that franchise
-      if (
-        userFranchiseId &&
-        item.franchiseId &&
-        Number(item.franchiseId) !== Number(userFranchiseId)
-      ) {
-        return false;
-      }
-
       // Search matching
       const query = bannerSearch.toLowerCase().trim();
       if (query) {
@@ -543,7 +486,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
 
       return true;
     });
-  }, [bannerTemplates, userFranchiseId, bannerSearch, bannerOrientationFilter]);
+  }, [bannerTemplates, bannerSearch, bannerOrientationFilter]);
 
   // Flatten templates by their images so each image is displayed separately on the user side
   const bannerDisplayItems = useMemo(() => {
@@ -619,11 +562,8 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
     const q = submissionSearch.toLowerCase().trim();
     return mySubmissions.filter((sub) => {
       const matchName = sub.templateName.toLowerCase().includes(q);
-      const matchFranchise = (sub.franchiseName || "")
-        .toLowerCase()
-        .includes(q);
       const matchStatus = sub.status.toLowerCase().includes(q);
-      return matchName || matchFranchise || matchStatus;
+      return matchName || matchStatus;
     });
   }, [mySubmissions, submissionSearch]);
 
@@ -634,18 +574,14 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
           ? "Banner Templates"
           : activeTab === "my-banner-submissions"
             ? "My Banner Submissions"
-            : activeTab === "my-franchise"
-              ? "My Franchise"
-              : "Client Review Portal"
+            : "Client Review Portal"
       }
       subtitle={
         activeTab === "banner-templates"
-          ? "Browse and customize marketing banner templates for your franchise"
+          ? "Browse and customize marketing banner templates"
           : activeTab === "my-banner-submissions"
             ? "Track and manage your submitted banner requests"
-            : activeTab === "my-franchise"
-              ? "View franchise profile and assigned marketing assets"
-              : "View, review, and submit feedback on your custom design proofs"
+            : "View, review, and submit feedback on your custom design proofs"
       }
       roleName="Client User"
       userEmail={clientUser.email}
@@ -841,150 +777,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
         </div>
       )}
 
-      {/* TAB 2: MY FRANCHISE (READ ONLY) */}
-      {activeTab === "my-franchise" && (
-        <div className="space-y-6 max-w-4xl animate-in fade-in duration-200">
-          {/* Header & Subtitle */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
-            <div>
-              <div className="flex items-center gap-2.5">
-                <h2 className="text-xl font-black text-slate-900 tracking-tight">
-                  My Franchise
-                </h2>
-                <span className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs">
-                  <CheckCircle2 size={13} className="text-emerald-600" />
-                  Assigned
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 mt-1">
-                Your assigned franchise association, branding overview, and
-                specifications
-              </p>
-            </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setActiveTab("banner-templates")}
-              className="text-xs h-9 font-medium gap-1.5"
-            >
-              <LayoutTemplate size={13} className="text-indigo-600" />
-              View Franchise Banners
-            </Button>
-          </div>
-
-          {loadingFranchise ? (
-            <Card className="p-12 text-center text-xs text-slate-500 space-y-2">
-              <Loader2
-                size={24}
-                className="animate-spin mx-auto text-indigo-600"
-              />
-              <p className="font-semibold text-slate-700">
-                Loading franchise information...
-              </p>
-            </Card>
-          ) : !userFranchiseId && !franchiseDetail ? (
-            <Card className="p-12 text-center text-slate-400 space-y-3 bg-white border border-slate-200">
-              <div className="w-14 h-14 rounded-2xl bg-slate-100 text-slate-400 mx-auto flex items-center justify-center border border-slate-200">
-                <Building2 size={28} />
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-bold text-slate-800">
-                  No Franchise Assigned
-                </p>
-                <p className="text-xs text-slate-500 max-w-sm mx-auto">
-                  You are not currently linked to an official franchise partner.
-                  Please contact your administrator.
-                </p>
-              </div>
-            </Card>
-          ) : (
-            <div className="space-y-5">
-              {/* Main Franchise Card */}
-              <Card className="p-6 bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden relative">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-                  {/* Franchise Logo Preview */}
-                  <div className="w-20 h-20 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center overflow-hidden flex-shrink-0 shadow-inner">
-                    {franchiseDetail?.brandingLogoUrl ? (
-                      <img
-                        src={resolveImageUrl(franchiseDetail.brandingLogoUrl)}
-                        alt={franchiseDetail.name || activeFranchiseName}
-                        className="w-full h-full object-contain p-2"
-                        onError={(e) => {
-                          (e.target as HTMLElement).style.display = "none";
-                          const parent = (e.target as HTMLElement)
-                            .parentElement;
-                          if (
-                            parent &&
-                            !parent.querySelector(".fallback-building-icon")
-                          ) {
-                            const iconWrap = document.createElement("div");
-                            iconWrap.className =
-                              "fallback-building-icon text-indigo-500 font-bold text-sm";
-                            iconWrap.textContent = (
-                              franchiseDetail?.name || activeFranchiseName
-                            )
-                              .slice(0, 2)
-                              .toUpperCase();
-                            parent.appendChild(iconWrap);
-                          }
-                        }}
-                      />
-                    ) : (
-                      <Building2 size={36} className="text-indigo-500" />
-                    )}
-                  </div>
-
-                  <div className="flex-1 min-w-0 space-y-1">
-                    <div className="flex items-center gap-2.5 flex-wrap">
-                      <h3 className="text-2xl font-black text-slate-900 tracking-tight">
-                        {franchiseDetail?.name || activeFranchiseName}
-                      </h3>
-                      <span className="inline-flex items-center gap-1 text-[13px] font-bold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
-                        <Building2 size={12} /> Franchise
-                      </span>
-                    </div>
-
-                    <p className="text-xs text-slate-600 leading-relaxed max-w-2xl">
-                      {franchiseDetail?.description ||
-                        "Official franchise partner organization associated with your client account."}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Details Grid (Read-only, clean 2-column) */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 mt-6 pt-6 border-t border-slate-100">
-                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-150">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                      Assigned Member
-                    </span>
-                    <p className="text-xs font-bold text-slate-900 mt-1 truncate">
-                      {clientUser?.name || "Client User"}
-                    </p>
-                    <p className="text-[13px] text-slate-500 truncate mt-0.5">
-                      {clientUser?.email}
-                    </p>
-                  </div>
-
-                  <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-150">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                      Marketing Banners
-                    </span>
-                    <p className="text-xs font-bold text-slate-900 mt-1">
-                      {totalBannerImages} Templates
-                    </p>
-                    <p className="text-[13px] text-indigo-600 font-medium mt-0.5">
-                      Available for customization
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* TAB 3: BANNER TEMPLATES FOR USER'S FRANCHISE */}
+      {/* TAB 2: BANNER TEMPLATES */}
       {activeTab === "banner-templates" &&
         (viewingTemplate !== null ? (
           /* IN-PAGE EMBEDDED BANNER REVIEW & CUSTOMIZATION (MATCHING SCREENSHOT 2) */
@@ -1021,12 +814,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                   variant="outline"
                   size="sm"
                   disabled={loadingBanners || refreshingBanners}
-                  onClick={() =>
-                    loadFranchiseBanners(
-                      userFranchiseId ? Number(userFranchiseId) : undefined,
-                      true,
-                    )
-                  }
+                  onClick={() => loadBannerTemplates(true)}
                   className="h-8 px-3 rounded-xl bg-white text-xs font-semibold flex-shrink-0"
                   title="Refresh Template Data"
                 >
@@ -1057,9 +845,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                 <span>
                   Designer:{" "}
                   <strong className="text-slate-800 font-semibold">
-                    {viewingTemplate.franchiseName ||
-                      activeFranchiseName ||
-                      "FBS designer - 1"}
+                    FBS Designer
                   </strong>
                 </span>
                 <span className="text-slate-300">·</span>
@@ -1207,7 +993,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                     */}
 
                     {/* Banner Technical Specifications */}
-                    <div className="pt-2 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-xs">
+                    <div className="pt-2 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
                       <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-150">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">
                           Dimensions
@@ -1223,14 +1009,6 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                         </span>
                         <span className="capitalize font-bold text-slate-900 mt-0.5 block">
                           {viewingTemplate.orientation}
-                        </span>
-                      </div>
-                      <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-150">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">
-                          Franchise
-                        </span>
-                        <span className="truncate font-bold text-slate-900 mt-0.5 block">
-                          {viewingTemplate.franchiseName || activeFranchiseName}
                         </span>
                       </div>
                       <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-150">
@@ -1255,7 +1033,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                       Customize Banner
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Fill in your franchise details to request this banner.
+                      Fill in your customization details to request this banner.
                     </p>
                   </div>
 
@@ -1604,12 +1382,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                 <Button
                   variant="outline"
                   disabled={loadingBanners || refreshingBanners}
-                  onClick={() =>
-                    loadFranchiseBanners(
-                      userFranchiseId ? Number(userFranchiseId) : undefined,
-                      true,
-                    )
-                  }
+                  onClick={() => loadBannerTemplates(true)}
                   title="Refresh Banner Templates"
                 >
                   <RefreshCw
@@ -1637,7 +1410,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                 <p className="text-xs">
                   {bannerSearch
                     ? "No templates match your search criteria."
-                    : `No marketing banners have been assigned to ${activeFranchiseName} yet.`}
+                    : "No marketing banners have been added yet."}
                 </p>
               </Card>
             ) : bannerViewMode === "list" ? (
@@ -1670,9 +1443,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                         <p className="text-[13px] text-slate-500 truncate mt-0.5">
                           Designer:{" "}
                           <strong className="text-slate-700">
-                            {item.template.franchiseName ||
-                              activeFranchiseName ||
-                              "FBS designer - 1"}
+                            FBS Designer
                           </strong>
                           {" · "}
                           Updated{" "}
@@ -1747,9 +1518,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                           <p className="text-xs text-slate-500 mt-0.5 truncate">
                             Designer:{" "}
                             <strong className="text-slate-700">
-                              {item.template.franchiseName ||
-                                activeFranchiseName ||
-                                "FBS designer - 1"}
+                              FBS Designer
                             </strong>
                           </p>
                         </div>
@@ -1896,7 +1665,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                     onClick={() => setActiveTab("banner-templates")}
                     className="text-xs mt-2 font-semibold"
                   >
-                    Browse Franchise Templates
+                    Browse Banner Templates
                   </Button>
                 </Card>
               ) : submissionListViewMode === "list" ? (
@@ -1916,13 +1685,6 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                             {getSubmissionStatusBadge(sub.status)}
                           </div>
                           <p className="text-[13px] text-slate-500 truncate mt-0.5">
-                            Franchise:{" "}
-                            <strong className="text-slate-700">
-                              {sub.franchiseName ||
-                                activeFranchiseName ||
-                                "General"}
-                            </strong>
-                            {" · "}
                             Qty:{" "}
                             <strong className="text-indigo-600 font-bold font-mono">
                               {sub.quantity || 1}
@@ -1981,13 +1743,6 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                               {sub.templateName}
                             </h3>
                             <p className="text-xs text-slate-500 mt-0.5 truncate">
-                              Franchise:{" "}
-                              <strong className="text-slate-700">
-                                {sub.franchiseName ||
-                                  activeFranchiseName ||
-                                  "General"}
-                              </strong>
-                              {" · "}
                               Qty:{" "}
                               <strong className="text-indigo-600 font-bold font-mono">
                                 {sub.quantity || 1}
@@ -2144,8 +1899,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                           .filter(
                             ([key]) =>
                               !key.startsWith("_") &&
-                              key !== "templateId" &&
-                              key !== "franchiseId",
+                              key !== "templateId",
                           )
                           .map(([key, val], idx) => {
                             const isFile =

@@ -81,11 +81,10 @@ export const authApi = {
     role: AuthRole,
     email: string,
     password: string,
-    franchiseId?: number,
   ) {
     const res = await request<LoginResponse>("/api/auth/login", {
       method: "POST",
-      body: JSON.stringify({ role, email, password, franchiseId }),
+      body: JSON.stringify({ role, email, password }),
     });
 
     if (res.token) {
@@ -98,28 +97,14 @@ export const authApi = {
     return res;
   },
 
-  listFranchises() {
-    return request<{
-      franchises: Array<{
-        id: number;
-        name: string;
-        slug: string;
-        brandingLogoUrl: string | null;
-        description: string | null;
-        isActive: boolean;
-      }>;
-    }>("/api/auth/franchises");
-  },
-
   async register(
     name: string,
     email: string,
     password: string,
-    franchiseId: number,
   ) {
     const res = await request<RegisterResponse>("/api/auth/register", {
       method: "POST",
-      body: JSON.stringify({ name, email, password, franchiseId }),
+      body: JSON.stringify({ name, email, password }),
     });
 
     if (res.token) {

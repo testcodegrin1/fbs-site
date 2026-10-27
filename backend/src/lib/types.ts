@@ -11,7 +11,6 @@ export type Permission =
   | "roles:update"
   | "designer:dashboard"
   | "user:dashboard"
-  | "franchises:manage"
   | "vendors:manage"
   | "banner_templates:manage";
 
@@ -22,8 +21,6 @@ export type AuthUser = {
   isActive: boolean;
   roles: AuthRole[];
   permissions: Permission[];
-  franchiseId?: number | null;
-  franchiseName?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -39,17 +36,6 @@ export type UserPayload = {
   role: AuthRole;
   password?: string;
   isActive?: boolean;
-  franchiseId?: number | null;
-};
-
-export type FranchiseModel = {
-  id: number;
-  name: string;
-  brandingLogoUrl: string | null;
-  description: string | null;
-  isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
 };
 
 export type BannerOrientation = "landscape" | "portrait" | "square";
@@ -64,7 +50,6 @@ export type BannerTemplateImageModel = {
   updatedAt: string;
   title?: string | null;
   imageType?: string;
-  franchiseId?: number;
   isActive?: boolean;
 };
 
@@ -72,8 +57,6 @@ export type BannerImageModel = BannerTemplateImageModel;
 
 export type BannerTemplateModel = {
   id: number;
-  franchiseId: number;
-  franchiseName?: string;
   name: string;
   description: string | null;
   widthPx: number;
@@ -107,7 +90,6 @@ export type BannerCustomizationModel = {
   id: number;
   templateId: number;
   userId: number;
-  franchiseId?: number | null;
   quantity?: number;
   customizationValues: Record<string, any>;
   status?: string;
@@ -168,8 +150,6 @@ export type BannerSubmissionDetailModel = {
   userId: number;
   userName: string;
   userEmail: string;
-  franchiseId?: number | null;
-  franchiseName?: string | null;
   status: BannerSubmissionStatus | string;
   customizationValues: Record<string, any>;
   submittedFields: Array<{

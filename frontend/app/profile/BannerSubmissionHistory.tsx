@@ -56,7 +56,7 @@ export function BannerSubmissionHistory({ user }: { user: AuthUser }) {
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
     if (!query) return submissions;
-    return submissions.filter(item => `${item.templateName} ${item.status} ${item.franchiseName || ""} ${item.id}`.toLowerCase().includes(query));
+    return submissions.filter(item => `${item.templateName} ${item.status} ${item.id}`.toLowerCase().includes(query));
   }, [search, submissions]);
 
   async function openSubmission(id: number) {

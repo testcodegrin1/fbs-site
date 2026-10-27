@@ -10,7 +10,6 @@ import {
   type BannerSubmissionStatus,
   type BannerSubmissionFile,
 } from "@/app/lib/client/banner-template-api";
-import { franchiseApi, type FranchiseModel } from "@/app/lib/client/franchise";
 import { BannerSubmissionThreadModal } from "@/app/user/dashboard/BannerSubmissionThreadModal";
 import { Card, CardHeader, Button, Input, Badge } from "@/app/Components/ui";
 import {
@@ -106,8 +105,6 @@ export interface ClientBannerSubmissionsGroup {
   userId: number;
   userName: string;
   userEmail: string;
-  franchiseId: number | null;
-  franchiseName: string | null;
   orders: BannerSubmissionListItem[];
   totalOrders: number;
 }
@@ -116,12 +113,10 @@ export function BannerSubmissionsManagement() {
   const [submissions, setSubmissions] = useState<BannerSubmissionListItem[]>(
     [],
   );
-  const [franchises, setFranchises] = useState<FranchiseModel[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [franchiseFilter, setFranchiseFilter] = useState("all");
   const [viewMode, setViewMode] = useState<"canvas" | "table">("table");
   const [expandedClients, setExpandedClients] = useState<
     Record<number, boolean>
@@ -165,19 +160,13 @@ export function BannerSubmissionsManagement() {
     else setLoading(true);
 
     try {
-      const [subsRes, franRes] = await Promise.all([
-        bannerTemplateApi.getBannerSubmissions({
-          search: search || undefined,
-          status: statusFilter !== "all" ? statusFilter : undefined,
-          franchiseId:
-            franchiseFilter !== "all" ? Number(franchiseFilter) : undefined,
-        }),
-        franchiseApi.getFranchises().catch(() => []),
-      ]);
+      const subsRes = await bannerTemplateApi.getBannerSubmissions({
+        search: search || undefined,
+        status: statusFilter !== "all" ? statusFilter : undefined,
+      });
 
       const fetchedSubs = subsRes.submissions || [];
       setSubmissions(fetchedSubs);
-      setFranchises(franRes || []);
 
       // If in canvas view and nothing selected yet or selected id not in list, select first
       if (fetchedSubs.length > 0) {
@@ -199,7 +188,7 @@ export function BannerSubmissionsManagement() {
   useEffect(() => {
     loadData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [search, statusFilter, franchiseFilter]);
+  }, [search, statusFilter]);
 
   async function openSubmissionDetail(id: number) {
     setSelectedSubmissionId(id);
@@ -285,27 +274,17 @@ export function BannerSubmissionsManagement() {
       ) {
         return false;
       }
-      if (
-        franchiseFilter !== "all" &&
-        sub.franchiseId &&
-        Number(sub.franchiseId) !== Number(franchiseFilter)
-      ) {
-        return false;
-      }
       if (search.trim()) {
         const q = search.toLowerCase().trim();
         const matchesId = String(sub.id).includes(q);
         const matchesTpl = sub.templateName.toLowerCase().includes(q);
         const matchesUser = sub.userName.toLowerCase().includes(q);
         const matchesEmail = sub.userEmail.toLowerCase().includes(q);
-        const matchesFran = (sub.franchiseName || "").toLowerCase().includes(q);
-        return (
-          matchesId || matchesTpl || matchesUser || matchesEmail || matchesFran
-        );
+        return matchesId || matchesTpl || matchesUser || matchesEmail;
       }
       return true;
     });
-  }, [submissions, statusFilter, franchiseFilter, search]);
+  }, [submissions, statusFilter, search]);
 
   const groupedSubmissions = useMemo<ClientBannerSubmissionsGroup[]>(() => {
     const map = new Map<number, ClientBannerSubmissionsGroup>();
@@ -317,8 +296,6 @@ export function BannerSubmissionsManagement() {
           userId: uId,
           userName: sub.userName || "Unknown Client",
           userEmail: sub.userEmail || "",
-          franchiseId: sub.franchiseId ?? null,
-          franchiseName: sub.franchiseName ?? null,
           orders: [],
           totalOrders: 0,
         });
@@ -327,10 +304,6 @@ export function BannerSubmissionsManagement() {
       const group = map.get(uId)!;
       group.orders.push(sub);
       group.totalOrders += 1;
-      if (!group.franchiseName && sub.franchiseName) {
-        group.franchiseName = sub.franchiseName;
-        group.franchiseId = sub.franchiseId ?? null;
-      }
     }
 
     return Array.from(map.values());
@@ -410,22 +383,6 @@ export function BannerSubmissionsManagement() {
               ))}
             </select>
 
-            {/* Franchise Filter */}
-            {franchises.length > 0 && (
-              <select
-                value={franchiseFilter}
-                onChange={(e) => setFranchiseFilter(e.target.value)}
-                className="h-9.5 px-3 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 max-w-[170px] truncate shadow-2xs"
-              >
-                <option value="all">All Franchises</option>
-                {franchises.map((f) => (
-                  <option key={f.id} value={String(f.id)}>
-                    {f.name}
-                  </option>
-                ))}
-              </select>
-            )}
-
             {/* Refresh Button */}
             <Button
               variant="outline"
@@ -464,7 +421,7 @@ export function BannerSubmissionsManagement() {
               No Banner Submissions Found
             </p>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
-              {search || statusFilter !== "all" || franchiseFilter !== "all"
+              {search || statusFilter !== "all"
                 ? "No submissions matched your search or filter criteria. Try clearing filters."
                 : "Banner customization requests submitted by clients will appear here."}
             </p>
@@ -514,15 +471,6 @@ export function BannerSubmissionsManagement() {
                         <p className="text-[13px] text-slate-500 truncate">
                           {group.userEmail}
                         </p>
-                        {group.franchiseName && (
-                          <p className="text-[10px] text-slate-400 truncate flex items-center gap-1 font-medium mt-0.5">
-                            <Building2
-                              size={10}
-                              className="text-slate-400 flex-shrink-0"
-                            />
-                            <span>{group.franchiseName}</span>
-                          </p>
-                        )}
                       </div>
                     </div>
 
@@ -765,18 +713,6 @@ export function BannerSubmissionsManagement() {
                                   </span>
                                 )}
                               </div>
-                              {selectedSubmission.franchiseName && (
-                                <div className="flex items-center gap-1">
-                                  <Building2
-                                    size={11}
-                                    className="text-slate-400"
-                                  />
-                                  <span>Franchise: </span>
-                                  <strong className="text-slate-700">
-                                    {selectedSubmission.franchiseName}
-                                  </strong>
-                                </div>
-                              )}
                               <div>
                                 Dimensions:{" "}
                                 <span className="font-mono text-indigo-600 font-bold">
@@ -870,15 +806,6 @@ export function BannerSubmissionsManagement() {
                               </span>
                             )}
                           </div>
-                          {selectedSubmission.franchiseName && (
-                            <div className="flex items-center gap-1">
-                              <Building2 size={11} className="text-slate-400" />
-                              <span>Franchise: </span>
-                              <strong className="text-slate-700">
-                                {selectedSubmission.franchiseName}
-                              </strong>
-                            </div>
-                          )}
                           <div>
                             Dimensions:{" "}
                             <span className="font-mono text-indigo-600 font-bold">
@@ -950,7 +877,6 @@ export function BannerSubmissionsManagement() {
                   <th className="py-3.5 px-4">Preview</th>
                   <th className="py-3.5 px-4">Banner Template</th>
                   <th className="py-3.5 px-4">User</th>
-                  <th className="py-3.5 px-4">Franchise</th>
                   <th className="py-3.5 px-4">Submitted At</th>
                   <th className="py-3.5 px-4">Status</th>
                   <th className="py-3.5 px-4 text-right">Actions</th>
@@ -1008,13 +934,6 @@ export function BannerSubmissionsManagement() {
                             <div className="text-[13px] text-slate-400">
                               {sub.userEmail}
                             </div>
-                          </td>
-
-                          <td className="py-3.5 px-4">
-                            <span className="inline-flex items-center gap-1 text-slate-700 font-medium">
-                              <Building2 size={12} className="text-slate-400" />
-                              {sub.franchiseName || "General / Unassigned"}
-                            </span>
                           </td>
 
                           <td className="py-3.5 px-4 text-slate-500 whitespace-nowrap">

@@ -20,7 +20,6 @@ import {
 } from "@/app/Components/ui";
 import { UserManagement } from "@/app/super-admin/dashboard/UserManagement";
 import { RolePermissionManagement } from "@/app/super-admin/dashboard/RolePermissionManagement";
-import { FranchiseManagement } from "@/app/super-admin/Franchise";
 import { BannerTemplateManagement } from "@/app/super-admin/dashboard/BannerTemplateManagement";
 import { BannerSubmissionsManagement } from "@/app/super-admin/dashboard/BannerSubmissionsManagement";
 import {
@@ -49,7 +48,6 @@ import {
   List,
   LayoutGrid,
   FileImage,
-  Building2,
   LayoutTemplate,
   Inbox,
 } from "lucide-react";
@@ -171,7 +169,6 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
       icon: Layers,
       badge: diagrams.length,
     },
-    { id: "franchises", label: "Franchises", icon: Building2 },
     { id: "banner-templates", label: "Banner Templates", icon: LayoutTemplate },
     { id: "banner-submissions", label: "Banner Submissions", icon: Inbox },
   ];
@@ -446,7 +443,7 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
   return (
     <SidebarLayout
       title="Super Admin Command Center"
-      subtitle="Full control of Projects, Users, Roles, Diagrams, Franchises & Banner Templates"
+      subtitle="Full control of Projects, Users, Roles, Diagrams & Banner Templates"
       roleName="Super Admin"
       userEmail={superAdminUser.email}
       userName={superAdminUser.name}
@@ -890,10 +887,7 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
         />
       )}
 
-      {/* TAB 5: FRANCHISES */}
-      {activeTab === "franchises" && <FranchiseManagement />}
-
-      {/* TAB 6: BANNER TEMPLATES */}
+      {/* TAB 5: BANNER TEMPLATES */}
       {activeTab === "banner-templates" && <BannerTemplateManagement />}
 
       {/* TAB 7: BANNER SUBMISSIONS */}

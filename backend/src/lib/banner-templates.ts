@@ -1,7 +1,6 @@
 import type { RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import { query, execute, withTransaction } from "./db.js";
 import { AuthError } from "./errors.js";
-import { getFranchiseById } from "./franchises.js";
 import type {
   BannerImageModel,
   BannerOrientation,
@@ -16,7 +15,6 @@ import type {
 
 function mapBannerTemplateImage(
   row: any,
-  franchiseId?: number,
 ): BannerTemplateImageModel {
   return {
     id: Number(row.id),
@@ -28,8 +26,6 @@ function mapBannerTemplateImage(
     updatedAt: new Date(row.updated_at).toISOString(),
     title: row.title || row.image_name || null,
     imageType: row.image_type || "banner",
-    franchiseId:
-      franchiseId ?? (row.franchise_id ? Number(row.franchise_id) : undefined),
     isActive: row.is_active != null ? Boolean(row.is_active) : true,
   };
 }
@@ -37,8 +33,6 @@ function mapBannerTemplateImage(
 function mapTemplate(row: any): BannerTemplateModel {
   return {
     id: Number(row.id),
-    franchiseId: Number(row.franchise_id),
-    franchiseName: row.franchise_name,
     name: row.name,
     description: row.description,
     widthPx: Number(row.width_px),
@@ -86,15 +80,10 @@ function mapField(row: any): BannerTemplateFieldModel {
 }
 
 export async function listBannerTemplates(
-  franchiseId?: number,
   includeInactive = false,
 ): Promise<BannerTemplateModel[]> {
-  let sql = `SELECT bt.*, f.name AS franchise_name FROM banner_templates bt JOIN franchises f ON bt.franchise_id = f.id WHERE 1=1`;
+  let sql = `SELECT bt.* FROM banner_templates bt WHERE 1=1`;
   const params: any[] = [];
-  if (franchiseId) {
-    sql += ` AND bt.franchise_id = ?`;
-    params.push(franchiseId);
-  }
   if (!includeInactive) {
     sql += ` AND bt.is_active = 1`;
   }
@@ -195,18 +184,11 @@ export async function getBannerTemplateFields(
 }
 
 export async function listBannerImages(filter: {
-  franchiseId?: number;
   templateId?: number;
 }): Promise<BannerTemplateImageModel[]> {
   let sql = `SELECT bti.* FROM banner_template_images bti`;
   const params: any[] = [];
   const whereClauses: string[] = [];
-
-  if (filter.franchiseId) {
-    sql += ` JOIN banner_templates bt ON bti.template_id = bt.id`;
-    whereClauses.push(`bt.franchise_id = ?`);
-    params.push(filter.franchiseId);
-  }
 
   if (filter.templateId) {
     whereClauses.push(`bti.template_id = ?`);
@@ -220,12 +202,11 @@ export async function listBannerImages(filter: {
   sql += ` ORDER BY bti.sort_order ASC, bti.id ASC`;
 
   const [rows] = await query<RowDataPacket[]>(sql, params);
-  return rows.map((r) => mapBannerTemplateImage(r, filter.franchiseId));
+  return rows.map((r) => mapBannerTemplateImage(r));
 }
 
 export async function saveBannerTemplateImages(
   templateId: number,
-  _franchiseId: number,
   images: Array<{
     imageUrl: string;
     imageName?: string | null;
@@ -308,7 +289,7 @@ export async function getBannerTemplateById(
   id: number,
 ): Promise<BannerTemplateModel | null> {
   const [rows] = await query<RowDataPacket[]>(
-    `SELECT bt.*, f.name AS franchise_name FROM banner_templates bt JOIN franchises f ON bt.franchise_id = f.id WHERE bt.id = ?`,
+    `SELECT bt.* FROM banner_templates bt WHERE bt.id = ?`,
     [id],
   );
   if (!rows[0]) return null;
@@ -319,9 +300,7 @@ export async function getBannerTemplateById(
     `SELECT * FROM banner_template_images WHERE template_id = ? ORDER BY sort_order ASC, id ASC`,
     [id],
   );
-  template.images = imgRows.map((r) =>
-    mapBannerTemplateImage(r, template.franchiseId),
-  );
+  template.images = imgRows.map((r) => mapBannerTemplateImage(r));
   return template;
 }
 
@@ -386,8 +365,6 @@ function normalizeImages(
 
 export async function saveBannerTemplate(data: {
   id?: number;
-  franchise_id?: number;
-  franchiseId?: number;
   name?: string;
   description?: string | null;
   width_px?: number;
@@ -417,18 +394,6 @@ export async function saveBannerTemplate(data: {
         throw new AuthError("Banner template not found.", 404);
       }
       const existing = existingRows[0];
-
-      const franchiseId = Number(
-        data.franchiseId ?? data.franchise_id ?? existing.franchise_id,
-      );
-      if (!franchiseId || isNaN(franchiseId)) {
-        throw new AuthError("Franchise ID is required.", 400);
-      }
-
-      const franchise = await getFranchiseById(franchiseId);
-      if (!franchise) {
-        throw new AuthError("Franchise not found.", 404);
-      }
 
       const name =
         data.name !== undefined ? data.name.trim() : String(existing.name);
@@ -480,12 +445,11 @@ export async function saveBannerTemplate(data: {
 
       await conn.execute(
         `UPDATE banner_templates SET 
-          franchise_id = ?, name = ?, description = ?, 
+          name = ?, description = ?, 
           width_px = ?, height_px = ?, 
           orientation = ?, is_active = ?
          WHERE id = ?`,
         [
-          franchiseId,
           name,
           description,
           widthPx,
@@ -521,16 +485,6 @@ export async function saveBannerTemplate(data: {
       return currentId;
     } else {
       // 2. CREATE NEW TEMPLATE
-      const franchiseId = Number(data.franchiseId ?? data.franchise_id);
-      if (!franchiseId || isNaN(franchiseId)) {
-        throw new AuthError("Franchise ID is required.", 400);
-      }
-
-      const franchise = await getFranchiseById(franchiseId);
-      if (!franchise) {
-        throw new AuthError("Franchise not found.", 404);
-      }
-
       const name = (data.name ?? "").trim();
       if (!name) {
         throw new AuthError("Template name is required.", 400);
@@ -553,11 +507,10 @@ export async function saveBannerTemplate(data: {
 
       const [res] = await conn.execute<ResultSetHeader>(
         `INSERT INTO banner_templates (
-          franchise_id, name, description,
+          name, description,
           width_px, height_px, orientation, is_active
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?)`,
         [
-          franchiseId,
           name,
           description,
           widthPx,
@@ -665,7 +618,6 @@ export async function saveBannerCustomization(
   templateId: number,
   userId: number,
   customizationValues: Record<string, any>,
-  franchiseId?: number,
   isNewSubmission = false,
 ): Promise<any> {
   const template = await getBannerTemplateById(templateId);
@@ -718,7 +670,6 @@ export async function saveBannerCustomization(
   customizationValues._quantity = qty;
 
   const valuesJson = JSON.stringify(customizationValues);
-  const fId = franchiseId || template.franchiseId || null;
 
   try {
     let custId: number;
@@ -733,8 +684,8 @@ export async function saveBannerCustomization(
         custId = Number(existing[0].id);
         try {
           await execute(
-            `UPDATE banner_customizations SET customization_values = ?, franchise_id = ?, status = 'Pending', quantity = ?, updated_at = NOW() WHERE id = ?`,
-            [valuesJson, fId, qty, custId],
+            `UPDATE banner_customizations SET customization_values = ?, status = 'Pending', quantity = ?, updated_at = NOW() WHERE id = ?`,
+            [valuesJson, qty, custId],
           );
         } catch (colErr: any) {
           if (
@@ -743,13 +694,13 @@ export async function saveBannerCustomization(
           ) {
             try {
               await execute(
-                `UPDATE banner_customizations SET customization_values = ?, franchise_id = ?, status = 'Pending', updated_at = NOW() WHERE id = ?`,
-                [valuesJson, fId, custId],
+                `UPDATE banner_customizations SET customization_values = ?, status = 'Pending', updated_at = NOW() WHERE id = ?`,
+                [valuesJson, custId],
               );
             } catch (statusErr: any) {
               await execute(
-                `UPDATE banner_customizations SET customization_values = ?, franchise_id = ?, updated_at = NOW() WHERE id = ?`,
-                [valuesJson, fId, custId],
+                `UPDATE banner_customizations SET customization_values = ?, updated_at = NOW() WHERE id = ?`,
+                [valuesJson, custId],
               );
             }
           } else {
@@ -761,7 +712,6 @@ export async function saveBannerCustomization(
           id: custId,
           templateId,
           userId,
-          franchiseId: fId,
           quantity: qty,
           customizationValues,
           status: "Pending",
@@ -774,8 +724,8 @@ export async function saveBannerCustomization(
     // Insert new submission record
     try {
       const [res] = await execute<ResultSetHeader>(
-        `INSERT INTO banner_customizations (template_id, user_id, franchise_id, customization_values, status, quantity) VALUES (?, ?, ?, ?, 'Pending', ?)`,
-        [templateId, userId, fId, valuesJson, qty],
+        `INSERT INTO banner_customizations (template_id, user_id, customization_values, status, quantity) VALUES (?, ?, ?, 'Pending', ?)`,
+        [templateId, userId, valuesJson, qty],
       );
       custId = res.insertId;
     } catch (colErr: any) {
@@ -785,14 +735,14 @@ export async function saveBannerCustomization(
       ) {
         try {
           const [res] = await execute<ResultSetHeader>(
-            `INSERT INTO banner_customizations (template_id, user_id, franchise_id, customization_values, status) VALUES (?, ?, ?, ?, 'Pending')`,
-            [templateId, userId, fId, valuesJson],
+            `INSERT INTO banner_customizations (template_id, user_id, customization_values, status) VALUES (?, ?, ?, 'Pending')`,
+            [templateId, userId, valuesJson],
           );
           custId = res.insertId;
         } catch (statusErr: any) {
           const [res] = await execute<ResultSetHeader>(
-            `INSERT INTO banner_customizations (template_id, user_id, franchise_id, customization_values) VALUES (?, ?, ?, ?)`,
-            [templateId, userId, fId, valuesJson],
+            `INSERT INTO banner_customizations (template_id, user_id, customization_values) VALUES (?, ?, ?)`,
+            [templateId, userId, valuesJson],
           );
           custId = res.insertId;
         }
@@ -805,7 +755,6 @@ export async function saveBannerCustomization(
       id: custId,
       templateId,
       userId,
-      franchiseId: fId,
       quantity: qty,
       customizationValues,
       status: "Pending",
@@ -818,7 +767,6 @@ export async function saveBannerCustomization(
         id: Date.now(),
         templateId,
         userId,
-        franchiseId: fId,
         customizationValues,
         status: "Pending",
         createdAt: new Date().toISOString(),
@@ -853,7 +801,6 @@ export async function getBannerCustomization(
       id: Number(r.id),
       templateId: Number(r.template_id),
       userId: Number(r.user_id),
-      franchiseId: r.franchise_id ? Number(r.franchise_id) : null,
       customizationValues: vals,
       status: r.status || "Pending",
       createdAt: new Date(r.created_at).toISOString(),
@@ -867,7 +814,6 @@ export async function getBannerCustomization(
 export async function listBannerSubmissions(filter?: {
   search?: string;
   status?: string;
-  franchiseId?: number;
   userId?: number;
 }): Promise<any[]> {
   try {
@@ -879,12 +825,10 @@ export async function listBannerSubmissions(filter?: {
         bt.height_px,
         bt.orientation,
         u.name AS user_name,
-        u.email AS user_email,
-        f.name AS franchise_name
+        u.email AS user_email
       FROM banner_customizations bc
       LEFT JOIN banner_templates bt ON bc.template_id = bt.id
       LEFT JOIN users u ON bc.user_id = u.id
-      LEFT JOIN franchises f ON bc.franchise_id = f.id
       WHERE 1=1
     `;
     const params: any[] = [];
@@ -892,11 +836,6 @@ export async function listBannerSubmissions(filter?: {
     if (filter?.userId) {
       sql += ` AND bc.user_id = ?`;
       params.push(filter.userId);
-    }
-
-    if (filter?.franchiseId) {
-      sql += ` AND (bc.franchise_id = ? OR bt.franchise_id = ?)`;
-      params.push(filter.franchiseId, filter.franchiseId);
     }
 
     if (filter?.status && filter.status.toLowerCase() !== "all") {
@@ -910,10 +849,9 @@ export async function listBannerSubmissions(filter?: {
         CAST(bc.id AS CHAR) LIKE ? OR
         bt.name LIKE ? OR
         u.name LIKE ? OR
-        u.email LIKE ? OR
-        f.name LIKE ?
+        u.email LIKE ?
       )`;
-      params.push(q, q, q, q, q);
+      params.push(q, q, q, q);
     }
 
     sql += ` ORDER BY bc.id DESC`;
@@ -978,8 +916,6 @@ export async function listBannerSubmissions(filter?: {
         userId: Number(r.user_id),
         userName: r.user_name || "Unknown User",
         userEmail: r.user_email || "",
-        franchiseId: r.franchise_id ? Number(r.franchise_id) : null,
-        franchiseName: r.franchise_name || null,
         status: r.status || "Pending",
         customizationValues: vals,
         createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
@@ -1007,12 +943,10 @@ export async function getBannerSubmissionById(
         bt.height_px,
         bt.orientation,
         u.name AS user_name,
-        u.email AS user_email,
-        f.name AS franchise_name
+        u.email AS user_email
       FROM banner_customizations bc
       LEFT JOIN banner_templates bt ON bc.template_id = bt.id
       LEFT JOIN users u ON bc.user_id = u.id
-      LEFT JOIN franchises f ON bc.franchise_id = f.id
       WHERE bc.id = ?
       LIMIT 1
       `,
@@ -1079,7 +1013,7 @@ export async function getBannerSubmissionById(
     }
 
     for (const [key, val] of Object.entries(vals)) {
-      if (!matchedKeys.has(key) && key !== "templateId" && key !== "franchiseId" && !key.startsWith("_")) {
+      if (!matchedKeys.has(key) && key !== "templateId" && !key.startsWith("_")) {
         submittedFields.push({
           id: key,
           label: key,
@@ -1116,8 +1050,6 @@ export async function getBannerSubmissionById(
       userId: Number(r.user_id),
       userName: r.user_name || "Unknown User",
       userEmail: r.user_email || "",
-      franchiseId: r.franchise_id ? Number(r.franchise_id) : null,
-      franchiseName: r.franchise_name || null,
       status: r.status || "Pending",
       customizationValues: vals,
       submittedFields,

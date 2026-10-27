@@ -19,7 +19,6 @@ type ProductField = {
 
 type PrintingProduct = {
   id: number;
-  franchiseId: number;
   name: string;
   description: string | null;
   widthPx: number;
@@ -81,7 +80,6 @@ export default function PrintingProductDetail({ productId }: { productId: string
     try {
       const result = await bannerTemplateApi.submitBannerCustomization({
         templateId: product.id,
-        franchiseId: product.franchiseId,
         quantity,
         values,
         files,

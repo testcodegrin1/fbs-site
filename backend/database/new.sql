@@ -46,3 +46,27 @@ CREATE TABLE IF NOT EXISTS banner_submission_messages (
 -- 4. Quantity column on banner_customizations (Number of banners requested by user)
 ALTER TABLE banner_customizations ADD COLUMN IF NOT EXISTS quantity INT NOT NULL DEFAULT 1;
 
+-- =============================================================================
+-- 5. MIGRATION: COMPLETELY REMOVE FRANCHISE FUNCTIONALITY
+-- =============================================================================
+-- Instructions: Run the following standard MySQL queries to remove franchise
+-- foreign keys, columns, tables, and permissions from your database.
+
+-- Step 5.1: Drop Foreign Key Constraints referencing franchises (already dropped)
+ALTER TABLE users DROP FOREIGN KEY fk_users_franchise;
+ALTER TABLE banner_templates DROP FOREIGN KEY fk_banner_templates_franchise;
+
+-- Step 5.2: Drop franchise_id columns from tables
+ALTER TABLE users DROP COLUMN franchise_id;
+ALTER TABLE banner_templates DROP COLUMN franchise_id;
+ALTER TABLE banner_customizations DROP COLUMN franchise_id;
+
+-- Step 5.3: Drop the franchises table
+DROP TABLE IF EXISTS franchises;
+
+-- Step 5.4: Clean up franchise-related permissions and role assignments
+DELETE rp FROM role_permissions rp
+JOIN permissions p ON rp.permission_id = p.id
+WHERE p.slug = 'franchises:manage';
+
+DELETE FROM permissions WHERE slug = 'franchises:manage';

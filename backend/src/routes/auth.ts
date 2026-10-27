@@ -9,23 +9,9 @@ import {
   loginWithRole,
   logoutUser,
 } from "../lib/auth.js";
-import {
-  getFranchiseById,
-  listFranchises,
-} from "../lib/franchises.js";
 import { createUser } from "../lib/users.js";
 
 export const authRouter = Router();
-
-authRouter.get("/franchises", async (_req, res) => {
-  try {
-    const franchises = await listFranchises(false);
-    res.json({ franchises });
-  } catch (error) {
-    const { message, status } = getErrorResponse(error);
-    res.status(status).json({ message });
-  }
-});
 
 authRouter.post("/register", async (req, res) => {
   try {
@@ -34,24 +20,11 @@ authRouter.post("/register", async (req, res) => {
     const name = typeof req.body?.name === "string" ? req.body.name.trim() : "";
     const password =
       typeof req.body?.password === "string" ? req.body.password : "";
-    const franchiseId =
-      req.body?.franchiseId != null &&
-      !Number.isNaN(Number(req.body.franchiseId))
-        ? Number(req.body.franchiseId)
-        : undefined;
 
-    if (!email || !name || !password || !franchiseId) {
+    if (!email || !name || !password) {
       res
         .status(400)
-        .json({ message: "Name, email, password, and franchise are required." });
-      return;
-    }
-
-    const franchise = await getFranchiseById(franchiseId);
-    if (!franchise || !franchise.isActive) {
-      res
-        .status(400)
-        .json({ message: "Selected franchise does not exist or is inactive." });
+        .json({ message: "Name, email, and password are required." });
       return;
     }
 
@@ -61,11 +34,10 @@ authRouter.post("/register", async (req, res) => {
       password,
       role: "user",
       isActive: false,
-      franchiseId,
     });
 
     res.status(201).json({
-      user: { ...user, franchiseId, franchiseName: franchise.name },
+      user,
       message: "Your account has been submitted to Super Admin for approval.",
     });
   } catch (error) {
@@ -80,26 +52,17 @@ authRouter.post("/login", async (req, res) => {
     const password =
       typeof req.body?.password === "string" ? req.body.password : "";
     const requestedRole = req.body?.role;
-    const franchiseId =
-      req.body?.franchiseId != null &&
-      !Number.isNaN(Number(req.body.franchiseId))
-        ? Number(req.body.franchiseId)
-        : undefined;
 
     if (requestedRole !== undefined && !isAuthRole(requestedRole)) {
       res.status(400).json({ message: "Unsupported role." });
       return;
     }
 
-    const {
-      user,
-      token,
-      franchiseId: activeFranchiseId,
-    } = await loginWithRole(email, password, requestedRole, franchiseId);
+    const { user, token } = await loginWithRole(email, password, requestedRole);
 
     res.cookie(AUTH_COOKIE_NAME, token, getAuthCookieOptions());
     res.cookie(JWT_COOKIE_NAME, token, getAuthCookieOptions());
-    res.json({ user, token, franchiseId: activeFranchiseId });
+    res.json({ user, token });
   } catch (error) {
     const { message, status } = getErrorResponse(error);
     res.status(status).json({ message });

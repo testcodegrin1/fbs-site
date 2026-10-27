@@ -5,7 +5,6 @@ import { createAuthToken, verifyAuthToken } from "./jwt.js";
 import { initializeAuthDatabase } from "./db.js";
 import { verifyPassword } from "./password.js";
 import { getUserByEmailWithPassword, getUserById } from "./users.js";
-import { getFranchiseById } from "./franchises.js";
 import type { AuthRole, AuthUser, Permission } from "./types.js";
 
 const TOKEN_TTL_SECONDS = 60 * 60 * 8;
@@ -14,8 +13,7 @@ export async function loginWithRole(
   email: string,
   password: string,
   requestedRole?: AuthRole,
-  franchiseId?: number,
-): Promise<{ user: AuthUser; token: string; expiresAt: Date; franchiseId?: number }> {
+): Promise<{ user: AuthUser; token: string; expiresAt: Date }> {
   const user = await getUserByEmailWithPassword(email);
 
   if (!user || !(await verifyPassword(password, user.passwordHash))) {
@@ -36,55 +34,19 @@ export async function loginWithRole(
     throw new AuthError("This account does not have a role assigned.", 403);
   }
 
-  let selectedFranchiseId: number | undefined = franchiseId;
-  let selectedFranchiseName: string | undefined;
-
-  if (activeRole === "user") {
-    const assignedFranchiseId = user.franchiseId ?? undefined;
-    selectedFranchiseId = franchiseId ?? assignedFranchiseId;
-
-    if (!selectedFranchiseId) {
-      throw new AuthError(
-        "No franchise is assigned to this account.",
-        400,
-      );
-    }
-
-    if (assignedFranchiseId !== selectedFranchiseId) {
-      throw new AuthError(
-        "This account is not authorized for the selected franchise.",
-        403,
-      );
-    }
-
-    const franchise = await getFranchiseById(selectedFranchiseId);
-    if (!franchise || !franchise.isActive) {
-      throw new AuthError("Selected franchise does not exist or is inactive.", 400);
-    }
-    selectedFranchiseName = franchise.name;
-  }
-
   const tokenId = randomUUID();
   const expiresAt = new Date(Date.now() + TOKEN_TTL_SECONDS * 1000);
   const token = createAuthToken({
     tid: tokenId,
     sub: user.id,
     roles: user.roles,
-    franchiseId: selectedFranchiseId,
     exp: Math.floor(expiresAt.getTime() / 1000),
   });
 
-  const responseUser: AuthUser = {
-    ...user,
-    franchiseId: selectedFranchiseId,
-    franchiseName: selectedFranchiseName,
-  };
-
   return {
-    user: responseUser,
+    user,
     token,
     expiresAt,
-    franchiseId: selectedFranchiseId,
   };
 }
 
@@ -122,10 +84,6 @@ export async function getUserFromToken(token: string): Promise<AuthUser | null> 
 
     userCache.set(payload.sub, { user, expiresAt: Date.now() + USER_CACHE_TTL_MS });
     user = { ...user };
-  }
-
-  if (payload.franchiseId) {
-    user.franchiseId = payload.franchiseId;
   }
 
   return user;

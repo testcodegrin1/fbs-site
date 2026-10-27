@@ -32,7 +32,7 @@ export const bannerTemplatesRouter = Router();
 // Return display information only, without customization fields or account data.
 bannerTemplatesRouter.get("/printing-products", async (_req, res) => {
   try {
-    const templates = await listBannerTemplates(undefined, false);
+    const templates = await listBannerTemplates(false);
     res.setHeader("Cache-Control", "no-store");
     res.json({
       products: templates.map(template => ({
@@ -73,7 +73,6 @@ bannerTemplatesRouter.get("/printing-products/:id", async (req, res) => {
     res.json({
       product: {
         id: template.id,
-        franchiseId: template.franchiseId,
         name: template.name,
         description: template.description,
         widthPx: template.widthPx,
@@ -145,14 +144,11 @@ bannerTemplatesRouter.post(
   },
 );
 
-// GET /api/getBannerTemplates - List templates (filter by franchiseId)
+// GET /api/getBannerTemplates - List templates
 bannerTemplatesRouter.get("/getBannerTemplates", async (req, res) => {
   try {
-    const franchiseId = req.query.franchiseId
-      ? Number(req.query.franchiseId)
-      : undefined;
     const includeInactive = req.query.includeInactive === "true";
-    const templates = await listBannerTemplates(franchiseId, includeInactive);
+    const templates = await listBannerTemplates(includeInactive);
     res.json({ templates });
   } catch (error) {
     const { message, status } = getErrorResponse(error);
@@ -187,24 +183,7 @@ bannerTemplatesRouter.post(
   requireAuth(),
   async (req, res) => {
     try {
-      const user = await requirePermission(req, "banner_templates:manage");
-      const franchiseId = Number(req.body.franchise_id ?? req.body.franchiseId);
-      if (!franchiseId || isNaN(franchiseId)) {
-        res.status(400).json({ message: "Franchise ID is required." });
-        return;
-      }
-
-      if (
-        !user.roles.includes("super_admin") &&
-        user.franchiseId &&
-        user.franchiseId !== franchiseId
-      ) {
-        res.status(403).json({
-          message:
-            "You do not have permission to create templates for this franchise.",
-        });
-        return;
-      }
+      await requirePermission(req, "banner_templates:manage");
 
       const files = Array.isArray(req.files) ? req.files : [];
       if (files.length > 0) {
@@ -268,23 +247,6 @@ bannerTemplatesRouter.put(
         return;
       }
 
-      const franchiseId = Number(
-        req.body.franchise_id ?? req.body.franchiseId ?? existing.franchiseId,
-      );
-
-      if (!user.roles.includes("super_admin") && user.franchiseId) {
-        if (
-          user.franchiseId !== existing.franchiseId ||
-          user.franchiseId !== franchiseId
-        ) {
-          res.status(403).json({
-            message:
-              "You do not have permission to modify templates for this franchise.",
-          });
-          return;
-        }
-      }
-
       const files = Array.isArray(req.files) ? req.files : [];
       if (files.length > 0) {
         let existingImages = req.body.images;
@@ -316,7 +278,7 @@ bannerTemplatesRouter.put(
         }
       }
 
-      await saveBannerTemplate({ ...req.body, id, franchiseId });
+      await saveBannerTemplate({ ...req.body, id });
       res.json({
         message: "Banner template updated successfully",
       });
@@ -333,7 +295,7 @@ bannerTemplatesRouter.delete(
   requireAuth(),
   async (req, res) => {
     try {
-      const user = await requirePermission(req, "banner_templates:manage");
+      await requirePermission(req, "banner_templates:manage");
       const id = Number(req.params.id);
       if (!id || isNaN(id)) {
         res.status(400).json({ message: "Valid template ID is required." });
@@ -343,17 +305,6 @@ bannerTemplatesRouter.delete(
       const existing = await getBannerTemplateById(id);
       if (!existing) {
         res.status(404).json({ message: "Banner template not found." });
-        return;
-      }
-
-      if (
-        !user.roles.includes("super_admin") &&
-        user.franchiseId &&
-        user.franchiseId !== existing.franchiseId
-      ) {
-        res.status(403).json({
-          message: "You do not have permission to delete this template.",
-        });
         return;
       }
 
@@ -390,14 +341,14 @@ bannerTemplatesRouter.post(
     try {
       await requirePermission(req, "banner_templates:manage");
       const templateId = Number(req.params.id);
-      const { franchiseId, images } = req.body;
-      if (!franchiseId || !Array.isArray(images)) {
+      const { images } = req.body;
+      if (!Array.isArray(images)) {
         res
           .status(400)
-          .json({ message: "franchiseId and images array are required." });
+          .json({ message: "images array is required." });
         return;
       }
-      await saveBannerTemplateImages(templateId, franchiseId, images);
+      await saveBannerTemplateImages(templateId, images);
       res.json({ message: "Banner images saved successfully" });
     } catch (error) {
       const { message, status } = getErrorResponse(error);
@@ -473,8 +424,6 @@ bannerTemplatesRouter.post(
         const {
           templateId: _t,
           template_id: _t2,
-          franchiseId: _f,
-          franchise_id: _f2,
           ...rest
         } = req.body;
         values = rest;
@@ -486,9 +435,6 @@ bannerTemplatesRouter.post(
         values[file.fieldname] = `/uploads/banners/${file.filename}`;
       }
 
-      const franchiseId = Number(
-        req.body.franchiseId ?? req.body.franchise_id ?? user.franchiseId,
-      );
       const quantity = Math.max(
         1,
         Number(
@@ -507,7 +453,6 @@ bannerTemplatesRouter.post(
         templateId,
         user.id,
         values,
-        franchiseId || undefined,
       );
 
       res.json({
@@ -580,8 +525,6 @@ bannerTemplatesRouter.post(
         const {
           templateId: _t,
           template_id: _t2,
-          franchiseId: _f,
-          franchise_id: _f2,
           ...rest
         } = req.body;
         values = rest;
@@ -592,9 +535,6 @@ bannerTemplatesRouter.post(
         values[file.fieldname] = `/uploads/banners/${file.filename}`;
       }
 
-      const franchiseId = Number(
-        req.body.franchiseId ?? req.body.franchise_id ?? user.franchiseId,
-      );
       const quantity = Math.max(
         1,
         Number(
@@ -613,7 +553,6 @@ bannerTemplatesRouter.post(
         templateId,
         user.id,
         values,
-        franchiseId || undefined,
         true,
       );
 
@@ -629,7 +568,7 @@ bannerTemplatesRouter.post(
   },
 );
 
-// GET /api/bannerSubmissions - List submissions for Super Admin & Franchise Managers
+// GET /api/bannerSubmissions - List submissions for Super Admin & Staff
 bannerTemplatesRouter.get(
   "/bannerSubmissions",
   requireAuth(),
@@ -641,22 +580,12 @@ bannerTemplatesRouter.get(
         return;
       }
 
-      const isSuperAdmin = user.roles?.includes("super_admin");
-      let franchiseId: number | undefined = undefined;
-
-      if (!isSuperAdmin && user.franchiseId) {
-        franchiseId = user.franchiseId;
-      } else if (req.query.franchiseId) {
-        franchiseId = Number(req.query.franchiseId);
-      }
-
       const search = req.query.search ? String(req.query.search) : undefined;
       const status = req.query.status ? String(req.query.status) : undefined;
 
       const submissions = await listBannerSubmissions({
         search,
         status,
-        franchiseId,
       });
 
       res.json({ submissions, total: submissions.length });
@@ -722,11 +651,7 @@ bannerTemplatesRouter.get(
 
       // Check authorization if not super_admin
       const isSuperAdmin = user.roles?.includes("super_admin");
-      if (
-        !isSuperAdmin &&
-        submission.userId !== user.id &&
-        (!user.franchiseId || user.franchiseId !== submission.franchiseId)
-      ) {
+      if (!isSuperAdmin && submission.userId !== user.id) {
         res.status(403).json({
           message: "You do not have permission to view this submission.",
         });

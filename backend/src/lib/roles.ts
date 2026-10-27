@@ -28,7 +28,6 @@ export const ROLE_PERMISSIONS: Record<AuthRole, Permission[]> = {
     "roles:update",
     "designer:dashboard",
     "user:dashboard",
-    "franchises:manage",
     "vendors:manage",
     "banner_templates:manage",
   ],

@@ -14,7 +14,6 @@ import {
   resolveImageUrl,
   getCandidateImageUrls,
   type BannerTemplateModel,
-  type FranchiseOption,
   type CreateBannerTemplatePayload,
   type BannerTemplateField,
   type BannerFieldType,
@@ -41,7 +40,6 @@ import {
   AlertCircle,
   CheckCircle2,
   Loader2,
-  Building2,
   ArrowUp,
   ArrowDown,
   ExternalLink,
@@ -62,7 +60,6 @@ interface FormImageItem {
 
 interface TemplateFormData {
   name: string;
-  franchise_id: number | "";
   description: string;
   orientation: "landscape" | "portrait";
   width_px: number;
@@ -74,7 +71,6 @@ interface TemplateFormData {
 
 const defaultFormData: TemplateFormData = {
   name: "",
-  franchise_id: "",
   description: "",
   orientation: "landscape",
   width_px: 1920,
@@ -276,10 +272,7 @@ function ImagePreviewWithFallback({
 
 export function BannerTemplateManagement() {
   const [templates, setTemplates] = useState<BannerTemplateModel[]>([]);
-  const [franchises, setFranchises] = useState<FranchiseOption[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedFranchiseFilter, setSelectedFranchiseFilter] =
-    useState<string>("all");
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -341,8 +334,8 @@ export function BannerTemplateManagement() {
     };
   }, [masterImagePreview, previewImagePreview]);
 
-  // Load templates & franchises from backend
-  async function loadData(silent = false, franchiseFilter?: string) {
+  // Load templates from backend
+  async function loadData(silent = false) {
     if (!silent) {
       setIsLoading(true);
     } else {
@@ -350,25 +343,9 @@ export function BannerTemplateManagement() {
     }
     setLoadError(null);
 
-    const activeFilter =
-      franchiseFilter !== undefined ? franchiseFilter : selectedFranchiseFilter;
-    const fId =
-      activeFilter && activeFilter !== "all" ? Number(activeFilter) : undefined;
-
     try {
-      const [tData, fData] = await Promise.all([
-        bannerTemplateApi.getBannerTemplates(fId, true),
-        franchises.length === 0 || !silent
-          ? bannerTemplateApi.getFranchises().catch((err) => {
-              console.warn("Could not load franchises:", err);
-              return [] as FranchiseOption[];
-            })
-          : Promise.resolve(franchises),
-      ]);
+      const tData = await bannerTemplateApi.getBannerTemplates(true);
       setTemplates(tData);
-      if (fData && fData.length > 0) {
-        setFranchises(fData);
-      }
     } catch (err: any) {
       console.error("Failed to load banner templates:", err);
       setLoadError(
@@ -382,19 +359,16 @@ export function BannerTemplateManagement() {
   }
 
   useEffect(() => {
-    loadData(false, selectedFranchiseFilter);
-  }, [selectedFranchiseFilter]);
+    loadData(false);
+  }, []);
 
-  // Filtered templates (Franchise filtering is handled directly by backend)
+  // Filtered templates
   const filteredTemplates = useMemo(() => {
     return templates.filter((item) => {
       const query = searchQuery.trim().toLowerCase();
       if (!query) return true;
 
       const matchesName = item.name.toLowerCase().includes(query);
-      const matchesFranchise = Boolean(
-        item.franchiseName && item.franchiseName.toLowerCase().includes(query),
-      );
       const matchesDimensions =
         `${item.widthPx}x${item.heightPx}`.includes(query) ||
         `${item.widthPx} x ${item.heightPx}`.includes(query) ||
@@ -403,14 +377,12 @@ export function BannerTemplateManagement() {
           item.dimensionsLabel.toLowerCase().includes(query),
         );
 
-      return matchesName || matchesFranchise || matchesDimensions;
+      return matchesName || matchesDimensions;
     });
   }, [templates, searchQuery]);
 
   // Open Create Modal
   function handleOpenCreateModal() {
-    const firstFranchiseId = franchises.length > 0 ? franchises[0].id : "";
-
     setMasterImageFile(null);
     setMasterImagePreview(null);
     setPreviewImageFile(null);
@@ -418,7 +390,6 @@ export function BannerTemplateManagement() {
 
     setFormData({
       ...defaultFormData,
-      franchise_id: firstFranchiseId,
       images: [],
       fields: [],
     });
@@ -433,7 +404,6 @@ export function BannerTemplateManagement() {
 
     setFormData({
       name: template.name,
-      franchise_id: template.franchiseId,
       description: template.description || "",
       orientation: template.orientation || "landscape",
       width_px: template.widthPx || 1920,
@@ -683,10 +653,6 @@ export function BannerTemplateManagement() {
       errors.name = "Template name is required.";
     }
 
-    if (!formData.franchise_id) {
-      errors.franchise_id = "Please select a franchise.";
-    }
-
     if (!formData.width_px || Number(formData.width_px) <= 0) {
       errors.width_px = "Width must be a positive number.";
     }
@@ -745,8 +711,6 @@ export function BannerTemplateManagement() {
       // 2. Submit template payload with actual uploaded image URLs
       const payload: CreateBannerTemplatePayload = {
         name: formData.name.trim(),
-        franchise_id: Number(formData.franchise_id),
-        franchiseId: Number(formData.franchise_id),
         description: formData.description.trim(),
         orientation: formData.orientation,
         width_px: Number(formData.width_px),
@@ -813,8 +777,6 @@ export function BannerTemplateManagement() {
       // 2. Submit update payload with actual uploaded image URLs
       const payload: Partial<CreateBannerTemplatePayload> = {
         name: formData.name.trim(),
-        franchise_id: Number(formData.franchise_id),
-        franchiseId: Number(formData.franchise_id),
         description: formData.description.trim(),
         orientation: formData.orientation,
         width_px: Number(formData.width_px),
@@ -1558,7 +1520,7 @@ export function BannerTemplateManagement() {
             />
             <Input
               type="text"
-              placeholder="Search by template name, franchise, or dimensions..."
+              placeholder="Search by template name or dimensions..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 pr-9 h-10 bg-slate-50/50 border-slate-200 text-sm focus:bg-white"
@@ -1571,22 +1533,6 @@ export function BannerTemplateManagement() {
                 <X size={14} />
               </button>
             )}
-          </div>
-
-          {/* Franchise filter dropdown */}
-          <div className="w-full md:w-64 flex-shrink-0">
-            <select
-              value={selectedFranchiseFilter}
-              onChange={(e) => setSelectedFranchiseFilter(e.target.value)}
-              className="w-full h-10 px-3 bg-slate-50/50 border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900 transition"
-            >
-              <option value="all">All Franchises ({franchises.length})</option>
-              {franchises.map((f) => (
-                <option key={f.id} value={String(f.id)}>
-                  {f.name}
-                </option>
-              ))}
-            </select>
           </div>
 
           {/* Active templates count badge */}
@@ -1639,23 +1585,22 @@ export function BannerTemplateManagement() {
           </div>
           <div>
             <h3 className="text-base font-bold text-slate-900">
-              {searchQuery || selectedFranchiseFilter !== "all"
+              {searchQuery
                 ? "No Matching Banner Templates"
                 : "No Banner Templates Yet"}
             </h3>
             <p className="text-xs text-slate-500 mt-1 max-w-sm">
-              {searchQuery || selectedFranchiseFilter !== "all"
-                ? "Try adjusting your search query or franchise filter."
+              {searchQuery
+                ? "Try adjusting your search query."
                 : "Get started by adding your first system-wide banner blueprint template."}
             </p>
           </div>
-          {searchQuery || selectedFranchiseFilter !== "all" ? (
+          {searchQuery ? (
             <Button
               variant="outline"
               size="sm"
               onClick={() => {
                 setSearchQuery("");
-                setSelectedFranchiseFilter("all");
               }}
               className="text-xs font-semibold"
             >
@@ -1680,7 +1625,6 @@ export function BannerTemplateManagement() {
                 <tr>
                   <th className="px-5 py-3.5">Preview</th>
                   <th className="px-5 py-3.5">Template Name</th>
-                  <th className="px-5 py-3.5">Franchise</th>
                   <th className="px-5 py-3.5">Dimensions</th>
                   <th className="px-5 py-3.5">Images</th>
                   <th className="px-5 py-3.5">Status</th>
@@ -1737,20 +1681,6 @@ export function BannerTemplateManagement() {
                               No description
                             </p>
                           )}
-                        </div>
-                      </td>
-
-                      {/* Franchise Name */}
-                      <td className="px-5 py-3.5 whitespace-nowrap">
-                        <div className="flex items-center gap-1.5">
-                          <Building2
-                            size={13}
-                            className="text-slate-400 flex-shrink-0"
-                          />
-                          <span className="text-xs font-semibold text-slate-700">
-                            {template.franchiseName ||
-                              `Franchise #${template.franchiseId}`}
-                          </span>
                         </div>
                       </td>
 
@@ -1880,67 +1810,30 @@ export function BannerTemplateManagement() {
                 </div>
               )}
 
-              {/* Row 1: Name & Franchise */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label
-                    htmlFor="create-tpl-name"
-                    className="text-xs font-bold text-slate-800"
-                  >
-                    Template Name <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="create-tpl-name"
-                    type="text"
-                    required
-                    placeholder="e.g. Diwali Mega Sale Banner 2026"
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    className="h-10 text-sm"
-                  />
-                  {formErrors.name && (
-                    <p className="text-[13px] text-red-500 font-medium">
-                      {formErrors.name}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label
-                    htmlFor="create-tpl-franchise"
-                    className="text-xs font-bold text-slate-800"
-                  >
-                    Franchise <span className="text-red-500">*</span>
-                  </Label>
-                  <select
-                    id="create-tpl-franchise"
-                    required
-                    value={formData.franchise_id}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        franchise_id: e.target.value
-                          ? Number(e.target.value)
-                          : "",
-                      })
-                    }
-                    className="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-900"
-                  >
-                    <option value="">Select a franchise...</option>
-                    {franchises.map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {f.name}
-                      </option>
-                    ))}
-                  </select>
-                  {formErrors.franchise_id && (
-                    <p className="text-[13px] text-red-500 font-medium">
-                      {formErrors.franchise_id}
-                    </p>
-                  )}
-                </div>
+              {/* Row 1: Name */}
+              <div className="space-y-1.5">
+                <Label
+                  htmlFor="create-tpl-name"
+                  className="text-xs font-bold text-slate-800"
+                >
+                  Template Name <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="create-tpl-name"
+                  type="text"
+                  required
+                  placeholder="e.g. Diwali Mega Sale Banner 2026"
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="h-10 text-sm"
+                />
+                {formErrors.name && (
+                  <p className="text-[13px] text-red-500 font-medium">
+                    {formErrors.name}
+                  </p>
+                )}
               </div>
 
               {/* Row 2: Description */}
@@ -2133,54 +2026,24 @@ export function BannerTemplateManagement() {
                 </div>
               )}
 
-              {/* Name & Franchise */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label
-                    htmlFor="edit-tpl-name"
-                    className="text-xs font-bold text-slate-800"
-                  >
-                    Template Name
-                  </Label>
-                  <Input
-                    id="edit-tpl-name"
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) =>
-                      setFormData({ ...formData, name: e.target.value })
-                    }
-                    className="h-10 text-sm"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label
-                    htmlFor="edit-tpl-franchise"
-                    className="text-xs font-bold text-slate-800"
-                  >
-                    Franchise
-                  </Label>
-                  <select
-                    id="edit-tpl-franchise"
-                    value={formData.franchise_id}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        franchise_id: e.target.value
-                          ? Number(e.target.value)
-                          : "",
-                      })
-                    }
-                    className="w-full h-10 px-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700"
-                  >
-                    {franchises.map((f) => (
-                      <option key={f.id} value={f.id}>
-                        {f.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              {/* Name */}
+              <div className="space-y-1.5">
+                <Label
+                  htmlFor="edit-tpl-name"
+                  className="text-xs font-bold text-slate-800"
+                >
+                  Template Name
+                </Label>
+                <Input
+                  id="edit-tpl-name"
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
+                  className="h-10 text-sm"
+                />
               </div>
 
               {/* Description */}
@@ -2342,9 +2205,7 @@ export function BannerTemplateManagement() {
                     {viewingTemplate.name}
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Template #{viewingTemplate.id} •{" "}
-                    {viewingTemplate.franchiseName ||
-                      `Franchise #${viewingTemplate.franchiseId}`}
+                    Template #{viewingTemplate.id}
                   </p>
                 </div>
               </div>

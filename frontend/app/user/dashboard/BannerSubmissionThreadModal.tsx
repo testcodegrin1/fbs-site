@@ -1231,17 +1231,6 @@ export function BannerSubmissionThreadModal({
                 {submission.userName || currentUserName || "Client User"}
               </strong>
             </span>
-            {submission.franchiseName && (
-              <>
-                <span className="text-slate-300">·</span>
-                <span>
-                  Franchise:{" "}
-                  <strong className="text-slate-800 font-semibold">
-                    {submission.franchiseName}
-                  </strong>
-                </span>
-              </>
-            )}
             {submission.dimensionsLabel && (
               <>
                 <span className="text-slate-300">·</span>

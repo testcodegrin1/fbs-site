@@ -52,8 +52,6 @@ export interface BannerTemplateField {
 
 export interface BannerTemplateModel {
   id: number;
-  franchiseId: number;
-  franchiseName?: string;
   name: string;
   description?: string;
   widthPx: number;
@@ -69,8 +67,6 @@ export interface BannerTemplateModel {
 
 export interface CreateBannerTemplatePayload {
   name: string;
-  franchise_id: number;
-  franchiseId?: number;
   description: string;
   orientation: "landscape" | "portrait";
   width_px: number;
@@ -87,12 +83,6 @@ export interface CreateBannerTemplatePayload {
     sortOrder: number;
   }>;
   fields?: BannerTemplateField[];
-}
-
-export interface FranchiseOption {
-  id: number;
-  name: string;
-  brandingLogoUrl?: string | null;
 }
 
 /**
@@ -167,7 +157,6 @@ function normalizeTemplate(raw: any): BannerTemplateModel {
   if (!raw || typeof raw !== "object") {
     return {
       id: 0,
-      franchiseId: 0,
       name: "",
       widthPx: 1080,
       heightPx: 1080,
@@ -244,8 +233,6 @@ function normalizeTemplate(raw: any): BannerTemplateModel {
 
   return {
     id: Number(raw.id),
-    franchiseId: Number(raw.franchiseId ?? raw.franchise_id ?? 0),
-    franchiseName: raw.franchiseName || raw.franchise_name || undefined,
     name: String(raw.name ?? ""),
     description: raw.description ?? "",
     widthPx: Number(raw.widthPx ?? raw.width_px ?? 1080),
@@ -393,16 +380,12 @@ export const bannerTemplateApi = {
 
   /**
    * 1. GET /api/getBannerTemplates
-   * Fetches all banner templates or filtered by franchiseId
+   * Fetches all banner templates
    */
   async getBannerTemplates(
-    franchiseId?: number,
     includeInactive = true,
   ): Promise<BannerTemplateModel[]> {
     const params = new URLSearchParams();
-    if (franchiseId !== undefined && franchiseId !== null && !isNaN(Number(franchiseId))) {
-      params.append("franchiseId", String(franchiseId));
-    }
     if (includeInactive) {
       params.append("includeInactive", "true");
     }
@@ -441,32 +424,7 @@ export const bannerTemplateApi = {
   },
 
   /**
-   * 3. GET /api/getFranchises
-   * Populates franchise dropdown with actual database franchises
-   */
-  async getFranchises(): Promise<FranchiseOption[]> {
-    const data = await request<any>("/api/getFranchises", {
-      method: "GET",
-    });
-
-    const list = Array.isArray(data)
-      ? data
-      : Array.isArray(data?.franchises)
-        ? data.franchises
-        : Array.isArray(data?.data)
-          ? data.data
-          : [];
-
-    return list.map((f: any) => ({
-      id: Number(f.id),
-      name: String(f.name ?? ""),
-      slug: String(f.slug ?? ""),
-      brandingLogoUrl: f.brandingLogoUrl || f.branding_logo_url || null,
-    }));
-  },
-
-  /**
-   * 4. POST /api/createBannerTemplate
+   * 3. POST /api/createBannerTemplate
    * Submits JSON payload to create a new banner template
    */
   async createBannerTemplate(
@@ -474,8 +432,6 @@ export const bannerTemplateApi = {
   ): Promise<BannerTemplateModel> {
     const body = {
       name: payload.name,
-      franchise_id: payload.franchise_id,
-      franchiseId: payload.franchise_id,
       description: payload.description,
       orientation: payload.orientation,
       width_px: payload.width_px,
@@ -579,7 +535,7 @@ export const bannerTemplateApi = {
   },
 
   /**
-   * 8. POST /api/saveBannerCustomization
+   * 7. POST /api/saveBannerCustomization
    */
   async saveBannerCustomization(
     templateIdOrOptions:
@@ -588,36 +544,28 @@ export const bannerTemplateApi = {
           templateId: number;
           values: Record<string, any>;
           files?: Record<string, File>;
-          franchiseId?: number;
         },
     values?: Record<string, any>,
     files?: Record<string, File>,
-    franchiseId?: number,
   ): Promise<any> {
     let tId: number;
     let vals: Record<string, any>;
     let fls: Record<string, File> | undefined;
-    let fId: number | undefined;
     let qty: number | undefined;
 
     if (typeof templateIdOrOptions === "object" && templateIdOrOptions !== null) {
       tId = templateIdOrOptions.templateId;
       vals = templateIdOrOptions.values;
       fls = templateIdOrOptions.files;
-      fId = templateIdOrOptions.franchiseId;
       qty = (templateIdOrOptions as any).quantity;
     } else {
       tId = templateIdOrOptions;
       vals = values || {};
       fls = files;
-      fId = franchiseId;
     }
 
     const formData = new FormData();
     formData.append("templateId", String(tId));
-    if (fId) {
-      formData.append("franchiseId", String(fId));
-    }
     if (qty) {
       formData.append("quantity", String(qty));
     }
@@ -639,7 +587,7 @@ export const bannerTemplateApi = {
   },
 
   /**
-   * 9. GET /api/getBannerCustomization/:id
+   * 8. GET /api/getBannerCustomization/:id
    */
   async getBannerCustomization(templateId: number): Promise<any> {
     const data = await request<any>(`/api/getBannerCustomization/${templateId}`, {
@@ -649,20 +597,16 @@ export const bannerTemplateApi = {
   },
 
   /**
-   * 10. POST /api/submitBannerCustomization
+   * 9. POST /api/submitBannerCustomization
    */
   async submitBannerCustomization(options: {
     templateId: number;
     values: Record<string, any>;
     files?: Record<string, File>;
-    franchiseId?: number;
     quantity?: number;
   }): Promise<{ message: string; submissionId?: number; submission: any }> {
     const formData = new FormData();
     formData.append("templateId", String(options.templateId));
-    if (options.franchiseId) {
-      formData.append("franchiseId", String(options.franchiseId));
-    }
     if (options.quantity) {
       formData.append("quantity", String(options.quantity));
     }
@@ -684,17 +628,15 @@ export const bannerTemplateApi = {
   },
 
   /**
-   * 11. GET /api/bannerSubmissions
+   * 10. GET /api/bannerSubmissions
    */
   async getBannerSubmissions(params?: {
     search?: string;
     status?: string;
-    franchiseId?: number;
   }): Promise<{ submissions: BannerSubmissionListItem[]; total: number }> {
     const queryParts: string[] = [];
     if (params?.search) queryParts.push(`search=${encodeURIComponent(params.search)}`);
     if (params?.status && params.status !== "all") queryParts.push(`status=${encodeURIComponent(params.status)}`);
-    if (params?.franchiseId) queryParts.push(`franchiseId=${encodeURIComponent(params.franchiseId)}`);
 
     const qs = queryParts.length > 0 ? `?${queryParts.join("&")}` : "";
     const data = await request<any>(`/api/bannerSubmissions${qs}`, {
@@ -869,8 +811,6 @@ export interface BannerSubmissionListItem {
   userId: number;
   userName: string;
   userEmail: string;
-  franchiseId?: number | null;
-  franchiseName?: string | null;
   status: BannerSubmissionStatus | string;
   customizationValues: Record<string, any>;
   createdAt: string;
@@ -890,8 +830,6 @@ export interface BannerSubmissionDetail {
   userId: number;
   userName: string;
   userEmail: string;
-  franchiseId?: number | null;
-  franchiseName?: string | null;
   status: BannerSubmissionStatus | string;
   customizationValues: Record<string, any>;
   submittedFields: Array<{

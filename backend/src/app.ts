@@ -5,7 +5,6 @@ import path from "path";
 import { authRouter } from "./routes/auth.js";
 import { rolesRouter } from "./routes/roles.js";
 import { usersRouter } from "./routes/users.js";
-import { franchisesRouter } from "./routes/franchises.js";
 import { bannerTemplatesRouter } from "./routes/banner-templates.js";
 import { canvasRouter } from "./routes/canvas-api.js";
 import { UPLOADS_DIR, ensureUploadDirs } from "./lib/canvas/watermark.js";
@@ -58,7 +57,6 @@ export function createApp() {
   app.use("/api/auth", authRouter);
   app.use("/api/users", usersRouter);
   app.use("/api/roles", rolesRouter);
-  app.use("/api", franchisesRouter);
   app.use("/api", bannerTemplatesRouter);
   app.use("/api", canvasRouter);
 

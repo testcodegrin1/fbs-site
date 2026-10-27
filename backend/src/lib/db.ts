@@ -107,11 +107,6 @@ export async function ensureCanvasCollageSchema(): Promise<void> {
   // Schema changes are managed through SQL migration files, not at runtime.
 }
 
-export function ensureFranchiseSchema(): Promise<void> {
-  // Schema changes are managed through SQL migration files, not at runtime.
-  return Promise.resolve();
-}
-
 export async function initializeAuthDatabase(): Promise<void> {
   getAuthDatabase();
 }
