@@ -28,6 +28,15 @@ import {
 
 export const productTemplatesRouter = Router();
 
+function slugify(text: string): string {
+  return (text || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 // Public catalog uses active product templates managed in the admin panel.
 productTemplatesRouter.get("/printing-products", async (_req, res) => {
   try {
@@ -37,6 +46,7 @@ productTemplatesRouter.get("/printing-products", async (_req, res) => {
       products: templates.map((template) => ({
         id: template.id,
         name: template.name,
+        slug: slugify(template.name) || String(template.id),
         description: template.description,
         widthPx: template.widthPx,
         heightPx: template.heightPx,
@@ -52,16 +62,33 @@ productTemplatesRouter.get("/printing-products", async (_req, res) => {
   }
 });
 
-// Public product detail
+// Public product detail (by ID or slug)
 productTemplatesRouter.get("/printing-products/:id", async (req, res) => {
   try {
-    const id = Number(req.params.id);
-    if (!Number.isSafeInteger(id) || id <= 0) {
-      res.status(400).json({ message: "Valid product ID is required." });
+    const rawParam = String(req.params.id || "").trim();
+    if (!rawParam) {
+      res.status(400).json({ message: "Valid product ID or slug is required." });
       return;
     }
 
-    const template = await getProductTemplateById(id);
+    let template: any = null;
+    const numId = Number(rawParam);
+    if (Number.isSafeInteger(numId) && numId > 0) {
+      template = await getProductTemplateById(numId);
+    }
+
+    if (!template || !template.isActive) {
+      const allTemplates = await listProductTemplates(false);
+      const targetSlug = slugify(rawParam);
+      template =
+        allTemplates.find(
+          (t) =>
+            t.isActive &&
+            (slugify(t.name) === targetSlug ||
+              t.name.toLowerCase().trim() === rawParam.toLowerCase().trim()),
+        ) || null;
+    }
+
     if (!template || !template.isActive) {
       res.status(404).json({ message: "Printing product not found." });
       return;
@@ -72,14 +99,15 @@ productTemplatesRouter.get("/printing-products/:id", async (req, res) => {
       product: {
         id: template.id,
         name: template.name,
+        slug: slugify(template.name) || String(template.id),
         description: template.description,
         widthPx: template.widthPx,
         heightPx: template.heightPx,
         orientation: template.orientation,
         images: (template.images || [])
-          .filter((image) => image.isActive !== false)
-          .map((image) => ({ id: image.id, imageUrl: image.imageUrl })),
-        fields: (template.fields || []).map((field) => ({
+          .filter((image: any) => image.isActive !== false)
+          .map((image: any) => ({ id: image.id, imageUrl: image.imageUrl })),
+        fields: (template.fields || []).map((field: any) => ({
           id: field.id,
           label: field.label,
           fieldType: field.fieldType,

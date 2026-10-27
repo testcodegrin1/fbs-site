@@ -9,6 +9,7 @@ import { FileImage, Search } from "lucide-react";
 type PrintingProduct = {
   id: number;
   name: string;
+  slug?: string;
   description: string | null;
   widthPx: number;
   heightPx: number;
@@ -16,15 +17,25 @@ type PrintingProduct = {
   images: { id: number; imageUrl: string }[];
 };
 
+function slugify(text: string): string {
+  return (text || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 function ProductCard({ product }: { product: PrintingProduct }) {
   const [failed, setFailed] = useState(false);
   const image = product.images?.[0];
   const rawUrl = image?.imageUrl || "";
   const imageUrl = rawUrl ? resolveImageUrl(rawUrl) : "";
+  const productSlug = product.slug || slugify(product.name) || String(product.id);
 
   return (
     <Link
-      href={`/printing-products/${product.id}`}
+      href={`/printing-products/${productSlug}`}
       aria-label={`View ${product.name} details`}
       className="group flex flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     >

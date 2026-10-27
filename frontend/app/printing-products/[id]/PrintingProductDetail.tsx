@@ -20,6 +20,7 @@ type ProductField = {
 type PrintingProduct = {
   id: number;
   name: string;
+  slug?: string;
   description: string | null;
   widthPx: number;
   heightPx: number;
@@ -27,6 +28,15 @@ type PrintingProduct = {
   images: { id: number; imageUrl: string }[];
   fields: ProductField[];
 };
+
+function slugify(text: string): string {
+  return (text || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
 function imageUrl(path: string) {
   return /^https?:\/\//i.test(path)
@@ -96,7 +106,8 @@ export default function PrintingProductDetail({ productId }: { productId: string
   const [error, setError] = useState("");
   const [submissionId, setSubmissionId] = useState<number | null>(null);
   const signedIn = Boolean(getStoredToken("user"));
-  const returnTo = `/printing-products/${productId}`;
+  const productSlug = product?.slug || (product ? slugify(product.name) : productId);
+  const returnTo = `/printing-products/${productSlug}`;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -113,7 +124,17 @@ export default function PrintingProductDetail({ productId }: { productId: string
         if (!response.ok) {
           throw new Error(data.message || "Unable to load this printing product.");
         }
-        if (!controller.signal.aborted) setProduct(data.product);
+        if (!controller.signal.aborted) {
+          setProduct(data.product);
+          // If URL was accessed with numeric ID or unformatted slug, update browser URL to the title slug
+          const targetSlug = data.product?.slug || (data.product?.name ? slugify(data.product.name) : "");
+          if (targetSlug && typeof window !== "undefined") {
+            const currentPath = window.location.pathname;
+            if (currentPath.endsWith(`/${productId}`) && productId !== targetSlug) {
+              window.history.replaceState(null, "", `/printing-products/${targetSlug}`);
+            }
+          }
+        }
       } catch (loadError) {
         if (!controller.signal.aborted) {
           setError(
