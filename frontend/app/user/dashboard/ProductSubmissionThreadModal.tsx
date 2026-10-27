@@ -415,7 +415,8 @@ export function ProductSubmissionThreadModal({
           )}
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-extrabold text-lg sm:text-xl text-slate-900 tracking-tight truncate">
-              {submission?.templateName || `Product Submission #${submissionId}`}
+              {submission?.templateName ||
+                `Product Submission #${submissionId}`}
             </h3>
             {submission && getStatusBadge(submission.status)}
           </div>
@@ -516,7 +517,9 @@ export function ProductSubmissionThreadModal({
                       const tileImgUrl = resolveImageUrl(file.fileUrl);
                       const isUpdating = replacingFileId === file.id;
                       const tileMessages = messages.filter(
-                        (m) => m.imageId === file.id,
+                        (m) =>
+                          m.imageId === file.id ||
+                          (!m.imageId && (files.length <= 1 || idx === 0)),
                       );
                       const draft = tileReplies[file.id] || "";
                       const isSubmittingReply = sendingReplyKey === file.id;
@@ -805,16 +808,20 @@ export function ProductSubmissionThreadModal({
                           </span>
                         </div>
 
-                        <div className="space-y-2.5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {submission.submittedFields.map((f, fIdx) => (
                             <div
                               key={f.id || fIdx}
-                              className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs space-y-1"
+                              className={`p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs space-y-1 ${
+                                f.fieldType === "textarea"
+                                  ? "sm:col-span-2"
+                                  : "col-span-1"
+                              }`}
                             >
                               <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block">
                                 {f.label}
                               </label>
-                              <p className="font-semibold text-slate-800 break-words text-xs sm:text-sm">
+                              <p className="font-semibold text-slate-800 break-words text-xs">
                                 {String(f.value ?? "-")}
                               </p>
                             </div>
@@ -1498,20 +1505,27 @@ export function ProductSubmissionThreadModal({
                     </span>
                   </div>
 
-                  <div className="space-y-2 text-xs">
-                    {fieldKeys.map((k) => (
-                      <div
-                        key={k}
-                        className="p-2.5 rounded-xl bg-slate-50 border border-slate-100"
-                      >
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">
-                          {k}
-                        </span>
-                        <span className="font-semibold text-slate-800 mt-0.5 block break-words">
-                          {String(customVals[k])}
-                        </span>
-                      </div>
-                    ))}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    {fieldKeys.map((k) => {
+                      const valStr = String(customVals[k] ?? "");
+                      const isLong =
+                        valStr.length > 50 || valStr.includes("\n");
+                      return (
+                        <div
+                          key={k}
+                          className={`p-2.5 rounded-xl bg-slate-50 border border-slate-100 ${
+                            isLong ? "sm:col-span-2" : "col-span-1"
+                          }`}
+                        >
+                          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">
+                            {k}
+                          </span>
+                          <span className="font-semibold text-slate-800 mt-0.5 block break-words">
+                            {valStr || "-"}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               );
@@ -1638,4 +1652,3 @@ export function ProductSubmissionThreadModal({
     </div>
   );
 }
-

@@ -54,7 +54,9 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
   const [submissions, setSubmissions] = useState<ProductSubmissionListItem[]>(
     [],
   );
-  const [selected, setSelected] = useState<ProductSubmissionDetail | null>(null);
+  const [selected, setSelected] = useState<ProductSubmissionDetail | null>(
+    null,
+  );
   const [thread, setThread] = useState<ProductSubmissionThread | null>(null);
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
@@ -89,6 +91,19 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
       active = false;
     };
   }, [refreshKey]);
+
+  useEffect(() => {
+    if (selected) {
+      const prevBodyOverflow = document.body.style.overflow;
+      const prevHtmlOverflow = document.documentElement.style.overflow;
+      document.body.style.overflow = "hidden";
+      document.documentElement.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = prevBodyOverflow;
+        document.documentElement.style.overflow = prevHtmlOverflow;
+      };
+    }
+  }, [selected]);
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -134,10 +149,11 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
     setSendingReply(true);
     setError("");
     try {
+      const activeImageId = thread?.files?.[0]?.id ?? null;
       await productTemplateApi.sendProductSubmissionMessage(
         selected.id,
         message,
-        null,
+        activeImageId,
         statusAction,
       );
       const updatedThread = await productTemplateApi.getProductSubmissionThread(
@@ -434,13 +450,13 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
                 </div>
               </div>
 
-              <aside className="space-y-5 rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <section>
+              <aside className="flex flex-col rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <section className="flex flex-1 flex-col min-h-0">
                   <h3 className="flex items-center gap-2 font-semibold text-slate-900">
                     <MessageSquare size={17} />
                     Review messages
                   </h3>
-                  <div className="mt-3 max-h-60 space-y-2 overflow-y-auto">
+                  <div className="mt-3 flex-1 min-h-[260px] max-h-[420px] space-y-2 overflow-y-auto pr-1">
                     {thread?.messages?.length ? (
                       thread.messages.map((message) => (
                         <div
@@ -468,7 +484,7 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
                   </div>
                 </section>
 
-                <section className="border-t border-slate-200 pt-4">
+                <section className="mt-auto border-t border-slate-200 pt-4">
                   <label
                     htmlFor="review-reply"
                     className="text-sm font-semibold text-slate-900"
@@ -505,4 +521,3 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
     </main>
   );
 }
-
