@@ -56,6 +56,10 @@ export function createApp() {
 
   app.use("/api/auth", authRouter);
   app.use("/api/users", usersRouter);
+  app.get("/api/customers", (req, res, next) => {
+    req.url = "/customers" + (req.url.includes("?") ? req.url.slice(req.url.indexOf("?")) : "");
+    usersRouter(req, res, next);
+  });
   app.use("/api/roles", rolesRouter);
   app.use("/api", productTemplatesRouter);
   app.use("/api", canvasRouter);

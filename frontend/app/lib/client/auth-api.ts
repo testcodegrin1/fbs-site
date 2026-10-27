@@ -137,6 +137,13 @@ export const authApi = {
     return request<{ users: AuthUser[] }>("/api/users");
   },
 
+  listCustomers(search?: string) {
+    const qs = search ? `?search=${encodeURIComponent(search)}` : "";
+    return request<{ customers: (AuthUser & { submissionsCount?: number })[] }>(
+      `/api/users/customers${qs}`,
+    );
+  },
+
   createUser(payload: UserPayload) {
     return request<{ user: AuthUser }>("/api/users", {
       method: "POST",

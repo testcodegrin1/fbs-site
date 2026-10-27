@@ -19,6 +19,7 @@ import {
   StatusBadge,
 } from "@/app/Components/ui";
 import { UserManagement } from "@/app/super-admin/dashboard/UserManagement";
+import { CustomerManagement } from "@/app/super-admin/dashboard/CustomerManagement";
 import { RolePermissionManagement } from "@/app/super-admin/dashboard/RolePermissionManagement";
 import { ProductTemplateManagement } from "@/app/super-admin/dashboard/ProductTemplateManagement";
 import { ProductSubmissionsManagement } from "@/app/super-admin/dashboard/ProductSubmissionsManagement";
@@ -30,6 +31,7 @@ import {
 } from "@/app/lib/client/canvas-api";
 import {
   FolderKanban,
+  Users,
   ShieldCheck,
   SlidersHorizontal,
   Layers,
@@ -169,6 +171,7 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
       icon: Layers,
       badge: diagrams.length,
     },
+    { id: "customers", label: "Customers", icon: Users },
     { id: "product-templates", label: "Product Templates", icon: LayoutTemplate },
     { id: "product-submissions", label: "Product Submissions", icon: Inbox },
   ];
@@ -886,6 +889,9 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
           onPreview={setFullscreenCanvas}
         />
       )}
+
+      {/* TAB: CUSTOMERS */}
+      {activeTab === "customers" && <CustomerManagement />}
 
       {/* TAB 5: PRODUCT TEMPLATES */}
       {activeTab === "product-templates" && (

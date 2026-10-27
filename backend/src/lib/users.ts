@@ -190,6 +190,91 @@ export async function listUsers(): Promise<AuthUser[]> {
   return rows.map(mapUser);
 }
 
+export type CustomerUser = AuthUser & {
+  submissionsCount?: number;
+};
+
+export async function listCustomers(search?: string): Promise<CustomerUser[]> {
+  await initializeAuthDatabase();
+
+  const searchTerm = search?.trim() ? `%${search.trim()}%` : null;
+
+  try {
+    const [rows] = await query<any[]>(
+      `
+        SELECT
+          users.id,
+          users.email,
+          users.name,
+          users.is_active,
+          users.created_at,
+          users.updated_at,
+          COALESCE(GROUP_CONCAT(DISTINCT roles.slug ORDER BY roles.slug SEPARATOR ','), 'user') AS roles,
+          (SELECT COUNT(*) FROM product_customizations pc WHERE pc.user_id = users.id) AS submissions_count
+        FROM users
+        LEFT JOIN user_roles ON user_roles.user_id = users.id
+        LEFT JOIN roles ON roles.id = user_roles.role_id
+        ${searchTerm ? "WHERE (users.name LIKE ? OR users.email LIKE ?)" : ""}
+        GROUP BY users.id
+        HAVING (
+          (roles IS NULL OR roles = '' OR FIND_IN_SET('user', roles) > 0)
+          AND (roles IS NULL OR (FIND_IN_SET('super_admin', roles) = 0 AND FIND_IN_SET('designer', roles) = 0))
+        )
+        ORDER BY users.created_at DESC, users.id DESC
+      `,
+      searchTerm ? [searchTerm, searchTerm] : [],
+    );
+
+    return rows.map((row) => ({
+      id: Number(row.id),
+      email: String(row.email),
+      name: String(row.name),
+      isActive: Number(row.is_active) === 1,
+      roles: splitCsv(row.roles).filter(isAuthRole),
+      permissions: [],
+      createdAt: toIsoString(row.created_at),
+      updatedAt: toIsoString(row.updated_at),
+      submissionsCount: Number(row.submissions_count ?? 0),
+    }));
+  } catch {
+    const [rows] = await query<any[]>(
+      `
+        SELECT
+          users.id,
+          users.email,
+          users.name,
+          users.is_active,
+          users.created_at,
+          users.updated_at,
+          COALESCE(GROUP_CONCAT(DISTINCT roles.slug ORDER BY roles.slug SEPARATOR ','), 'user') AS roles
+        FROM users
+        LEFT JOIN user_roles ON user_roles.user_id = users.id
+        LEFT JOIN roles ON roles.id = user_roles.role_id
+        ${searchTerm ? "WHERE (users.name LIKE ? OR users.email LIKE ?)" : ""}
+        GROUP BY users.id
+        HAVING (
+          (roles IS NULL OR roles = '' OR FIND_IN_SET('user', roles) > 0)
+          AND (roles IS NULL OR (FIND_IN_SET('super_admin', roles) = 0 AND FIND_IN_SET('designer', roles) = 0))
+        )
+        ORDER BY users.created_at DESC, users.id DESC
+      `,
+      searchTerm ? [searchTerm, searchTerm] : [],
+    );
+
+    return rows.map((row) => ({
+      id: Number(row.id),
+      email: String(row.email),
+      name: String(row.name),
+      isActive: Number(row.is_active) === 1,
+      roles: splitCsv(row.roles).filter(isAuthRole),
+      permissions: [],
+      createdAt: toIsoString(row.created_at),
+      updatedAt: toIsoString(row.updated_at),
+      submissionsCount: 0,
+    }));
+  }
+}
+
 export async function listRoles() {
   await initializeAuthDatabase();
 

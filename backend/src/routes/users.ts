@@ -5,6 +5,7 @@ import {
   createUser,
   deleteUser,
   getUserById,
+  listCustomers,
   listUsers,
   updateUser,
 } from "../lib/users.js";
@@ -44,6 +45,18 @@ usersRouter.get("/", async (req, res) => {
   try {
     await requirePermission(req, "users:read");
     res.json({ users: await listUsers() });
+  } catch (error) {
+    const { message, status } = getErrorResponse(error);
+    res.status(status).json({ message });
+  }
+});
+
+usersRouter.get("/customers", async (req, res) => {
+  try {
+    await requirePermission(req, "users:read");
+    const search = typeof req.query.search === "string" ? req.query.search : undefined;
+    const customers = await listCustomers(search);
+    res.json({ customers });
   } catch (error) {
     const { message, status } = getErrorResponse(error);
     res.status(status).json({ message });
