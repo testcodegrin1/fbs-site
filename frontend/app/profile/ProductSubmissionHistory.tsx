@@ -381,20 +381,24 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
                   </div>
                 )}
                 <section>
-                  <h3 className="mb-3 font-semibold text-slate-900">
+                  <h3 className="mb-2.5 text-sm font-semibold text-slate-900">
                     Submitted information
                   </h3>
                   {selected.submittedFields?.length ? (
-                    <dl className="grid gap-3 sm:grid-cols-2">
+                    <dl className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
                       {selected.submittedFields.map((field, index) => (
                         <div
                           key={`${field.id}-${index}`}
-                          className={`rounded-xl border border-slate-200 bg-slate-50 p-4 ${field.fieldType === "textarea" ? "sm:col-span-2" : ""}`}
+                          className={`rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 ${
+                            field.fieldType === "textarea"
+                              ? "col-span-1 sm:col-span-2 md:col-span-3"
+                              : "col-span-1"
+                          }`}
                         >
-                          <dt className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                          <dt className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
                             {field.label}
                           </dt>
-                          <dd className="mt-1 break-words text-slate-900">
+                          <dd className="mt-0.5 break-words text-xs font-semibold text-slate-800">
                             {field.fieldType === "file" &&
                             typeof field.value === "string" ? (
                               <a

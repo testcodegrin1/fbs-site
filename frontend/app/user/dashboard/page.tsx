@@ -1142,33 +1142,86 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                                     </p>
                                   )}
                                 </div>
-                              ) : (
-                                <Input
-                                  type={
-                                    field.fieldType === "number"
-                                      ? "number"
-                                      : field.fieldType === "email"
-                                        ? "email"
-                                        : field.fieldType === "phone"
-                                          ? "tel"
-                                          : "text"
-                                  }
-                                  placeholder={
-                                    field.placeholder ||
-                                    `Enter ${field.label}...`
-                                  }
-                                  value={val}
-                                  disabled={isReadOnly}
-                                  onChange={(e) =>
-                                    setCustomFieldValues((prev) => ({
-                                      ...prev,
-                                      [fieldKey]: e.target.value,
-                                    }))
-                                  }
-                                  className="h-8 text-xs bg-slate-50/50 focus:bg-white"
-                                  required={field.isRequired}
-                                />
-                              )}
+                              ) : (() => {
+                                const isPhone =
+                                  field.fieldType === "phone" ||
+                                  field.fieldType === "tel" ||
+                                  (Boolean(field.label) &&
+                                    (field.label.toLowerCase().includes("phone") ||
+                                      field.label.toLowerCase().includes("mobile") ||
+                                      field.label.toLowerCase().includes("whatsapp") ||
+                                      field.label.toLowerCase().includes("contact")));
+
+                                const isEmail =
+                                  field.fieldType === "email" ||
+                                  field.fieldType === "mail" ||
+                                  (Boolean(field.label) &&
+                                    (field.label.toLowerCase().includes("email") ||
+                                      field.label.toLowerCase().includes("mail")));
+
+                                return (
+                                  <Input
+                                    type={
+                                      isPhone
+                                        ? "tel"
+                                        : isEmail
+                                          ? "email"
+                                          : field.fieldType === "number"
+                                            ? "number"
+                                            : "text"
+                                    }
+                                    inputMode={isPhone ? "numeric" : isEmail ? "email" : undefined}
+                                    pattern={isPhone ? "[0-9]*" : undefined}
+                                    maxLength={isPhone ? 12 : undefined}
+                                    placeholder={
+                                      field.placeholder ||
+                                      `Enter ${field.label}...`
+                                    }
+                                    value={val}
+                                    disabled={isReadOnly}
+                                    onKeyDown={
+                                      isPhone
+                                        ? (e) => {
+                                            if (
+                                              [
+                                                "Backspace",
+                                                "Delete",
+                                                "Tab",
+                                                "Escape",
+                                                "Enter",
+                                                "ArrowLeft",
+                                                "ArrowRight",
+                                                "ArrowUp",
+                                                "ArrowDown",
+                                                "Home",
+                                                "End",
+                                              ].includes(e.key) ||
+                                              ((e.ctrlKey || e.metaKey) &&
+                                                ["a", "c", "v", "x", "z"].includes(e.key.toLowerCase()))
+                                            ) {
+                                              return;
+                                            }
+                                            if (!/^[0-9]$/.test(e.key)) {
+                                              e.preventDefault();
+                                            }
+                                          }
+                                        : undefined
+                                    }
+                                    onChange={(e) => {
+                                      let v = e.target.value;
+                                      if (isPhone) {
+                                        v = v.replace(/\D/g, "").slice(0, 12);
+                                      }
+                                      setCustomFieldValues((prev) => ({
+                                        ...prev,
+                                        [fieldKey]: v,
+                                      }));
+                                    }}
+                                    className="h-8 text-xs bg-slate-50/50 focus:bg-white"
+                                    required={field.isRequired}
+                                  />
+                                );
+                              })()}
                             </div>
                           );
                         })}

@@ -34,10 +34,33 @@ function imageUrl(path: string) {
     : `${getApiBaseUrl()}/${path.replace(/^\/+/, "")}`;
 }
 
-const inputClass =
-  "mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-primary-dark placeholder:text-slate-400 outline-none transition focus:border-primary focus:ring-4 focus:ring-primary/15 disabled:cursor-not-allowed disabled:bg-slate-100";
+function isPhoneField(field: ProductField): boolean {
+  const type = (field.fieldType || "").toLowerCase().trim();
+  if (type === "phone" || type === "tel") return true;
+  const label = (field.label || "").toLowerCase();
+  return (
+    label.includes("phone") ||
+    label.includes("mobile") ||
+    label.includes("whatsapp") ||
+    label.includes("contact")
+  );
+}
 
-const labelClass = "block text-sm font-semibold text-primary-dark";
+function isEmailField(field: ProductField): boolean {
+  const type = (field.fieldType || "").toLowerCase().trim();
+  if (type === "email" || type === "mail") return true;
+  const label = (field.label || "").toLowerCase();
+  return (
+    label.includes("email") ||
+    label.includes("e-mail") ||
+    /\bmail\b/i.test(label)
+  );
+}
+
+const inputClass =
+  "mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-primary-dark placeholder:text-slate-400 outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/15 disabled:cursor-not-allowed disabled:bg-slate-100";
+
+const labelClass = "block text-xs font-semibold text-primary-dark";
 
 function LoadingSkeleton() {
   return (
@@ -150,7 +173,7 @@ export default function PrintingProductDetail({ productId }: { productId: string
         <label
           key={field.id}
           htmlFor={id}
-          className="flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:border-primary/40"
+          className="col-span-1 flex cursor-pointer items-start gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4 transition hover:border-primary/40 sm:col-span-2"
         >
           <input
             id={id}
@@ -171,7 +194,7 @@ export default function PrintingProductDetail({ productId }: { productId: string
 
     if (type === "radio") {
       return (
-        <fieldset key={field.id} disabled={submitting}>
+        <fieldset key={field.id} disabled={submitting} className="col-span-1 sm:col-span-2">
           <legend className={labelClass}>
             {field.label}
             {requiredMark}
@@ -206,8 +229,12 @@ export default function PrintingProductDetail({ productId }: { productId: string
       );
     }
 
+    const isPhone = isPhoneField(field);
+    const isEmail = isEmailField(field);
+    const isFullWidth = type === "textarea";
+
     return (
-      <div key={field.id}>
+      <div key={field.id} className={isFullWidth ? "col-span-1 sm:col-span-2" : "col-span-1"}>
         <label htmlFor={id} className={labelClass}>
           {field.label}
           {requiredMark}
@@ -262,18 +289,58 @@ export default function PrintingProductDetail({ productId }: { productId: string
           <input
             id={id}
             type={
-              ["email", "number", "date"].includes(type)
-                ? type
-                : type === "phone"
+              isPhone
                 ? "tel"
+                : isEmail
+                ? "email"
+                : ["number", "date"].includes(type)
+                ? type
                 : "text"
             }
+            inputMode={isPhone ? "numeric" : isEmail ? "email" : undefined}
+            pattern={isPhone ? "[0-9]*" : undefined}
+            maxLength={isPhone ? 12 : undefined}
+            autoComplete={isEmail ? "email" : isPhone ? "tel" : undefined}
             required={field.isRequired}
             disabled={submitting}
             placeholder={field.placeholder || ""}
             className={inputClass}
             value={String(values[key] || "")}
-            onChange={(event) => setValue(field.id, event.target.value)}
+            onKeyDown={
+              isPhone
+                ? (event) => {
+                    if (
+                      [
+                        "Backspace",
+                        "Delete",
+                        "Tab",
+                        "Escape",
+                        "Enter",
+                        "ArrowLeft",
+                        "ArrowRight",
+                        "ArrowUp",
+                        "ArrowDown",
+                        "Home",
+                        "End",
+                      ].includes(event.key) ||
+                      ((event.ctrlKey || event.metaKey) &&
+                        ["a", "c", "v", "x", "z"].includes(event.key.toLowerCase()))
+                    ) {
+                      return;
+                    }
+                    if (!/^[0-9]$/.test(event.key)) {
+                      event.preventDefault();
+                    }
+                  }
+                : undefined
+            }
+            onChange={(event) => {
+              let val = event.target.value;
+              if (isPhone) {
+                val = val.replace(/\D/g, "").slice(0, 12);
+              }
+              setValue(field.id, val);
+            }}
           />
         )}
       </div>
@@ -330,11 +397,19 @@ export default function PrintingProductDetail({ productId }: { productId: string
         )}
 
         {product && (
-          <div className="mt-6 grid items-start gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10">
-            {/* Left: gallery + info */}
-            <section className="space-y-5">
-              {/* Product Image Container with increased size and broken image fallback */}
-              <div className="relative flex h-[360px] sm:h-[420px] md:h-[480px] w-full items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 sm:p-4 shadow-sm">
+          <div className="mt-6 space-y-6">
+            {/* Product Title above both columns */}
+            <div>
+              <h1 className="text-2xl font-bold leading-tight text-primary-dark sm:text-3xl md:text-4xl">
+                {product.name}
+              </h1>
+            </div>
+
+            <div className="grid items-start gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:gap-10">
+              {/* Left: gallery + info */}
+              <section className="space-y-5">
+                {/* Product Image Container with increased size and broken image fallback */}
+                <div className="relative flex h-[360px] sm:h-[420px] md:h-[480px] w-full items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 sm:p-4 shadow-sm">
                 {product.images[activeImage] && !imageError ? (
                   <img
                     src={imageUrl(product.images[activeImage].imageUrl)}
@@ -386,14 +461,12 @@ export default function PrintingProductDetail({ productId }: { productId: string
                 </div>
               )}
 
-              <div className="rounded-2xl bg-white p-6 shadow-sm md:p-8">
-                <h1 className="text-2xl font-bold leading-tight text-primary-dark sm:text-3xl md:text-4xl">
-                  {product.name}
-                </h1>
-                <p className="mt-4 max-w-prose whitespace-pre-wrap leading-relaxed text-slate-600 sm:text-base">
+              {/* Product Description & Specifications below Image */}
+              <div className="rounded-2xl bg-white p-5 shadow-sm md:p-6">
+                <p className="whitespace-pre-wrap leading-relaxed text-slate-600 sm:text-base">
                   {product.description || "Contact our team for details about this printing product."}
                 </p>
-                <dl className="mt-6 grid grid-cols-2 gap-3 border-t border-slate-100 pt-5 text-sm">
+                <dl className="mt-5 grid grid-cols-2 gap-3 border-t border-slate-100 pt-5 text-sm">
                   {product.widthPx > 0 && product.heightPx > 0 && (
                     <div className="rounded-xl bg-slate-50 px-4 py-3">
                       <dt className="text-slate-500">Size</dt>
@@ -486,9 +559,12 @@ export default function PrintingProductDetail({ productId }: { productId: string
                   </div>
                 </div>
               ) : (
-                <form onSubmit={submit} className="mt-6 space-y-5">
-                  {editableFields.map(renderField)}
-                  {editableFields.length === 0 && (
+                <form onSubmit={submit} className="mt-4 space-y-3.5">
+                  {editableFields.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-x-3 gap-y-2.5 sm:grid-cols-2">
+                      {editableFields.map(renderField)}
+                    </div>
+                  ) : (
                     <p className="rounded-xl bg-slate-50 p-4 text-sm text-slate-600">
                       No additional details needed for this product. Choose a quantity and submit.
                     </p>
@@ -498,13 +574,13 @@ export default function PrintingProductDetail({ productId }: { productId: string
                     <label htmlFor="product-quantity" className={labelClass}>
                       Quantity<span className="text-red-600" aria-hidden="true"> *</span>
                     </label>
-                    <div className="mt-1.5 inline-flex items-center overflow-hidden rounded-xl border border-slate-300 bg-white focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/15">
+                    <div className="mt-1 inline-flex items-center overflow-hidden rounded-xl border border-slate-300 bg-white focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15">
                       <button
                         type="button"
                         aria-label="Decrease quantity"
                         disabled={submitting || quantity <= 1}
                         onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                        className="h-12 w-12 text-xl text-primary-dark transition hover:bg-slate-100 disabled:opacity-40"
+                        className="h-10 w-10 text-lg text-primary-dark transition hover:bg-slate-100 disabled:opacity-40"
                       >
                         −
                       </button>
@@ -515,7 +591,7 @@ export default function PrintingProductDetail({ productId }: { productId: string
                         step={1}
                         required
                         disabled={submitting}
-                        className="h-12 w-20 border-x border-slate-200 text-center text-base font-semibold text-primary-dark outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                        className="h-10 w-16 border-x border-slate-200 text-center text-sm font-semibold text-primary-dark outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         value={quantity}
                         onChange={(event) =>
                           setQuantity(Math.max(1, Number(event.target.value) || 1))
@@ -526,7 +602,7 @@ export default function PrintingProductDetail({ productId }: { productId: string
                         aria-label="Increase quantity"
                         disabled={submitting}
                         onClick={() => setQuantity((q) => q + 1)}
-                        className="h-12 w-12 text-xl text-primary-dark transition hover:bg-slate-100 disabled:opacity-40"
+                        className="h-10 w-10 text-lg text-primary-dark transition hover:bg-slate-100 disabled:opacity-40"
                       >
                         +
                       </button>
@@ -549,6 +625,7 @@ export default function PrintingProductDetail({ productId }: { productId: string
                 </form>
               )}
             </section>
+            </div>
           </div>
         )}
       </div>
