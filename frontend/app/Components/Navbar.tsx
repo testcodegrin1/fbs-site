@@ -4,10 +4,10 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { FiArrowUpRight } from "react-icons/fi";
+import { FiArrowUpRight, FiUser } from "react-icons/fi";
 import { IoClose } from "react-icons/io5";
 import { IoIosMenu } from "react-icons/io";
-import { FaEnvelope, FaMapMarkerAlt, FaPhoneAlt, FaUserCircle } from "react-icons/fa";
+import { FaEnvelope, FaMapMarkerAlt, FaPhoneAlt } from "react-icons/fa";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -230,21 +230,13 @@ export default function Navbar() {
 
           {/* DESKTOP RIGHT */}
           <div className="hidden xl:flex items-center gap-3">
-            <Image
-              src="/images/brand/one-hundred-percent-badge.gif"
-              alt="100 percent satisfaction badge"
-              width={96}
-              height={96}
-              unoptimized
-              className="w-20 xl:w-24 h-auto"
-            />
             <Link
               href={profileHref}
               aria-label="Open user profile and submission history"
               title="Account"
-              className="flex h-12 w-12 items-center justify-center rounded-full border border-primary text-primary transition hover:bg-primary hover:text-white"
+              className="group flex h-11 w-11 items-center justify-center rounded-full border border-primary/40 bg-white shadow-2xs transition-all duration-200 hover:border-primary hover:bg-pink-50/60"
             >
-              <FaUserCircle className="text-xl" />
+              <FiUser className="text-xl text-primary stroke-[2.2] transition-colors duration-200 group-hover:text-pink-700" />
             </Link>
             <Link
               href="/contact"
@@ -257,6 +249,14 @@ export default function Navbar() {
                 <FiArrowUpRight />
               </span>
             </Link>
+            <Image
+              src="/images/brand/one-hundred-percent-badge.gif"
+              alt="100 percent satisfaction badge"
+              width={96}
+              height={96}
+              unoptimized
+              className="w-20 xl:w-24 h-auto"
+            />
           </div>
 
           {/* MOBILE MENU BUTTON */}
@@ -399,10 +399,14 @@ export default function Navbar() {
                 onClick={() => setMenuOpen(false)}
                 aria-label="Open account"
                 title="Account"
-                className={`flex items-center border-b border-black/[0.06] py-3 text-2xl transition-colors duration-300
-                ${pathname.startsWith("/user") ? "text-primary font-semibold" : "text-black"}`}
+                className={`flex items-center gap-2.5 border-b border-black/[0.06] py-3 text-lg tracking-[0.10em] transition-colors duration-300 ${
+                  pathname.startsWith("/user") || pathname.startsWith("/profile")
+                    ? "text-primary font-semibold"
+                    : "text-black hover:text-primary"
+                }`}
               >
-                <FaUserCircle />
+                <FiUser className="text-xl" />
+                <span>MY ACCOUNT</span>
               </Link>
             </li>
           </ul>
