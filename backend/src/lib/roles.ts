@@ -29,7 +29,7 @@ export const ROLE_PERMISSIONS: Record<AuthRole, Permission[]> = {
     "designer:dashboard",
     "user:dashboard",
     "vendors:manage",
-    "banner_templates:manage",
+    "product_templates:manage",
   ],
   designer: ["designer:dashboard"],
   user: ["user:dashboard"],

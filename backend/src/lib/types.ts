@@ -12,7 +12,7 @@ export type Permission =
   | "designer:dashboard"
   | "user:dashboard"
   | "vendors:manage"
-  | "banner_templates:manage";
+  | "product_templates:manage";
 
 export type AuthUser = {
   id: number;
@@ -38,9 +38,9 @@ export type UserPayload = {
   isActive?: boolean;
 };
 
-export type BannerOrientation = "landscape" | "portrait" | "square";
+export type ProductOrientation = "landscape" | "portrait" | "square";
 
-export type BannerTemplateImageModel = {
+export type ProductTemplateImageModel = {
   id: number;
   templateId: number;
   imageUrl: string;
@@ -52,25 +52,24 @@ export type BannerTemplateImageModel = {
   imageType?: string;
   isActive?: boolean;
 };
+export type ProductImageModel = ProductTemplateImageModel;
 
-export type BannerImageModel = BannerTemplateImageModel;
-
-export type BannerTemplateModel = {
+export type ProductTemplateModel = {
   id: number;
   name: string;
   description: string | null;
   widthPx: number;
   heightPx: number;
   dimensionsLabel: string | null;
-  orientation: BannerOrientation;
+  orientation: ProductOrientation;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  fields?: BannerTemplateFieldModel[];
-  images?: BannerTemplateImageModel[];
+  fields?: ProductTemplateFieldModel[];
+  images?: ProductTemplateImageModel[];
 };
 
-export type BannerTemplateFieldModel = {
+export type ProductTemplateFieldModel = {
   id: number;
   templateId: number;
   label: string;
@@ -86,7 +85,7 @@ export type BannerTemplateFieldModel = {
   updatedAt?: string;
 };
 
-export type BannerCustomizationModel = {
+export type ProductCustomizationModel = {
   id: number;
   templateId: number;
   userId: number;
@@ -97,7 +96,7 @@ export type BannerCustomizationModel = {
   updatedAt: string;
 };
 
-export type BannerSubmissionStatus =
+export type ProductSubmissionStatus =
   | "Pending"
   | "In Review"
   | "Changes Requested"
@@ -105,7 +104,7 @@ export type BannerSubmissionStatus =
   | "Rejected"
   | "Completed";
 
-export type BannerSubmissionFileModel = {
+export type ProductSubmissionFileModel = {
   id: number;
   submissionId: number;
   version: number;
@@ -117,10 +116,10 @@ export type BannerSubmissionFileModel = {
   replacedFileId?: number | null;
   createdAt: string;
   isReplaced?: boolean;
-  history?: BannerSubmissionFileModel[];
+  history?: ProductSubmissionFileModel[];
 };
 
-export type BannerSubmissionMessageModel = {
+export type ProductSubmissionMessageModel = {
   id: number;
   submissionId: number;
   imageId?: number | null;
@@ -131,13 +130,13 @@ export type BannerSubmissionMessageModel = {
   createdAt: string;
 };
 
-export type BannerSubmissionThreadModel = {
-  submission: BannerSubmissionDetailModel;
-  files: BannerSubmissionFileModel[];
-  messages: BannerSubmissionMessageModel[];
+export type ProductSubmissionThreadModel = {
+  submission: ProductSubmissionDetailModel;
+  files: ProductSubmissionFileModel[];
+  messages: ProductSubmissionMessageModel[];
 };
 
-export type BannerSubmissionDetailModel = {
+export type ProductSubmissionDetailModel = {
   id: number;
   templateId: number;
   templateName: string;
@@ -145,12 +144,12 @@ export type BannerSubmissionDetailModel = {
   heightPx: number;
   dimensionsLabel?: string;
   previewImageUrl?: string | null;
-  images?: BannerTemplateImageModel[];
+  images?: ProductTemplateImageModel[];
   quantity?: number;
   userId: number;
   userName: string;
   userEmail: string;
-  status: BannerSubmissionStatus | string;
+  status: ProductSubmissionStatus | string;
   customizationValues: Record<string, any>;
   submittedFields: Array<{
     id: number | string;
@@ -161,4 +160,3 @@ export type BannerSubmissionDetailModel = {
   createdAt: string;
   updatedAt: string;
 };
-

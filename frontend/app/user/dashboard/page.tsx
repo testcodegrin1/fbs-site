@@ -46,12 +46,12 @@ import {
   History,
 } from "lucide-react";
 import {
-  bannerTemplateApi,
+  productTemplateApi,
   resolveImageUrl,
-  type BannerTemplateModel,
-  type BannerSubmissionListItem,
-} from "@/app/lib/client/banner-template-api";
-import { BannerSubmissionThreadModal } from "./BannerSubmissionThreadModal";
+  type ProductTemplateModel,
+  type ProductSubmissionListItem,
+} from "@/app/lib/client/product-template-api";
+import { ProductSubmissionThreadModal } from "./ProductSubmissionThreadModal";
 
 export default function ClientDashboardPage() {
   return (
@@ -62,9 +62,9 @@ export default function ClientDashboardPage() {
 }
 
 /**
- * Robust banner image thumbnail with loading spinner and fallback placeholder
+ * Robust product image thumbnail with loading spinner and fallback placeholder
  */
-function BannerImageThumbnail({
+function ProductImageThumbnail({
   src,
   alt,
   className = "w-full h-full object-cover",
@@ -120,19 +120,19 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
     "card" | "list"
   >("list");
 
-  // Banner Templates state
-  const [bannerTemplates, setBannerTemplates] = useState<BannerTemplateModel[]>(
+  // Product Templates state
+  const [productTemplates, setProductTemplates] = useState<ProductTemplateModel[]>(
     [],
   );
-  const [loadingBanners, setLoadingBanners] = useState(true);
-  const [refreshingBanners, setRefreshingBanners] = useState(false);
-  const [bannerSearch, setBannerSearch] = useState("");
-  const [bannerOrientationFilter, setBannerOrientationFilter] = useState<
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [refreshingProducts, setRefreshingProducts] = useState(false);
+  const [productSearch, setProductSearch] = useState("");
+  const [productOrientationFilter, setProductOrientationFilter] = useState<
     "all" | "landscape" | "portrait"
   >("all");
-  const [bannerViewMode, setBannerViewMode] = useState<"grid" | "list">("list");
+  const [productViewMode, setProductViewMode] = useState<"grid" | "list">("list");
   const [viewingTemplate, setViewingTemplate] =
-    useState<BannerTemplateModel | null>(null);
+    useState<ProductTemplateModel | null>(null);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [copiedLink, setCopiedLink] = useState(false);
 
@@ -151,14 +151,14 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
     message: string;
   } | null>(null);
 
-  // User's Submitted Banners state
+  // User's submitted products state
   const [mySubmissions, setMySubmissions] = useState<
-    BannerSubmissionListItem[]
+    ProductSubmissionListItem[]
   >([]);
   const [loadingMySubmissions, setLoadingMySubmissions] = useState(false);
   const [refreshingMySubmissions, setRefreshingMySubmissions] = useState(false);
   const [selectedMySubmission, setSelectedMySubmission] =
-    useState<BannerSubmissionListItem | null>(null);
+    useState<ProductSubmissionListItem | null>(null);
   const [loadingSubmissionDetail, setLoadingSubmissionDetail] = useState(false);
   const [mySubmissionDetail, setMySubmissionDetail] = useState<any>(null);
   const [threadSubmissionId, setThreadSubmissionId] = useState<number | null>(
@@ -173,21 +173,21 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
     if (!isSilent) setLoadingMySubmissions(true);
     else setRefreshingMySubmissions(true);
     try {
-      const res = await bannerTemplateApi.getMyBannerSubmissions();
+      const res = await productTemplateApi.getMyProductSubmissions();
       setMySubmissions(res.submissions || []);
     } catch (err) {
-      console.error("Failed to load my banner submissions:", err);
+      console.error("Failed to load my product submissions:", err);
     } finally {
       setLoadingMySubmissions(false);
       setRefreshingMySubmissions(false);
     }
   }
 
-  async function openMySubmissionDetail(sub: BannerSubmissionListItem) {
+  async function openMySubmissionDetail(sub: ProductSubmissionListItem) {
     setSelectedMySubmission(sub);
     setLoadingSubmissionDetail(true);
     try {
-      const detail = await bannerTemplateApi.getBannerSubmissionById(sub.id);
+      const detail = await productTemplateApi.getProductSubmissionById(sub.id);
       setMySubmissionDetail(detail);
     } catch (err) {
       console.error("Failed to load submission detail:", err);
@@ -246,7 +246,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
     }
   }
 
-  // Load existing customization when a banner template is opened
+  // Load existing customization when a product template is opened
   useEffect(() => {
     if (!viewingTemplate) {
       setCustomFieldValues({});
@@ -262,7 +262,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
       setLoadingCustomization(true);
       setCustomizationNotice(null);
       try {
-        const cust = await bannerTemplateApi.getBannerCustomization(
+        const cust = await productTemplateApi.getProductCustomization(
           viewingTemplate.id,
         );
         if (isMounted) {
@@ -278,7 +278,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
           setCustomizationQuantity(savedQty > 0 ? savedQty : 1);
         }
       } catch (err) {
-        console.warn("No existing banner customization found:", err);
+        console.warn("No existing product customization found:", err);
       } finally {
         if (isMounted) setLoadingCustomization(false);
       }
@@ -290,7 +290,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
     };
   }, [viewingTemplate?.id]);
 
-  // Save banner customization values
+  // Save product customization values
   async function handleSaveCustomization(e?: React.FormEvent) {
     if (e) e.preventDefault();
     if (!viewingTemplate?.id) return;
@@ -336,7 +336,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
           ? `${viewingTemplate.name} (#${activeImageIndex + 1})`
           : viewingTemplate.name;
 
-      const res = await bannerTemplateApi.submitBannerCustomization({
+      const res = await productTemplateApi.submitProductCustomization({
         templateId: viewingTemplate.id,
         quantity: customizationQuantity,
         values: {
@@ -345,7 +345,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
           _quantity: customizationQuantity,
           _selectedImageIndex: activeImageIndex,
           _selectedImageUrl: currentImage?.imageUrl || "",
-          _bannerTitle: variantTitle,
+          _productTitle: variantTitle,
         },
         files: customFieldFiles,
       });
@@ -355,14 +355,14 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
         : "";
       setCustomizationNotice({
         type: "success",
-        message: `Banner customization submitted successfully!${subIdMsg} You can track the status under 'My Banner Submissions'.`,
+        message: `Product customization submitted successfully!${subIdMsg} You can track the status under 'My Product Submissions'.`,
       });
       loadMySubmissions(true);
     } catch (err: any) {
       console.error("Failed to save customization:", err);
       setCustomizationNotice({
         type: "error",
-        message: err?.message || "Failed to save banner customization.",
+        message: err?.message || "Failed to save product customization.",
       });
     } finally {
       setSavingCustomization(false);
@@ -371,12 +371,12 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
 
   const backendHost = getApiBaseUrl();
 
-  const totalBannerImages = useMemo(() => {
-    return bannerTemplates.reduce(
+  const totalProductImages = useMemo(() => {
+    return productTemplates.reduce(
       (sum, t) => sum + (t.images && t.images.length > 0 ? t.images.length : 1),
       0,
     );
-  }, [bannerTemplates]);
+  }, [productTemplates]);
 
   const navItems: SidebarNavItem[] = [
     {
@@ -386,14 +386,14 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
       badge: projects.length,
     },
     {
-      id: "banner-templates",
-      label: "Banner Templates",
+      id: "product-templates",
+      label: "Product Templates",
       icon: LayoutTemplate,
-      badge: totalBannerImages,
+      badge: totalProductImages,
     },
     {
-      id: "my-banner-submissions",
-      label: "My Banner Submissions",
+      id: "my-product-submissions",
+      label: "My Product Submissions",
       icon: Inbox,
       badge: mySubmissions.length > 0 ? mySubmissions.length : undefined,
     },
@@ -411,32 +411,32 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
     }
   }
 
-  async function loadBannerTemplates(isSilent = false) {
+  async function loadProductTemplates(isSilent = false) {
     if (!isSilent) {
-      setLoadingBanners(true);
+      setLoadingProducts(true);
     } else {
-      setRefreshingBanners(true);
+      setRefreshingProducts(true);
     }
     try {
-      const data = await bannerTemplateApi.getBannerTemplates();
-      setBannerTemplates(data);
+      const data = await productTemplateApi.getProductTemplates();
+      setProductTemplates(data);
     } catch (err) {
-      console.error("Failed to load banner templates:", err);
+      console.error("Failed to load product templates:", err);
     } finally {
-      setLoadingBanners(false);
-      setRefreshingBanners(false);
+      setLoadingProducts(false);
+      setRefreshingProducts(false);
     }
   }
 
   useEffect(() => {
     loadClientProjects();
-    loadBannerTemplates();
+    loadProductTemplates();
     loadMySubmissions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectSearch]);
 
   useEffect(() => {
-    if (activeTab === "my-banner-submissions") {
+    if (activeTab === "my-product-submissions") {
       loadMySubmissions();
     }
   }, [activeTab]);
@@ -457,11 +457,11 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
     }
   }
 
-  // Filter banner templates based on search & orientation
-  const filteredBanners = useMemo(() => {
-    return bannerTemplates.filter((item) => {
+  // Filter product templates based on search & orientation
+  const filteredProducts = useMemo(() => {
+    return productTemplates.filter((item) => {
       // Search matching
-      const query = bannerSearch.toLowerCase().trim();
+      const query = productSearch.toLowerCase().trim();
       if (query) {
         const matchesName = item.name.toLowerCase().includes(query);
         const matchesDesc = (item.description || "")
@@ -478,28 +478,28 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
 
       // Orientation matching
       if (
-        bannerOrientationFilter !== "all" &&
-        item.orientation.toLowerCase() !== bannerOrientationFilter
+        productOrientationFilter !== "all" &&
+        item.orientation.toLowerCase() !== productOrientationFilter
       ) {
         return false;
       }
 
       return true;
     });
-  }, [bannerTemplates, bannerSearch, bannerOrientationFilter]);
+  }, [productTemplates, productSearch, productOrientationFilter]);
 
   // Flatten templates by their images so each image is displayed separately on the user side
-  const bannerDisplayItems = useMemo(() => {
+  const productDisplayItems = useMemo(() => {
     const list: Array<{
       key: string;
-      template: BannerTemplateModel;
+      template: ProductTemplateModel;
       imageIndex: number;
       imageUrl: string;
       imageName?: string | null;
       totalImages: number;
     }> = [];
 
-    for (const template of filteredBanners) {
+    for (const template of filteredProducts) {
       if (!template.images || template.images.length === 0) {
         list.push({
           key: `tpl-${template.id}-0`,
@@ -524,10 +524,10 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
     }
 
     return list;
-  }, [filteredBanners]);
+  }, [filteredProducts]);
 
-  // Download banner image
-  async function handleDownloadBanner(
+  // Download product image
+  async function handleDownloadProduct(
     imgUrl?: string | null,
     fileName?: string,
   ) {
@@ -539,7 +539,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
       const blobUrl = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = blobUrl;
-      link.download = fileName || "banner-template.png";
+      link.download = fileName || "product-template.png";
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -570,17 +570,17 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
   return (
     <SidebarLayout
       title={
-        activeTab === "banner-templates"
-          ? "Banner Templates"
-          : activeTab === "my-banner-submissions"
-            ? "My Banner Submissions"
+        activeTab === "product-templates"
+          ? "Product Templates"
+          : activeTab === "my-product-submissions"
+            ? "My Product Submissions"
             : "Client Review Portal"
       }
       subtitle={
-        activeTab === "banner-templates"
-          ? "Browse and customize marketing banner templates"
-          : activeTab === "my-banner-submissions"
-            ? "Track and manage your submitted banner requests"
+        activeTab === "product-templates"
+          ? "Browse and customize marketing product templates"
+          : activeTab === "my-product-submissions"
+            ? "Track and manage your submitted product requests"
             : "View, review, and submit feedback on your custom design proofs"
       }
       roleName="Client User"
@@ -777,10 +777,10 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
         </div>
       )}
 
-      {/* TAB 2: BANNER TEMPLATES */}
-      {activeTab === "banner-templates" &&
+      {/* TAB 2: PRODUCT TEMPLATES */}
+      {activeTab === "product-templates" &&
         (viewingTemplate !== null ? (
-          /* IN-PAGE EMBEDDED BANNER REVIEW & CUSTOMIZATION (MATCHING SCREENSHOT 2) */
+          /* IN-PAGE EMBEDDED product review & CUSTOMIZATION (MATCHING SCREENSHOT 2) */
           <div className="space-y-5 animate-in fade-in duration-200">
             {/* Top Navigation Bar */}
             <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-200/90">
@@ -792,11 +792,11 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                   onClick={() => setViewingTemplate(null)}
                   className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-700 hover:text-slate-900 h-8 px-2.5 rounded-xl border-slate-200 cursor-pointer flex-shrink-0 bg-white shadow-2xs"
                 >
-                  <ArrowLeft size={14} /> Back to Banner Templates
+                  <ArrowLeft size={14} /> Back to Product Templates
                 </Button>
                 <span className="text-slate-300">|</span>
                 <span className="inline-flex items-center rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-1 text-[13px] font-bold whitespace-nowrap">
-                  Banner Template Details
+                  Product Template Details
                 </span>
                 {/* <span className="hidden sm:inline-flex items-center rounded-xl bg-slate-50 text-slate-500 border border-slate-200 px-2.5 py-1 text-[13px] font-medium whitespace-nowrap">
                   Anyone with this link can review
@@ -813,15 +813,15 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                   type="button"
                   variant="outline"
                   size="sm"
-                  disabled={loadingBanners || refreshingBanners}
-                  onClick={() => loadBannerTemplates(true)}
+                  disabled={loadingProducts || refreshingProducts}
+                  onClick={() => loadProductTemplates(true)}
                   className="h-8 px-3 rounded-xl bg-white text-xs font-semibold flex-shrink-0"
                   title="Refresh Template Data"
                 >
                   <RefreshCw
                     size={13}
                     className={
-                      refreshingBanners ? "animate-spin text-indigo-600" : ""
+                      refreshingProducts ? "animate-spin text-indigo-600" : ""
                     }
                   />
                   Refresh
@@ -860,21 +860,21 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
 
             {/* Two-Column Review Layout */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-              {/* LEFT COLUMN: Project Banners */}
+              {/* LEFT COLUMN: Project Products */}
               <div className="lg:col-span-8 space-y-4">
                 <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-4">
                   <div className="flex items-center justify-between gap-3">
                     <h3 className="text-[13px] font-bold uppercase tracking-[0.08em] text-indigo-600">
-                      BANNER TEMPLATE
+                      PRODUCT TEMPLATE
                     </h3>
                     {/* <p className="text-[13px] text-slate-400 font-medium">
                       Select variation &amp; preview
                     </p> */}
                   </div>
 
-                  {/* Banner proof container */}
+                  {/* Product proof container */}
                   <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 space-y-4 transition">
-                    {/* Banner sub-header */}
+                    {/* product sub-header */}
                     <div className="flex items-start justify-between gap-3 flex-wrap">
                       <div className="min-w-0 space-y-1">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -882,7 +882,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                             {viewingTemplate.name}
                           </h4>
                           <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 px-2 py-0.5 text-[13px] font-semibold">
-                            <FileImage size={11} /> Banner Template
+                            <FileImage size={11} /> Product Template
                           </span>
                           {/* <span className="text-[13px] text-slate-400 font-mono font-semibold">
                             v{activeImageIndex + 1}
@@ -890,17 +890,17 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                         </div>
                         <p className="text-[12px] text-slate-500">
                           {viewingTemplate.description ||
-                            "Banner template preview"}
+                            "Product template preview"}
                         </p>
                       </div>
-                      {/* Commented out Approved badge on banner preview */}
+                      {/* Commented out Approved badge on product preview */}
                       {/* <span className="inline-flex items-center gap-1 text-[13px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                         <CheckCircle2 size={11} className="text-emerald-600" />{" "}
                         Approved
                       </span> */}
                     </div>
 
-                    {/* Banner Main Proof Preview */}
+                    {/* product main proof preview */}
                     <div className="rounded-xl bg-slate-50 border border-slate-200/80 p-2 sm:p-3">
                       <div className="relative h-[220px] sm:h-[320px] md:h-[400px] bg-white rounded-lg overflow-hidden group border border-slate-200/60 flex items-center justify-center p-2">
                         {viewingTemplate.images &&
@@ -963,7 +963,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                       viewingTemplate.images.length > 1 && (
                         <div className="space-y-1.5 pt-1">
                           <span className="text-[13px] font-bold text-slate-600 block">
-                            Switch Banner Variation:
+                            Switch Product Variation:
                           </span>
                           <div className="flex items-center gap-2 overflow-x-auto pb-1">
                             {viewingTemplate.images.map((img, idx) => (
@@ -992,7 +992,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                       )}
                     */}
 
-                    {/* Banner Technical Specifications */}
+                    {/* product technical specifications */}
                     <div className="pt-2 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
                       <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-150">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">
@@ -1016,7 +1016,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                           Format
                         </span>
                         <span className="font-bold text-slate-900 mt-0.5 block">
-                          Banner Template
+                          Product Template
                         </span>
                       </div>
                     </div>
@@ -1030,10 +1030,10 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                 <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-4">
                   <div>
                     <h3 className="font-bold text-slate-900 text-sm">
-                      Customize Banner
+                      Customize Product
                     </h3>
                     <p className="text-xs text-slate-500 mt-0.5">
-                      Fill in your customization details to request this banner.
+                      Fill in your customization details to request this product.
                     </p>
                   </div>
 
@@ -1062,7 +1062,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
 
                   {/* Form fields */}
                   <form
-                    id="banner-review-customization-form"
+                    id="product-review-customization-form"
                     onSubmit={handleSaveCustomization}
                     className="space-y-3.5"
                   >
@@ -1176,22 +1176,22 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                     ) : (
                       <div className="space-y-1.5">
                         <Textarea
-                          placeholder="Type feedback or required changes for this banner..."
+                          placeholder="Type feedback or required changes for this product..."
                           rows={4}
                           className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition resize-none bg-white"
                         />
                       </div>
                     )}
 
-                    {/* Quantity of Banners Required */}
+                    {/* quantity of products required */}
                     <div className="pt-2 border-t border-slate-100 space-y-1.5">
                       <div className="flex items-center justify-between">
                         <label className="text-[11.5px] font-bold text-slate-700 flex items-center gap-1.5">
-                          <span>Quantity (Number of Banners)</span>
+                          <span>Quantity (Number of Products)</span>
                           <span className="text-red-500 font-bold">*</span>
                         </label>
                         <span className="text-[10.5px] text-slate-400">
-                          Total prints / banners needed
+                          Total prints / products needed
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -1229,12 +1229,12 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                           +
                         </button>
                         <span className="text-xs text-slate-500 font-medium ml-1">
-                          {customizationQuantity > 1 ? "Banners" : "Banner"}
+                          {customizationQuantity > 1 ? "Products" : "Product"}
                         </span>
                       </div>
                     </div>
 
-                    {/* Action button: Submit banner customization request */}
+                    {/* Action button: Submit product customization request */}
                     <div className="pt-2">
                       {/* Commented out proof review buttons:
                       <div className="grid grid-cols-2 gap-2 pt-1">
@@ -1274,13 +1274,13 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                         ) : (
                           <Send size={14} />
                         )}
-                        <span>Submit Banner Request</span>
+                        <span>Submit Product Request</span>
                       </Button>
                     </div>
                   </form>
                 </div>
 
-                {/* Commented out fake approval status history - actual submissions are tracked under 'My Banner Submissions' */}
+                {/* Commented out fake approval status history - actual submissions are tracked under 'My Product Submissions' */}
                 {/* 
                 <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-3.5">
                   <div className="flex items-center justify-between">
@@ -1323,7 +1323,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                         Pending Review
                       </span>
                       <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-150 text-slate-700 text-[13px] leading-relaxed">
-                        Initial banner uploaded
+                        Initial product uploaded
                       </div>
                       <span className="text-[10px] text-slate-400 block">
                         {new Date(
@@ -1350,9 +1350,9 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                 />
                 <Input
                   type="text"
-                  placeholder="Search banner templates..."
-                  value={bannerSearch}
-                  onChange={(e) => setBannerSearch(e.target.value)}
+                  placeholder="Search product templates..."
+                  value={productSearch}
+                  onChange={(e) => setProductSearch(e.target.value)}
                   className="pl-9 h-10 bg-white shadow-sm text-xs"
                 />
               </div>
@@ -1360,20 +1360,20 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
               <div className="flex items-center gap-2 flex-shrink-0">
                 <div className="flex items-center gap-0.5 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
                   <Button
-                    variant={bannerViewMode === "grid" ? "default" : "ghost"}
+                    variant={productViewMode === "grid" ? "default" : "ghost"}
                     size="icon-sm"
-                    onClick={() => setBannerViewMode("grid")}
+                    onClick={() => setProductViewMode("grid")}
                     title="Card View"
-                    className={bannerViewMode === "grid" ? "shadow-sm" : ""}
+                    className={productViewMode === "grid" ? "shadow-sm" : ""}
                   >
                     <LayoutGrid size={14} />
                   </Button>
                   <Button
-                    variant={bannerViewMode === "list" ? "default" : "ghost"}
+                    variant={productViewMode === "list" ? "default" : "ghost"}
                     size="icon-sm"
-                    onClick={() => setBannerViewMode("list")}
+                    onClick={() => setProductViewMode("list")}
                     title="List View"
-                    className={bannerViewMode === "list" ? "shadow-sm" : ""}
+                    className={productViewMode === "list" ? "shadow-sm" : ""}
                   >
                     <List size={14} />
                   </Button>
@@ -1381,42 +1381,42 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
 
                 <Button
                   variant="outline"
-                  disabled={loadingBanners || refreshingBanners}
-                  onClick={() => loadBannerTemplates(true)}
-                  title="Refresh Banner Templates"
+                  disabled={loadingProducts || refreshingProducts}
+                  onClick={() => loadProductTemplates(true)}
+                  title="Refresh Product Templates"
                 >
                   <RefreshCw
                     size={14}
                     className={
-                      refreshingBanners ? "animate-spin text-indigo-600" : ""
+                      refreshingProducts ? "animate-spin text-indigo-600" : ""
                     }
                   />
-                  {refreshingBanners ? "Refreshing..." : "Refresh"}
+                  {refreshingProducts ? "Refreshing..." : "Refresh"}
                 </Button>
               </div>
             </div>
 
-            {/* Banner Content Grid / List */}
-            {loadingBanners ? (
+            {/* product content grid / list */}
+            {loadingProducts ? (
               <Card className="p-10 text-center text-xs text-slate-500">
-                Loading banner templates...
+                Loading product templates...
               </Card>
-            ) : bannerDisplayItems.length === 0 ? (
+            ) : productDisplayItems.length === 0 ? (
               <Card className="p-12 text-center text-slate-400 space-y-2">
                 <FileImage size={40} className="mx-auto text-slate-300" />
                 <p className="text-sm font-semibold text-slate-700">
-                  No banner templates found.
+                  No product templates found.
                 </p>
                 <p className="text-xs">
-                  {bannerSearch
+                  {productSearch
                     ? "No templates match your search criteria."
-                    : "No marketing banners have been added yet."}
+                    : "No marketing products have been added yet."}
                 </p>
               </Card>
-            ) : bannerViewMode === "list" ? (
+            ) : productViewMode === "list" ? (
               /* List View */
               <div className="space-y-2">
-                {bannerDisplayItems.map((item) => (
+                {productDisplayItems.map((item) => (
                   <Card
                     key={item.key}
                     onClick={() => {
@@ -1454,9 +1454,9 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                           ).toLocaleDateString()}
                         </p>
                       </div>
-                      <span className="portal-action" title="Customize Banner">
+                      <span className="portal-action" title="Customize Product">
                         <Eye size={15} aria-hidden="true" />
-                        <span className="sr-only">Customize Banner</span>
+                        <span className="sr-only">Customize Product</span>
                       </span>
                     </div>
                   </Card>
@@ -1465,7 +1465,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
             ) : (
               /* Grid View (Matching Screenshot 1) */
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {bannerDisplayItems.map((item) => {
+                {productDisplayItems.map((item) => {
                   const effectiveImage = item.imageUrl
                     ? resolveImageUrl(item.imageUrl)
                     : "";
@@ -1479,7 +1479,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                       }}
                       className="overflow-hidden transition hover:border-indigo-300 hover:shadow-md p-0 cursor-pointer"
                     >
-                      {/* Banner image preview */}
+                      {/* Product image preview */}
                       <div className="relative aspect-[16/10] bg-slate-50 border-b border-slate-100 flex items-center justify-center overflow-hidden">
                         {effectiveImage ? (
                           <img
@@ -1495,7 +1495,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                             </span>
                           </div>
                         )}
-                        {/* Commented out Approved badge on banner template card */}
+                        {/* Commented out Approved badge on product template card */}
                         {/* <div className="absolute top-2 right-2">
                           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 text-[10.5px] font-semibold">
                             <CheckCircle2
@@ -1533,10 +1533,10 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                           </span>
                           <span
                             className="portal-action"
-                            title="Customize Banner"
+                            title="Customize Product"
                           >
                             <Eye size={15} aria-hidden="true" />
-                            <span className="sr-only">Customize Banner</span>
+                            <span className="sr-only">Customize Product</span>
                           </span>
                         </div>
                       </div>
@@ -1548,14 +1548,14 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
           </div>
         ))}
 
-      {/* TAB 4: MY BANNER SUBMISSIONS */}
-      {activeTab === "my-banner-submissions" && (
+      {/* TAB 4: MY Product submissionS */}
+      {activeTab === "my-product-submissions" && (
         <div
           className={`space-y-5 ${threadSubmissionId !== null ? "max-w-6xl w-full" : "max-w-3xl"}`}
         >
           {threadSubmissionId !== null ? (
             /* IN-PAGE EMBEDDED SUBMISSION DETAILS & THREAD (NO POPUP) */
-            <BannerSubmissionThreadModal
+            <ProductSubmissionThreadModal
               submissionId={threadSubmissionId}
               isOpen={true}
               onClose={() => {
@@ -1646,26 +1646,26 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
               {/* Submissions List / Grid */}
               {loadingMySubmissions ? (
                 <Card className="p-10 text-center text-xs text-slate-500">
-                  Loading your submitted banner requests...
+                  Loading your submitted product requests...
                 </Card>
               ) : filteredMySubmissions.length === 0 ? (
                 <Card className="p-12 text-center text-slate-400 space-y-2">
                   <FileImage size={40} className="mx-auto text-slate-300" />
                   <p className="text-sm font-semibold text-slate-700">
-                    No banner submissions found.
+                    No product submissions found.
                   </p>
                   <p className="text-xs">
                     {submissionSearch
                       ? "No submissions matched your search query."
-                      : "When you submit a banner customization request, it will appear here."}
+                      : "When you submit a product customization request, it will appear here."}
                   </p>
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setActiveTab("banner-templates")}
+                    onClick={() => setActiveTab("product-templates")}
                     className="text-xs mt-2 font-semibold"
                   >
-                    Browse Banner Templates
+                    Browse Product Templates
                   </Button>
                 </Card>
               ) : submissionListViewMode === "list" ? (
@@ -1815,7 +1815,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
 
             {/* Modal Body */}
             <div className="p-5 overflow-y-auto space-y-4 flex-1">
-              {/* Banner Image Preview */}
+              {/* product image Preview */}
               <div className="rounded-xl border border-slate-200 overflow-hidden bg-slate-950 flex items-center justify-center p-2 min-h-[180px] max-h-[260px]">
                 {selectedMySubmission.previewImageUrl ? (
                   <img
@@ -1945,7 +1945,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                   variant="outline"
                   size="sm"
                   onClick={() =>
-                    handleDownloadBanner(
+                    handleDownloadProduct(
                       selectedMySubmission.previewImageUrl,
                       `${selectedMySubmission.templateName}.png`,
                     )
@@ -1953,7 +1953,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                   className="text-xs font-semibold gap-1.5 h-8 text-slate-700"
                 >
                   <Download size={13} />
-                  <span>Download Banner</span>
+                  <span>Download Product</span>
                 </Button>
               </div>
             )}

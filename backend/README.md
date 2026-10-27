@@ -33,16 +33,16 @@ Override `DEFAULT_SUPERADMIN_EMAIL`, `DEFAULT_SUPERADMIN_NAME`, and
 `DEFAULT_SUPERADMIN_PASSWORD` before starting the backend if you want different
 initial credentials.
 
-## Endpoints (Banner System)
+## Endpoints (Product System)
 
-### Banner Templates & Variations
+### Product Templates & Variations
 | Method | Path | Description | Access |
 | ------ | ---- | ----------- | ------ |
-| GET    | `/api/getBannerTemplates` | List banner templates (`?orientation`, `?includeInactive`) | Authenticated |
-| GET    | `/api/getBannerTemplate/:id` | Get template by ID with images array & custom fields | Authenticated |
-| POST   | `/api/createBannerTemplate` | Create banner template with images atomically (`image_url`, `image_name`, `sort_order`) | Super Admin (`templates:manage`) |
-| PUT    | `/api/updateBannerTemplate/:id` | Update template with images array atomically | Super Admin (`templates:manage`) |
-| DELETE | `/api/deleteBannerTemplate/:id` | Delete banner template | Super Admin (`templates:manage`) |
+| GET    | `/api/getProductTemplates` | List product templates (`?orientation`, `?includeInactive`) | Authenticated |
+| GET    | `/api/getProductTemplate/:id` | Get template by ID with images array & custom fields | Authenticated |
+| POST   | `/api/createProductTemplate` | Create product template with images atomically (`image_url`, `image_name`, `sort_order`) | Super Admin (`product_templates:manage`) |
+| PUT    | `/api/updateProductTemplate/:id` | Update template with images array atomically | Super Admin (`product_templates:manage`) |
+| DELETE | `/api/deleteProductTemplate/:id` | Delete product template | Super Admin (`product_templates:manage`) |
 
 ## Environment
 

@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Edit, Eye, Layers, Loader2, Plus, Trash2, X } from "lucide-react";
 import type { DiagramTemplateModel } from "@/app/lib/client/canvas-api";
-import { resolveImageUrl } from "@/app/lib/client/banner-template-api";
+import { resolveImageUrl } from "@/app/lib/client/product-template-api";
 import { Button, Card } from "@/app/Components/ui";
 import { DetailRow } from "@/app/Components/ui/detail-row";
 

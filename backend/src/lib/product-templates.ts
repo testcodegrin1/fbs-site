@@ -2,20 +2,17 @@ import type { RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import { query, execute, withTransaction } from "./db.js";
 import { AuthError } from "./errors.js";
 import type {
-  BannerImageModel,
-  BannerOrientation,
-  BannerTemplateFieldModel,
-  BannerTemplateImageModel,
-  BannerTemplateModel,
-  BannerSubmissionDetailModel,
-  BannerSubmissionFileModel,
-  BannerSubmissionMessageModel,
-  BannerSubmissionThreadModel,
+  ProductOrientation,
+  ProductTemplateFieldModel,
+  ProductTemplateImageModel,
+  ProductTemplateModel,
+  ProductSubmissionDetailModel,
+  ProductSubmissionFileModel,
+  ProductSubmissionMessageModel,
+  ProductSubmissionThreadModel,
 } from "./types.js";
 
-function mapBannerTemplateImage(
-  row: any,
-): BannerTemplateImageModel {
+function mapProductTemplateImage(row: any): ProductTemplateImageModel {
   return {
     id: Number(row.id),
     templateId: Number(row.template_id),
@@ -25,12 +22,12 @@ function mapBannerTemplateImage(
     createdAt: new Date(row.created_at).toISOString(),
     updatedAt: new Date(row.updated_at).toISOString(),
     title: row.title || row.image_name || null,
-    imageType: row.image_type || "banner",
+    imageType: row.image_type || "product",
     isActive: row.is_active != null ? Boolean(row.is_active) : true,
   };
 }
 
-function mapTemplate(row: any): BannerTemplateModel {
+function mapTemplate(row: any): ProductTemplateModel {
   return {
     id: Number(row.id),
     name: row.name,
@@ -46,7 +43,7 @@ function mapTemplate(row: any): BannerTemplateModel {
   };
 }
 
-function mapField(row: any): BannerTemplateFieldModel {
+function mapField(row: any): ProductTemplateFieldModel {
   let parsedOptions: string[] | null = null;
   if (row.options) {
     if (typeof row.options === "string") {
@@ -79,50 +76,56 @@ function mapField(row: any): BannerTemplateFieldModel {
   };
 }
 
-export async function listBannerTemplates(
+export async function listProductTemplates(
   includeInactive = false,
-): Promise<BannerTemplateModel[]> {
-  let sql = `SELECT bt.* FROM banner_templates bt WHERE 1=1`;
+): Promise<ProductTemplateModel[]> {
+  let sql = `SELECT pt.* FROM product_templates pt WHERE 1=1`;
   const params: any[] = [];
   if (!includeInactive) {
-    sql += ` AND bt.is_active = 1`;
+    sql += ` AND pt.is_active = 1`;
   }
-  sql += ` ORDER BY bt.id DESC`;
+  sql += ` ORDER BY pt.id DESC`;
 
   const [rows] = await query<RowDataPacket[]>(sql, params);
   const templates = rows.map(mapTemplate);
-
   if (templates.length === 0) {
     return [];
   }
 
   const templateIds = templates.map((t) => t.id);
   const placeholders = templateIds.map(() => "?").join(",");
-  const [imageRows] = await query<RowDataPacket[]>(
-    `SELECT * FROM banner_template_images WHERE template_id IN (${placeholders}) ORDER BY sort_order ASC, id ASC`,
-    templateIds,
-  );
 
-  const imagesByTemplateId = new Map<number, BannerTemplateImageModel[]>();
+  let imageRows: RowDataPacket[] = [];
+  try {
+    const [res] = await query<RowDataPacket[]>(
+      `SELECT * FROM product_template_images WHERE template_id IN (${placeholders}) ORDER BY sort_order ASC, id ASC`,
+      templateIds,
+    );
+    imageRows = res;
+  } catch {
+    imageRows = [];
+  }
+
+  const imagesByTemplateId = new Map<number, ProductTemplateImageModel[]>();
   for (const imgRow of imageRows) {
     const tId = Number(imgRow.template_id);
     if (!imagesByTemplateId.has(tId)) {
       imagesByTemplateId.set(tId, []);
     }
-    imagesByTemplateId.get(tId)!.push(mapBannerTemplateImage(imgRow));
+    imagesByTemplateId.get(tId)!.push(mapProductTemplateImage(imgRow));
   }
 
   for (const t of templates) {
     t.images = imagesByTemplateId.get(t.id) || [];
   }
 
-  // Load custom input fields for all templates
+  // Load custom input fields
   try {
     const [fieldRows] = await query<RowDataPacket[]>(
-      `SELECT * FROM banner_template_fields WHERE template_id IN (${placeholders}) ORDER BY sort_order ASC, id ASC`,
+      `SELECT * FROM product_template_fields WHERE template_id IN (${placeholders}) ORDER BY sort_order ASC, id ASC`,
       templateIds,
     );
-    const fieldsByTemplateId = new Map<number, BannerTemplateFieldModel[]>();
+    const fieldsByTemplateId = new Map<number, ProductTemplateFieldModel[]>();
     for (const fRow of fieldRows) {
       const tId = Number(fRow.template_id);
       if (!fieldsByTemplateId.has(tId)) {
@@ -134,13 +137,12 @@ export async function listBannerTemplates(
       t.fields = fieldsByTemplateId.get(t.id) || [];
     }
   } catch {
-    // If fields query fails (e.g. sort_order not present yet), fallback
     try {
       const [fieldRows] = await query<RowDataPacket[]>(
-        `SELECT * FROM banner_template_fields WHERE template_id IN (${placeholders}) ORDER BY id ASC`,
+        `SELECT * FROM product_template_fields WHERE template_id IN (${placeholders}) ORDER BY id ASC`,
         templateIds,
       );
-      const fieldsByTemplateId = new Map<number, BannerTemplateFieldModel[]>();
+      const fieldsByTemplateId = new Map<number, ProductTemplateFieldModel[]>();
       for (const fRow of fieldRows) {
         const tId = Number(fRow.template_id);
         if (!fieldsByTemplateId.has(tId)) {
@@ -161,19 +163,19 @@ export async function listBannerTemplates(
   return templates;
 }
 
-export async function getBannerTemplateFields(
+export async function getProductTemplateFields(
   templateId: number,
-): Promise<BannerTemplateFieldModel[]> {
+): Promise<ProductTemplateFieldModel[]> {
   try {
     const [rows] = await query<RowDataPacket[]>(
-      `SELECT * FROM banner_template_fields WHERE template_id = ? ORDER BY sort_order ASC, id ASC`,
+      `SELECT * FROM product_template_fields WHERE template_id = ? ORDER BY sort_order ASC, id ASC`,
       [templateId],
     );
     return rows.map(mapField);
   } catch {
     try {
       const [rows] = await query<RowDataPacket[]>(
-        `SELECT * FROM banner_template_fields WHERE template_id = ? ORDER BY id ASC`,
+        `SELECT * FROM product_template_fields WHERE template_id = ? ORDER BY id ASC`,
         [templateId],
       );
       return rows.map(mapField);
@@ -183,39 +185,31 @@ export async function getBannerTemplateFields(
   }
 }
 
-export async function listBannerImages(filter: {
+export async function listProductImages(filter: {
   templateId?: number;
-}): Promise<BannerTemplateImageModel[]> {
-  let sql = `SELECT bti.* FROM banner_template_images bti`;
+}): Promise<ProductTemplateImageModel[]> {
+  let sql = `SELECT pti.* FROM product_template_images pti`;
   const params: any[] = [];
-  const whereClauses: string[] = [];
-
   if (filter.templateId) {
-    whereClauses.push(`bti.template_id = ?`);
+    sql += ` WHERE pti.template_id = ?`;
     params.push(filter.templateId);
   }
-
-  if (whereClauses.length > 0) {
-    sql += ` WHERE ` + whereClauses.join(" AND ");
-  }
-
-  sql += ` ORDER BY bti.sort_order ASC, bti.id ASC`;
-
+  sql += ` ORDER BY pti.sort_order ASC, pti.id ASC`;
   const [rows] = await query<RowDataPacket[]>(sql, params);
-  return rows.map((r) => mapBannerTemplateImage(r));
+  return rows.map((r) => mapProductTemplateImage(r));
 }
 
-export async function saveBannerTemplateImages(
+export async function saveProductTemplateImages(
   templateId: number,
   images: Array<{
     imageUrl: string;
     imageName?: string | null;
     sortOrder?: number;
   }>,
-): Promise<BannerTemplateImageModel[]> {
+): Promise<ProductTemplateImageModel[]> {
   await withTransaction(async (conn) => {
     await conn.execute(
-      `DELETE FROM banner_template_images WHERE template_id = ?`,
+      `DELETE FROM product_template_images WHERE template_id = ?`,
       [templateId],
     );
 
@@ -231,23 +225,23 @@ export async function saveBannerTemplateImages(
         null;
 
       await conn.execute(
-        `INSERT INTO banner_template_images (template_id, image_url, image_name, sort_order)
+        `INSERT INTO product_template_images (template_id, image_url, image_name, sort_order)
          VALUES (?, ?, ?, ?)`,
         [templateId, img.imageUrl.trim(), imageName, img.sortOrder ?? i],
       );
     }
   });
 
-  return listBannerImages({ templateId });
+  return listProductImages({ templateId });
 }
 
-export async function addOrUpdateBannerImage(data: {
+export async function addOrUpdateProductImage(data: {
   id?: number;
   templateId: number;
   imageUrl: string;
   imageName?: string | null;
   sortOrder?: number;
-}): Promise<BannerTemplateImageModel> {
+}): Promise<ProductTemplateImageModel> {
   const imageName =
     data.imageName?.trim() ||
     (data as any).image_name?.trim() ||
@@ -256,55 +250,60 @@ export async function addOrUpdateBannerImage(data: {
 
   if (data.id) {
     await execute(
-      `UPDATE banner_template_images
+      `UPDATE product_template_images
        SET template_id = ?, image_url = ?, image_name = ?, sort_order = ?
        WHERE id = ?`,
       [data.templateId, data.imageUrl.trim(), imageName, data.sortOrder ?? 0, data.id],
     );
     const [rows] = await query<RowDataPacket[]>(
-      `SELECT * FROM banner_template_images WHERE id = ?`,
+      `SELECT * FROM product_template_images WHERE id = ?`,
       [data.id],
     );
-    return mapBannerTemplateImage(rows[0]);
+    return mapProductTemplateImage(rows[0]);
   } else {
     const [res] = await execute<ResultSetHeader>(
-      `INSERT INTO banner_template_images (template_id, image_url, image_name, sort_order)
+      `INSERT INTO product_template_images (template_id, image_url, image_name, sort_order)
        VALUES (?, ?, ?, ?)`,
       [data.templateId, data.imageUrl.trim(), imageName, data.sortOrder ?? 0],
     );
     const [rows] = await query<RowDataPacket[]>(
-      `SELECT * FROM banner_template_images WHERE id = ?`,
+      `SELECT * FROM product_template_images WHERE id = ?`,
       [res.insertId],
     );
-    return mapBannerTemplateImage(rows[0]);
+    return mapProductTemplateImage(rows[0]);
   }
 }
 
-export async function deleteBannerImage(id: number): Promise<boolean> {
-  await execute(`DELETE FROM banner_template_images WHERE id = ?`, [id]);
+export async function deleteProductImage(id: number): Promise<boolean> {
+  await execute(`DELETE FROM product_template_images WHERE id = ?`, [id]);
   return true;
 }
 
-export async function getBannerTemplateById(
+export async function getProductTemplateById(
   id: number,
-): Promise<BannerTemplateModel | null> {
+): Promise<ProductTemplateModel | null> {
   const [rows] = await query<RowDataPacket[]>(
-    `SELECT bt.* FROM banner_templates bt WHERE bt.id = ?`,
+    `SELECT pt.* FROM product_templates pt WHERE pt.id = ?`,
     [id],
   );
   if (!rows[0]) return null;
   const template = mapTemplate(rows[0]);
-  template.fields = await getBannerTemplateFields(id);
+  template.fields = await getProductTemplateFields(id);
 
-  const [imgRows] = await query<RowDataPacket[]>(
-    `SELECT * FROM banner_template_images WHERE template_id = ? ORDER BY sort_order ASC, id ASC`,
-    [id],
-  );
-  template.images = imgRows.map((r) => mapBannerTemplateImage(r));
+  try {
+    const [imgRows] = await query<RowDataPacket[]>(
+      `SELECT * FROM product_template_images WHERE template_id = ? ORDER BY sort_order ASC, id ASC`,
+      [id],
+    );
+    template.images = imgRows.map((r) => mapProductTemplateImage(r));
+  } catch {
+    template.images = [];
+  }
+
   return template;
 }
 
-export type BannerImageInput =
+export type ProductImageInput =
   | string
   | {
       imageUrl?: string;
@@ -363,7 +362,7 @@ function normalizeImages(
   return normalized;
 }
 
-export async function saveBannerTemplate(data: {
+export async function saveProductTemplate(data: {
   id?: number;
   name?: string;
   description?: string | null;
@@ -373,12 +372,12 @@ export async function saveBannerTemplate(data: {
   heightPx?: number;
   dimensions_label?: string | null;
   dimensionsLabel?: string | null;
-  orientation?: BannerOrientation;
+  orientation?: ProductOrientation;
   is_active?: boolean | number;
   isActive?: boolean | number;
-  fields?: Partial<BannerTemplateFieldModel>[];
-  images?: BannerImageInput[];
-}): Promise<BannerTemplateModel> {
+  fields?: Partial<ProductTemplateFieldModel>[];
+  images?: ProductImageInput[];
+}): Promise<ProductTemplateModel> {
   const normalizedImages = normalizeImages(data.images);
 
   const templateId = await withTransaction(async (conn) => {
@@ -387,11 +386,12 @@ export async function saveBannerTemplate(data: {
     if (currentId) {
       // 1. UPDATE EXISTING TEMPLATE
       const [existingRows] = await conn.execute<RowDataPacket[]>(
-        `SELECT * FROM banner_templates WHERE id = ? FOR UPDATE`,
+        `SELECT * FROM product_templates WHERE id = ? FOR UPDATE`,
         [currentId],
       );
+
       if (!existingRows[0]) {
-        throw new AuthError("Banner template not found.", 404);
+        throw new AuthError("Product template not found.", 404);
       }
       const existing = existingRows[0];
 
@@ -420,13 +420,6 @@ export async function saveBannerTemplate(data: {
             ? Number(data.height_px)
             : Number(existing.height_px);
 
-      const dimensionsLabel =
-        data.dimensionsLabel !== undefined
-          ? data.dimensionsLabel || null
-          : data.dimensions_label !== undefined
-            ? data.dimensions_label || null
-            : existing.dimensions_label;
-
       const orientation =
         data.orientation || existing.orientation || "landscape";
 
@@ -444,7 +437,7 @@ export async function saveBannerTemplate(data: {
               : 0;
 
       await conn.execute(
-        `UPDATE banner_templates SET 
+        `UPDATE product_templates SET 
           name = ?, description = ?, 
           width_px = ?, height_px = ?, 
           orientation = ?, is_active = ?
@@ -460,24 +453,24 @@ export async function saveBannerTemplate(data: {
         ],
       );
 
-      // Synchronize images in the same transaction if provided
+      // Synchronize images in transaction if provided
       if (normalizedImages !== undefined) {
         await conn.execute(
-          `DELETE FROM banner_template_images WHERE template_id = ?`,
+          `DELETE FROM product_template_images WHERE template_id = ?`,
           [currentId],
         );
 
         for (let i = 0; i < normalizedImages.length; i++) {
           const img = normalizedImages[i];
           await conn.execute(
-            `INSERT INTO banner_template_images (template_id, image_url, image_name, sort_order)
+            `INSERT INTO product_template_images (template_id, image_url, image_name, sort_order)
              VALUES (?, ?, ?, ?)`,
             [currentId, img.imageUrl, img.imageName || null, img.sortOrder ?? i],
           );
         }
       }
 
-      // Synchronize fields in the same transaction if provided
+      // Synchronize fields in transaction if provided
       if (data.fields !== undefined) {
         await saveFieldsInTx(conn, currentId, data.fields);
       }
@@ -505,8 +498,8 @@ export async function saveBannerTemplate(data: {
               : 0
             : 1;
 
-      const [res] = await conn.execute<ResultSetHeader>(
-        `INSERT INTO banner_templates (
+      const [insertRes] = await conn.execute<ResultSetHeader>(
+        `INSERT INTO product_templates (
           name, description,
           width_px, height_px, orientation, is_active
         ) VALUES (?, ?, ?, ?, ?, ?)`,
@@ -520,13 +513,13 @@ export async function saveBannerTemplate(data: {
         ],
       );
 
-      currentId = res.insertId;
+      currentId = insertRes.insertId;
 
       if (normalizedImages && normalizedImages.length > 0) {
         for (let i = 0; i < normalizedImages.length; i++) {
           const img = normalizedImages[i];
           await conn.execute(
-            `INSERT INTO banner_template_images (template_id, image_url, image_name, sort_order)
+            `INSERT INTO product_template_images (template_id, image_url, image_name, sort_order)
              VALUES (?, ?, ?, ?)`,
             [currentId, img.imageUrl, img.imageName || null, img.sortOrder ?? i],
           );
@@ -541,11 +534,15 @@ export async function saveBannerTemplate(data: {
     }
   });
 
-  return (await getBannerTemplateById(templateId))!;
+  return (await getProductTemplateById(templateId))!;
 }
 
-async function saveFieldsInTx(conn: any, templateId: number, fields: any[]) {
-  await conn.execute(`DELETE FROM banner_template_fields WHERE template_id = ?`, [templateId]);
+async function saveFieldsInTx(
+  conn: any,
+  templateId: number,
+  fields: any[],
+) {
+  await conn.execute(`DELETE FROM product_template_fields WHERE template_id = ?`, [templateId]);
 
   if (!Array.isArray(fields) || fields.length === 0) return;
 
@@ -573,7 +570,7 @@ async function saveFieldsInTx(conn: any, templateId: number, fields: any[]) {
 
     try {
       await conn.execute(
-        `INSERT INTO banner_template_fields (
+        `INSERT INTO product_template_fields (
           template_id, label, field_type, placeholder, options, is_required, is_editable, sort_order
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [templateId, label, fieldType, placeholder, optionsJson, isRequired, isEditable, sortOrder],
@@ -585,7 +582,7 @@ async function saveFieldsInTx(conn: any, templateId: number, fields: any[]) {
       ) {
         // Fallback for older table schema
         await conn.execute(
-          `INSERT INTO banner_template_fields (
+          `INSERT INTO product_template_fields (
             template_id, field_key, field_label, field_type, is_required, is_editable
           ) VALUES (?, ?, ?, ?, ?, ?)`,
           [templateId, `field_${i + 1}`, label, fieldType, isRequired, isEditable],
@@ -597,32 +594,32 @@ async function saveFieldsInTx(conn: any, templateId: number, fields: any[]) {
   }
 }
 
-export async function saveBannerTemplateFields(
+export async function saveProductTemplateFields(
   templateId: number,
-  fields: Partial<BannerTemplateFieldModel>[],
-): Promise<BannerTemplateFieldModel[]> {
+  fields: Partial<ProductTemplateFieldModel>[],
+): Promise<ProductTemplateFieldModel[]> {
   await withTransaction(async (conn) => {
     await saveFieldsInTx(conn, templateId, fields);
   });
 
-  return getBannerTemplateFields(templateId);
+  return getProductTemplateFields(templateId);
 }
 
-export async function deleteBannerTemplate(id: number): Promise<boolean> {
-  await execute(`DELETE FROM banner_templates WHERE id = ?`, [id]);
+export async function deleteProductTemplate(id: number): Promise<boolean> {
+  await execute(`DELETE FROM product_templates WHERE id = ?`, [id]);
   return true;
 }
 
-// User-side Banner Customization Helpers
-export async function saveBannerCustomization(
+// User-side Product Customization Helpers
+export async function saveProductCustomization(
   templateId: number,
   userId: number,
   customizationValues: Record<string, any>,
   isNewSubmission = false,
 ): Promise<any> {
-  const template = await getBannerTemplateById(templateId);
+  const template = await getProductTemplateById(templateId);
   if (!template) {
-    throw new AuthError("Banner template not found.", 404);
+    throw new AuthError("Product template not found.", 404);
   }
   if (!template.isActive) {
     throw new AuthError("This printing product is no longer available.", 400);
@@ -642,10 +639,9 @@ export async function saveBannerCustomization(
           throw new AuthError(`Field "${f.label}" is required.`, 400);
         }
       }
-      // Check options for dropdown or radio
       if (
         f.isEditable &&
-        (f.fieldType === "dropdown" || f.fieldType === "radio") &&
+        (f.fieldType === "dropdown" || f.fieldType === "radio" || f.fieldType === "select") &&
         Array.isArray(f.options) &&
         f.options.length > 0
       ) {
@@ -671,300 +667,200 @@ export async function saveBannerCustomization(
 
   const valuesJson = JSON.stringify(customizationValues);
 
-  try {
-    let custId: number;
+  let custId: number;
 
-    if (!isNewSubmission) {
-      const [existing] = await query<RowDataPacket[]>(
-        `SELECT id FROM banner_customizations WHERE template_id = ? AND user_id = ? ORDER BY id DESC LIMIT 1`,
-        [templateId, userId],
-      );
+  if (!isNewSubmission) {
+    const [existing] = await query<RowDataPacket[]>(
+      `SELECT id FROM product_customizations WHERE template_id = ? AND user_id = ? ORDER BY id DESC LIMIT 1`,
+      [templateId, userId],
+    );
 
-      if (existing.length > 0) {
-        custId = Number(existing[0].id);
-        try {
-          await execute(
-            `UPDATE banner_customizations SET customization_values = ?, status = 'Pending', quantity = ?, updated_at = NOW() WHERE id = ?`,
-            [valuesJson, qty, custId],
-          );
-        } catch (colErr: any) {
-          if (
-            colErr.code === "ER_BAD_FIELD_ERROR" ||
-            String(colErr.message).includes("Unknown column")
-          ) {
-            try {
-              await execute(
-                `UPDATE banner_customizations SET customization_values = ?, status = 'Pending', updated_at = NOW() WHERE id = ?`,
-                [valuesJson, custId],
-              );
-            } catch (statusErr: any) {
-              await execute(
-                `UPDATE banner_customizations SET customization_values = ?, updated_at = NOW() WHERE id = ?`,
-                [valuesJson, custId],
-              );
-            }
-          } else {
-            throw colErr;
+    if (existing.length > 0) {
+      custId = Number(existing[0].id);
+      try {
+        await execute(
+          `UPDATE product_customizations SET customization_values = ?, status = 'Pending', quantity = ?, updated_at = NOW() WHERE id = ?`,
+          [valuesJson, qty, custId],
+        );
+      } catch (colErr: any) {
+        if (
+          colErr.code === "ER_BAD_FIELD_ERROR" ||
+          String(colErr.message).includes("Unknown column")
+        ) {
+          try {
+            await execute(
+              `UPDATE product_customizations SET customization_values = ?, status = 'Pending', updated_at = NOW() WHERE id = ?`,
+              [valuesJson, custId],
+            );
+          } catch {
+            await execute(
+              `UPDATE product_customizations SET customization_values = ?, updated_at = NOW() WHERE id = ?`,
+              [valuesJson, custId],
+            );
           }
+        } else {
+          throw colErr;
         }
-
-        return {
-          id: custId,
-          templateId,
-          userId,
-          quantity: qty,
-          customizationValues,
-          status: "Pending",
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
       }
-    }
 
-    // Insert new submission record
-    try {
-      const [res] = await execute<ResultSetHeader>(
-        `INSERT INTO banner_customizations (template_id, user_id, customization_values, status, quantity) VALUES (?, ?, ?, 'Pending', ?)`,
-        [templateId, userId, valuesJson, qty],
-      );
-      custId = res.insertId;
-    } catch (colErr: any) {
-      if (
-        colErr.code === "ER_BAD_FIELD_ERROR" ||
-        String(colErr.message).includes("Unknown column")
-      ) {
-        try {
-          const [res] = await execute<ResultSetHeader>(
-            `INSERT INTO banner_customizations (template_id, user_id, customization_values, status) VALUES (?, ?, ?, 'Pending')`,
-            [templateId, userId, valuesJson],
-          );
-          custId = res.insertId;
-        } catch (statusErr: any) {
-          const [res] = await execute<ResultSetHeader>(
-            `INSERT INTO banner_customizations (template_id, user_id, customization_values) VALUES (?, ?, ?)`,
-            [templateId, userId, valuesJson],
-          );
-          custId = res.insertId;
-        }
-      } else {
-        throw colErr;
-      }
-    }
-
-    return {
-      id: custId,
-      templateId,
-      userId,
-      quantity: qty,
-      customizationValues,
-      status: "Pending",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-  } catch (err: any) {
-    if (err.code === "ER_NO_SUCH_TABLE" || String(err.message).includes("doesn't exist")) {
       return {
-        id: Date.now(),
+        id: custId,
         templateId,
         userId,
+        quantity: qty,
         customizationValues,
         status: "Pending",
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
     }
-    throw err;
   }
+
+  try {
+    const [res] = await execute<ResultSetHeader>(
+      `INSERT INTO product_customizations (template_id, user_id, customization_values, status, quantity) VALUES (?, ?, ?, 'Pending', ?)`,
+      [templateId, userId, valuesJson, qty],
+    );
+    custId = res.insertId;
+  } catch (colErr: any) {
+    if (
+      colErr.code === "ER_BAD_FIELD_ERROR" ||
+      String(colErr.message).includes("Unknown column")
+    ) {
+      try {
+        const [res] = await execute<ResultSetHeader>(
+          `INSERT INTO product_customizations (template_id, user_id, customization_values, status) VALUES (?, ?, ?, 'Pending')`,
+          [templateId, userId, valuesJson],
+        );
+        custId = res.insertId;
+      } catch {
+        const [res] = await execute<ResultSetHeader>(
+          `INSERT INTO product_customizations (template_id, user_id, customization_values) VALUES (?, ?, ?)`,
+          [templateId, userId, valuesJson],
+        );
+        custId = res.insertId;
+      }
+    } else {
+      throw colErr;
+    }
+  }
+
+  return {
+    id: custId,
+    templateId,
+    userId,
+    quantity: qty,
+    customizationValues,
+    status: "Pending",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
 }
 
-export async function getBannerCustomization(
+export async function getProductCustomization(
   templateId: number,
   userId: number,
 ): Promise<any | null> {
+  const [rows] = await query<RowDataPacket[]>(
+    `SELECT * FROM product_customizations WHERE template_id = ? AND user_id = ? ORDER BY id DESC LIMIT 1`,
+    [templateId, userId],
+  );
+  if (rows.length === 0) return null;
+  const r = rows[0];
+  let vals: Record<string, any> = {};
   try {
-    const [rows] = await query<RowDataPacket[]>(
-      `SELECT * FROM banner_customizations WHERE template_id = ? AND user_id = ? ORDER BY id DESC LIMIT 1`,
-      [templateId, userId],
-    );
-    if (rows.length === 0) return null;
-    const r = rows[0];
-    let vals: Record<string, any> = {};
-    try {
-      vals =
-        typeof r.customization_values === "string"
-          ? JSON.parse(r.customization_values)
-          : r.customization_values || {};
-    } catch {
-      vals = {};
-    }
-    return {
-      id: Number(r.id),
-      templateId: Number(r.template_id),
-      userId: Number(r.user_id),
-      customizationValues: vals,
-      status: r.status || "Pending",
-      createdAt: new Date(r.created_at).toISOString(),
-      updatedAt: new Date(r.updated_at).toISOString(),
-    };
+    vals =
+      typeof r.customization_values === "string"
+        ? JSON.parse(r.customization_values)
+        : r.customization_values || {};
   } catch {
-    return null;
+    vals = {};
   }
+  return {
+    id: Number(r.id),
+    templateId: Number(r.template_id),
+    userId: Number(r.user_id),
+    customizationValues: vals,
+    status: r.status || "Pending",
+    createdAt: new Date(r.created_at).toISOString(),
+    updatedAt: new Date(r.updated_at).toISOString(),
+  };
 }
 
-export async function listBannerSubmissions(filter?: {
+export async function listProductSubmissions(filter?: {
   search?: string;
   status?: string;
   userId?: number;
 }): Promise<any[]> {
-  try {
-    let sql = `
-      SELECT 
-        bc.*,
-        bt.name AS template_name,
-        bt.width_px,
-        bt.height_px,
-        bt.orientation,
-        u.name AS user_name,
-        u.email AS user_email
-      FROM banner_customizations bc
-      LEFT JOIN banner_templates bt ON bc.template_id = bt.id
-      LEFT JOIN users u ON bc.user_id = u.id
-      WHERE 1=1
-    `;
-    const params: any[] = [];
+  let sql = `
+    SELECT 
+      pc.*,
+      pt.name AS template_name,
+      pt.width_px,
+      pt.height_px,
+      pt.orientation,
+      u.name AS user_name,
+      u.email AS user_email
+    FROM product_customizations pc
+    LEFT JOIN product_templates pt ON pc.template_id = pt.id
+    LEFT JOIN users u ON pc.user_id = u.id
+    WHERE 1=1
+  `;
+  const params: any[] = [];
 
-    if (filter?.userId) {
-      sql += ` AND bc.user_id = ?`;
-      params.push(filter.userId);
-    }
+  if (filter?.userId) {
+    sql += ` AND pc.user_id = ?`;
+    params.push(filter.userId);
+  }
 
-    if (filter?.status && filter.status.toLowerCase() !== "all") {
-      sql += ` AND LOWER(COALESCE(bc.status, 'Pending')) = LOWER(?)`;
-      params.push(filter.status);
-    }
+  if (filter?.status && filter.status.toLowerCase() !== "all") {
+    sql += ` AND LOWER(COALESCE(pc.status, 'Pending')) = LOWER(?)`;
+    params.push(filter.status);
+  }
 
-    if (filter?.search) {
-      const q = `%${filter.search.trim()}%`;
-      sql += ` AND (
-        CAST(bc.id AS CHAR) LIKE ? OR
-        bt.name LIKE ? OR
-        u.name LIKE ? OR
-        u.email LIKE ?
-      )`;
-      params.push(q, q, q, q);
-    }
+  if (filter?.search) {
+    const q = `%${filter.search.trim()}%`;
+    sql += ` AND (
+      CAST(pc.id AS CHAR) LIKE ? OR
+      pt.name LIKE ? OR
+      u.name LIKE ? OR
+      u.email LIKE ?
+    )`;
+    params.push(q, q, q, q);
+  }
 
-    sql += ` ORDER BY bc.id DESC`;
+  sql += ` ORDER BY pc.id DESC`;
 
-    const [rows] = await query<RowDataPacket[]>(sql, params);
-    if (rows.length === 0) return [];
+  const [rows] = await query<RowDataPacket[]>(sql, params);
+  if (rows.length === 0) return [];
 
-    const templateIds = [...new Set(rows.map((r) => Number(r.template_id)).filter((id) => !isNaN(id) && id > 0))];
-    let imageRows: any[] = [];
-    if (templateIds.length > 0) {
-      const placeholders = templateIds.map(() => "?").join(",");
+  const templateIds = [
+    ...new Set(
+      rows.map((r) => Number(r.template_id)).filter((id) => !isNaN(id) && id > 0),
+    ),
+  ];
+  let imageRows: any[] = [];
+  if (templateIds.length > 0) {
+    const placeholders = templateIds.map(() => "?").join(",");
+    try {
       const [imgs] = await query<RowDataPacket[]>(
-        `SELECT * FROM banner_template_images WHERE template_id IN (${placeholders}) ORDER BY sort_order ASC, id ASC`,
+        `SELECT * FROM product_template_images WHERE template_id IN (${placeholders}) ORDER BY sort_order ASC, id ASC`,
         templateIds,
       );
       imageRows = imgs;
+    } catch {
+      imageRows = [];
     }
-
-    const imagesByTemplateId = new Map<number, any[]>();
-    for (const img of imageRows) {
-      const tId = Number(img.template_id);
-      if (!imagesByTemplateId.has(tId)) imagesByTemplateId.set(tId, []);
-      imagesByTemplateId.get(tId)!.push(mapBannerTemplateImage(img));
-    }
-
-    return rows.map((r) => {
-      let vals: Record<string, any> = {};
-      try {
-        vals =
-          typeof r.customization_values === "string"
-            ? JSON.parse(r.customization_values)
-            : r.customization_values || {};
-      } catch {
-        vals = {};
-      }
-
-      const tId = Number(r.template_id);
-      const tImages = imagesByTemplateId.get(tId) || [];
-      const previewImageUrl =
-        vals._selectedImageUrl ||
-        (vals._selectedImageIndex !== undefined && tImages[Number(vals._selectedImageIndex)]
-          ? tImages[Number(vals._selectedImageIndex)].imageUrl
-          : tImages[0]?.imageUrl || null);
-
-      const templateName =
-        vals._bannerTitle ||
-        (vals._selectedImageIndex !== undefined && tImages.length > 1
-          ? `${r.template_name} (#${Number(vals._selectedImageIndex) + 1})`
-          : r.template_name || `Template #${tId}`);
-
-      return {
-        id: Number(r.id),
-        templateId: tId,
-        templateName,
-        widthPx: Number(r.width_px || 1920),
-        heightPx: Number(r.height_px || 1080),
-        orientation: r.orientation || "landscape",
-        previewImageUrl,
-        quantity: Number(
-          r.quantity ?? vals.quantity ?? vals._quantity ?? vals.qty ?? 1,
-        ),
-        userId: Number(r.user_id),
-        userName: r.user_name || "Unknown User",
-        userEmail: r.user_email || "",
-        status: r.status || "Pending",
-        customizationValues: vals,
-        createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
-        updatedAt: r.updated_at ? new Date(r.updated_at).toISOString() : new Date().toISOString(),
-      };
-    });
-  } catch (err: any) {
-    if (err.code === "ER_NO_SUCH_TABLE" || String(err.message).includes("doesn't exist")) {
-      return [];
-    }
-    throw err;
   }
-}
 
-export async function getBannerSubmissionById(
-  submissionId: number,
-): Promise<BannerSubmissionDetailModel | null> {
-  try {
-    const [rows] = await query<RowDataPacket[]>(
-      `
-      SELECT 
-        bc.*,
-        bt.name AS template_name,
-        bt.width_px,
-        bt.height_px,
-        bt.orientation,
-        u.name AS user_name,
-        u.email AS user_email
-      FROM banner_customizations bc
-      LEFT JOIN banner_templates bt ON bc.template_id = bt.id
-      LEFT JOIN users u ON bc.user_id = u.id
-      WHERE bc.id = ?
-      LIMIT 1
-      `,
-      [submissionId],
-    );
+  const imagesByTemplateId = new Map<number, any[]>();
+  for (const img of imageRows) {
+    const tId = Number(img.template_id);
+    if (!imagesByTemplateId.has(tId)) imagesByTemplateId.set(tId, []);
+    imagesByTemplateId.get(tId)!.push(mapProductTemplateImage(img));
+  }
 
-    if (rows.length === 0) return null;
-    const r = rows[0];
-    const templateId = Number(r.template_id);
-
-    const fields = await getBannerTemplateFields(templateId);
-
-    const [imageRows] = await query<RowDataPacket[]>(
-      `SELECT * FROM banner_template_images WHERE template_id = ? ORDER BY sort_order ASC, id ASC`,
-      [templateId],
-    );
-    const images = imageRows.map(mapBannerTemplateImage);
-
+  return rows.map((r) => {
     let vals: Record<string, any> = {};
     try {
       vals =
@@ -975,75 +871,28 @@ export async function getBannerSubmissionById(
       vals = {};
     }
 
-    const submittedFields: Array<{
-      id: number | string;
-      label: string;
-      fieldType: string;
-      value: any;
-    }> = [];
-
-    const matchedKeys = new Set<string>();
-
-    for (let i = 0; i < fields.length; i++) {
-      const f = fields[i];
-      const strId = String(f.id);
-      const strIndex = String(i);
-
-      let foundVal =
-        vals[f.id] ??
-        vals[strId] ??
-        vals[f.label] ??
-        (f.fieldKey ? vals[f.fieldKey] : undefined) ??
-        vals[f.label.toLowerCase()] ??
-        vals[strIndex];
-
-      if (foundVal !== undefined) {
-        matchedKeys.add(strId);
-        matchedKeys.add(f.label);
-        if (f.fieldKey) matchedKeys.add(f.fieldKey);
-        matchedKeys.add(strIndex);
-      }
-
-      submittedFields.push({
-        id: f.id,
-        label: f.label,
-        fieldType: f.fieldType || "text",
-        value: foundVal !== undefined ? foundVal : "-",
-      });
-    }
-
-    for (const [key, val] of Object.entries(vals)) {
-      if (!matchedKeys.has(key) && key !== "templateId" && !key.startsWith("_")) {
-        submittedFields.push({
-          id: key,
-          label: key,
-          fieldType: typeof val === "boolean" ? "checkbox" : "text",
-          value: val,
-        });
-      }
-    }
-
-    const templateName =
-      vals._bannerTitle ||
-      (vals._selectedImageIndex !== undefined && images.length > 1
-        ? `${r.template_name} (#${Number(vals._selectedImageIndex) + 1})`
-        : r.template_name || `Template #${templateId}`);
-
+    const tId = Number(r.template_id);
+    const tImages = imagesByTemplateId.get(tId) || [];
     const previewImageUrl =
       vals._selectedImageUrl ||
-      (vals._selectedImageIndex !== undefined && images[Number(vals._selectedImageIndex)]
-        ? images[Number(vals._selectedImageIndex)].imageUrl
-        : images[0]?.imageUrl || null);
+      (vals._selectedImageIndex !== undefined && tImages[Number(vals._selectedImageIndex)]
+        ? tImages[Number(vals._selectedImageIndex)].imageUrl
+        : tImages[0]?.imageUrl || null);
+
+    const templateName =
+      vals._productTitle ||
+      (vals._selectedImageIndex !== undefined && tImages.length > 1
+        ? `${r.template_name} (#${Number(vals._selectedImageIndex) + 1})`
+        : r.template_name || `Product #${tId}`);
 
     return {
       id: Number(r.id),
-      templateId,
+      templateId: tId,
       templateName,
       widthPx: Number(r.width_px || 1920),
       heightPx: Number(r.height_px || 1080),
-      dimensionsLabel: `${r.width_px || 1920} × ${r.height_px || 1080} px`,
+      orientation: r.orientation || "landscape",
       previewImageUrl,
-      images,
       quantity: Number(
         r.quantity ?? vals.quantity ?? vals._quantity ?? vals.qty ?? 1,
       ),
@@ -1052,19 +901,154 @@ export async function getBannerSubmissionById(
       userEmail: r.user_email || "",
       status: r.status || "Pending",
       customizationValues: vals,
-      submittedFields,
-      createdAt: r.created_at ? new Date(r.created_at).toISOString() : new Date().toISOString(),
-      updatedAt: r.updated_at ? new Date(r.updated_at).toISOString() : new Date().toISOString(),
+      createdAt: r.created_at
+        ? new Date(r.created_at).toISOString()
+        : new Date().toISOString(),
+      updatedAt: r.updated_at
+        ? new Date(r.updated_at).toISOString()
+        : new Date().toISOString(),
     };
-  } catch (err: any) {
-    if (err.code === "ER_NO_SUCH_TABLE" || String(err.message).includes("doesn't exist")) {
-      return null;
-    }
-    throw err;
-  }
+  });
 }
 
-export async function updateBannerSubmissionStatus(
+export async function getProductSubmissionById(
+  submissionId: number,
+): Promise<ProductSubmissionDetailModel | null> {
+  const [rows] = await query<RowDataPacket[]>(
+    `
+    SELECT 
+      pc.*,
+      pt.name AS template_name,
+      pt.width_px,
+      pt.height_px,
+      pt.orientation,
+      u.name AS user_name,
+      u.email AS user_email
+    FROM product_customizations pc
+    LEFT JOIN product_templates pt ON pc.template_id = pt.id
+    LEFT JOIN users u ON pc.user_id = u.id
+    WHERE pc.id = ?
+    LIMIT 1
+    `,
+    [submissionId],
+  );
+
+  if (rows.length === 0) return null;
+  const r = rows[0];
+  const templateId = Number(r.template_id);
+
+  const fields = await getProductTemplateFields(templateId);
+
+  let imageRows: RowDataPacket[] = [];
+  try {
+    const [imgs] = await query<RowDataPacket[]>(
+      `SELECT * FROM product_template_images WHERE template_id = ? ORDER BY sort_order ASC, id ASC`,
+      [templateId],
+    );
+    imageRows = imgs;
+  } catch {
+    imageRows = [];
+  }
+  const images = imageRows.map(mapProductTemplateImage);
+
+  let vals: Record<string, any> = {};
+  try {
+    vals =
+      typeof r.customization_values === "string"
+        ? JSON.parse(r.customization_values)
+        : r.customization_values || {};
+  } catch {
+    vals = {};
+  }
+
+  const submittedFields: Array<{
+    id: number | string;
+    label: string;
+    fieldType: string;
+    value: any;
+  }> = [];
+
+  const matchedKeys = new Set<string>();
+
+  for (let i = 0; i < fields.length; i++) {
+    const f = fields[i];
+    const strId = String(f.id);
+    const strIndex = String(i);
+
+    let foundVal =
+      vals[f.id] ??
+      vals[strId] ??
+      vals[f.label] ??
+      (f.fieldKey ? vals[f.fieldKey] : undefined) ??
+      vals[f.label.toLowerCase()] ??
+      vals[strIndex];
+
+    if (foundVal !== undefined) {
+      matchedKeys.add(strId);
+      matchedKeys.add(f.label);
+      if (f.fieldKey) matchedKeys.add(f.fieldKey);
+      matchedKeys.add(strIndex);
+    }
+
+    submittedFields.push({
+      id: f.id,
+      label: f.label,
+      fieldType: f.fieldType || "text",
+      value: foundVal !== undefined ? foundVal : "-",
+    });
+  }
+
+  for (const [key, val] of Object.entries(vals)) {
+    if (!matchedKeys.has(key) && key !== "templateId" && !key.startsWith("_")) {
+      submittedFields.push({
+        id: key,
+        label: key,
+        fieldType: typeof val === "boolean" ? "checkbox" : "text",
+        value: val,
+      });
+    }
+  }
+
+  const templateName =
+    vals._productTitle ||
+    (vals._selectedImageIndex !== undefined && images.length > 1
+      ? `${r.template_name} (#${Number(vals._selectedImageIndex) + 1})`
+      : r.template_name || `Product #${templateId}`);
+
+  const previewImageUrl =
+    vals._selectedImageUrl ||
+    (vals._selectedImageIndex !== undefined && images[Number(vals._selectedImageIndex)]
+      ? images[Number(vals._selectedImageIndex)].imageUrl
+      : images[0]?.imageUrl || null);
+
+  return {
+    id: Number(r.id),
+    templateId,
+    templateName,
+    widthPx: Number(r.width_px || 1920),
+    heightPx: Number(r.height_px || 1080),
+    dimensionsLabel: `${r.width_px || 1920} × ${r.height_px || 1080} px`,
+    previewImageUrl,
+    images,
+    quantity: Number(
+      r.quantity ?? vals.quantity ?? vals._quantity ?? vals.qty ?? 1,
+    ),
+    userId: Number(r.user_id),
+    userName: r.user_name || "Unknown User",
+    userEmail: r.user_email || "",
+    status: r.status || "Pending",
+    customizationValues: vals,
+    submittedFields,
+    createdAt: r.created_at
+      ? new Date(r.created_at).toISOString()
+      : new Date().toISOString(),
+    updatedAt: r.updated_at
+      ? new Date(r.updated_at).toISOString()
+      : new Date().toISOString(),
+  };
+}
+
+export async function updateProductSubmissionStatus(
   submissionId: number,
   status: string,
 ): Promise<{ id: number; status: string }> {
@@ -1082,12 +1066,15 @@ export async function updateBannerSubmissionStatus(
 
   try {
     await execute(
-      `UPDATE banner_customizations SET status = ?, updated_at = NOW() WHERE id = ?`,
+      `UPDATE product_customizations SET status = ?, updated_at = NOW() WHERE id = ?`,
       [normalized, submissionId],
     );
   } catch (err: any) {
-    if (err.code === "ER_BAD_FIELD_ERROR" || String(err.message).includes("Unknown column")) {
-      console.warn("status column not in banner_customizations table yet.");
+    if (
+      err.code === "ER_BAD_FIELD_ERROR" ||
+      String(err.message).includes("Unknown column")
+    ) {
+      console.warn("status column not in product_customizations table yet.");
     } else {
       throw err;
     }
@@ -1097,13 +1084,13 @@ export async function updateBannerSubmissionStatus(
 }
 
 /**
- * Get banner submission thread: combines submission metadata, uploaded files (with versioning & history), and thread messages.
+ * Get product submission thread: combines submission metadata, uploaded files (with versioning & history), and thread messages.
  */
-export async function getBannerSubmissionThread(
+export async function getProductSubmissionThread(
   submissionId: number,
   viewerRole?: string,
-): Promise<BannerSubmissionThreadModel | null> {
-  const submission = await getBannerSubmissionById(submissionId);
+): Promise<ProductSubmissionThreadModel | null> {
+  const submission = await getProductSubmissionById(submissionId);
   if (!submission) return null;
 
   // Status Flow: Admin/designer views a pending submission -> automatically mark as "In Review"
@@ -1112,34 +1099,32 @@ export async function getBannerSubmissionThread(
     submission.status === "Pending"
   ) {
     try {
-      await updateBannerSubmissionStatus(submissionId, "In Review");
+      await updateProductSubmissionStatus(submissionId, "In Review");
       submission.status = "In Review";
     } catch {
       // Ignore if status column is not ready yet
     }
   }
 
-  // 1. Fetch files from banner_submission_files
+  // 1. Fetch files from product_submission_files
   let rawFiles: any[] = [];
   try {
     const [fileRows] = await query<RowDataPacket[]>(
       `SELECT 
-        bsf.*,
+        psf.*,
         u.name AS uploaded_by_name
-       FROM banner_submission_files bsf
-       LEFT JOIN users u ON bsf.uploaded_by = u.id
-       WHERE bsf.submission_id = ?
-       ORDER BY bsf.sort_order ASC, bsf.id ASC`,
+       FROM product_submission_files psf
+       LEFT JOIN users u ON psf.uploaded_by = u.id
+       WHERE psf.submission_id = ?
+       ORDER BY psf.sort_order ASC, psf.id ASC`,
       [submissionId],
     );
     rawFiles = fileRows;
   } catch (err: any) {
-    if (err.code !== "ER_NO_SUCH_TABLE" && !String(err.message).includes("doesn't exist")) {
-      console.error("Error fetching banner_submission_files:", err);
-    }
+    console.error("Error fetching product_submission_files:", err);
   }
 
-  // If banner_submission_files has no rows yet, auto-populate from submission's uploaded photos or preview
+  // If no rows yet, auto-populate from submission's uploaded photos or preview
   if (rawFiles.length === 0) {
     const initialFiles: Array<{ url: string; name: string }> = [];
 
@@ -1156,7 +1141,7 @@ export async function getBannerSubmissionThread(
     if (initialFiles.length === 0 && submission.previewImageUrl) {
       initialFiles.push({
         url: submission.previewImageUrl,
-        name: submission.templateName || "Banner Preview",
+        name: submission.templateName || "Product Preview",
       });
     }
 
@@ -1164,7 +1149,7 @@ export async function getBannerSubmissionThread(
       try {
         for (let i = 0; i < initialFiles.length; i++) {
           await execute<ResultSetHeader>(
-            `INSERT INTO banner_submission_files (submission_id, version, file_url, file_name, uploaded_by, sort_order, replaced_file_id) VALUES (?, 1, ?, ?, ?, ?, NULL)`,
+            `INSERT INTO product_submission_files (submission_id, version, file_url, file_name, uploaded_by, sort_order, replaced_file_id) VALUES (?, 1, ?, ?, ?, ?, NULL)`,
             [
               submissionId,
               initialFiles[i].url,
@@ -1177,17 +1162,16 @@ export async function getBannerSubmissionThread(
 
         const [refetched] = await query<RowDataPacket[]>(
           `SELECT 
-            bsf.*,
+            sf.*,
             u.name AS uploaded_by_name
-           FROM banner_submission_files bsf
-           LEFT JOIN users u ON bsf.uploaded_by = u.id
-           WHERE bsf.submission_id = ?
-           ORDER BY bsf.sort_order ASC, bsf.id ASC`,
+           FROM product_submission_files sf
+           LEFT JOIN users u ON sf.uploaded_by = u.id
+           WHERE sf.submission_id = ?
+           ORDER BY sf.sort_order ASC, sf.id ASC`,
           [submissionId],
         );
         rawFiles = refetched;
       } catch {
-        // Fallback in-memory representation if DB table is not yet created
         rawFiles = initialFiles.map((f, idx) => ({
           id: idx + 1,
           submission_id: submissionId,
@@ -1212,7 +1196,7 @@ export async function getBannerSubmissionThread(
     }
   }
 
-  const allFilesMap = new Map<number, BannerSubmissionFileModel>();
+  const allFilesMap = new Map<number, ProductSubmissionFileModel>();
   for (const r of rawFiles) {
     const fId = Number(r.id);
     allFilesMap.set(fId, {
@@ -1234,10 +1218,10 @@ export async function getBannerSubmissionThread(
   }
 
   // Active files are those not replaced by newer versions. Attach their replacement history chain.
-  const activeFiles: BannerSubmissionFileModel[] = [];
+  const activeFiles: ProductSubmissionFileModel[] = [];
   for (const file of allFilesMap.values()) {
     if (!file.isReplaced) {
-      const history: BannerSubmissionFileModel[] = [];
+      const history: ProductSubmissionFileModel[] = [];
       let curReplacedId = file.replacedFileId;
       while (curReplacedId && allFilesMap.has(curReplacedId)) {
         const past = allFilesMap.get(curReplacedId)!;
@@ -1249,18 +1233,18 @@ export async function getBannerSubmissionThread(
     }
   }
 
-  // 2. Fetch messages from banner_submission_messages
-  let messages: BannerSubmissionMessageModel[] = [];
+  // 2. Fetch messages from product_submission_messages
+  let messages: ProductSubmissionMessageModel[] = [];
   try {
     const [msgRows] = await query<RowDataPacket[]>(
       `SELECT 
-        bsm.*,
+        sm.*,
         u.name AS sender_name,
         u.email AS sender_email
-       FROM banner_submission_messages bsm
-       LEFT JOIN users u ON bsm.sender_user_id = u.id
-       WHERE bsm.submission_id = ?
-       ORDER BY bsm.id ASC`,
+       FROM product_submission_messages sm
+       LEFT JOIN users u ON sm.sender_user_id = u.id
+       WHERE sm.submission_id = ?
+       ORDER BY sm.id ASC`,
       [submissionId],
     );
 
@@ -1278,9 +1262,7 @@ export async function getBannerSubmissionThread(
         : new Date().toISOString(),
     }));
   } catch (err: any) {
-    if (err.code !== "ER_NO_SUCH_TABLE" && !String(err.message).includes("doesn't exist")) {
-      console.error("Error fetching banner_submission_messages:", err);
-    }
+    console.error("Error fetching submission messages:", err);
   }
 
   return {
@@ -1293,7 +1275,7 @@ export async function getBannerSubmissionThread(
 /**
  * Add a thread message (overall or photo-tile specific).
  */
-export async function addBannerSubmissionMessage(params: {
+export async function addProductSubmissionMessage(params: {
   submissionId: number;
   senderUserId: number;
   senderRole: string;
@@ -1301,10 +1283,10 @@ export async function addBannerSubmissionMessage(params: {
   message: string;
   imageId?: number | null;
   statusAction?: string;
-}): Promise<BannerSubmissionMessageModel> {
-  const submission = await getBannerSubmissionById(params.submissionId);
+}): Promise<ProductSubmissionMessageModel> {
+  const submission = await getProductSubmissionById(params.submissionId);
   if (!submission) {
-    throw new AuthError("Banner submission not found.", 404);
+    throw new AuthError("Product submission not found.", 404);
   }
   if (submission.status === "Approved" || submission.status === "Completed") {
     throw new AuthError(
@@ -1314,7 +1296,7 @@ export async function addBannerSubmissionMessage(params: {
   }
 
   const [res] = await execute<ResultSetHeader>(
-    `INSERT INTO banner_submission_messages (submission_id, image_id, sender_user_id, sender_role, message) VALUES (?, ?, ?, ?, ?)`,
+    `INSERT INTO product_submission_messages (submission_id, image_id, sender_user_id, sender_role, message) VALUES (?, ?, ?, ?, ?)`,
     [
       params.submissionId,
       params.imageId || null,
@@ -1324,21 +1306,21 @@ export async function addBannerSubmissionMessage(params: {
     ],
   );
 
-  // Status Flow (User review action sets status: approved or changes_requested, matching Canvas flow)
+  // Status Flow
   const normAction = (params.statusAction || "").toLowerCase();
   if (normAction === "approved") {
     await execute(
-      `UPDATE banner_customizations SET status = 'Approved', updated_at = NOW() WHERE id = ?`,
+      `UPDATE product_customizations SET status = 'Approved', updated_at = NOW() WHERE id = ?`,
       [params.submissionId],
     ).catch(() => {});
   } else if (normAction === "changes_requested" || normAction.includes("change")) {
     await execute(
-      `UPDATE banner_customizations SET status = 'Changes Requested', updated_at = NOW() WHERE id = ?`,
+      `UPDATE product_customizations SET status = 'Changes Requested', updated_at = NOW() WHERE id = ?`,
       [params.submissionId],
     ).catch(() => {});
   } else if (params.senderRole === "user") {
     await execute(
-      `UPDATE banner_customizations SET status = 'In Review', updated_at = NOW() WHERE id = ?`,
+      `UPDATE product_customizations SET status = 'In Review', updated_at = NOW() WHERE id = ?`,
       [params.submissionId],
     ).catch(() => {});
   }
@@ -1349,25 +1331,26 @@ export async function addBannerSubmissionMessage(params: {
     imageId: params.imageId || null,
     senderUserId: params.senderUserId,
     senderRole: params.senderRole,
-    senderName: params.senderName || (params.senderRole === "user" ? "Client" : "FBS Admin"),
+    senderName:
+      params.senderName || (params.senderRole === "user" ? "Client" : "FBS Admin"),
     message: params.message.trim(),
     createdAt: new Date().toISOString(),
   };
 }
 
 /**
- * Add a new photo file to the banner submission collage.
+ * Add a new photo file to the product submission collage.
  */
-export async function addBannerSubmissionFile(params: {
+export async function addProductSubmissionFile(params: {
   submissionId: number;
   uploadedBy: number;
   uploadedByRole: string;
   fileUrl: string;
   fileName?: string;
-}): Promise<BannerSubmissionFileModel> {
-  const submission = await getBannerSubmissionById(params.submissionId);
+}): Promise<ProductSubmissionFileModel> {
+  const submission = await getProductSubmissionById(params.submissionId);
   if (!submission) {
-    throw new AuthError("Banner submission not found.", 404);
+    throw new AuthError("Product submission not found.", 404);
   }
   if (submission.status === "Approved" || submission.status === "Completed") {
     throw new AuthError(
@@ -1379,7 +1362,7 @@ export async function addBannerSubmissionFile(params: {
   let nextOrder = 0;
   try {
     const [orderRows] = await query<RowDataPacket[]>(
-      `SELECT COALESCE(MAX(sort_order), -1) AS max_order FROM banner_submission_files WHERE submission_id = ?`,
+      `SELECT COALESCE(MAX(sort_order), -1) AS max_order FROM product_submission_files WHERE submission_id = ?`,
       [params.submissionId],
     );
     nextOrder = Number(orderRows[0]?.max_order ?? -1) + 1;
@@ -1388,7 +1371,7 @@ export async function addBannerSubmissionFile(params: {
   }
 
   const [res] = await execute<ResultSetHeader>(
-    `INSERT INTO banner_submission_files (submission_id, version, file_url, file_name, uploaded_by, sort_order, replaced_file_id) VALUES (?, 1, ?, ?, ?, ?, NULL)`,
+    `INSERT INTO product_submission_files (submission_id, version, file_url, file_name, uploaded_by, sort_order, replaced_file_id) VALUES (?, 1, ?, ?, ?, ?, NULL)`,
     [
       params.submissionId,
       params.fileUrl,
@@ -1398,10 +1381,10 @@ export async function addBannerSubmissionFile(params: {
     ],
   );
 
-  // Status Flow: User upload or staff uploading moves submission back to "In Review"
+  // Status Flow
   if (params.uploadedByRole === "user" || submission.status === "Changes Requested") {
     await execute(
-      `UPDATE banner_customizations SET status = 'In Review', updated_at = NOW() WHERE id = ?`,
+      `UPDATE product_customizations SET status = 'In Review', updated_at = NOW() WHERE id = ?`,
       [params.submissionId],
     ).catch(() => {});
   }
@@ -1422,19 +1405,19 @@ export async function addBannerSubmissionFile(params: {
 }
 
 /**
- * Replace an existing photo tile: creates a new row with incremented version and replaced_file_id to preserve history.
+ * Replace an existing photo tile: creates a new row with incremented version and replaced_file_id.
  */
-export async function replaceBannerSubmissionFile(params: {
+export async function replaceProductSubmissionFile(params: {
   submissionId: number;
   fileId: number;
   uploadedBy: number;
   uploadedByRole: string;
   fileUrl: string;
   fileName?: string;
-}): Promise<BannerSubmissionFileModel> {
-  const submission = await getBannerSubmissionById(params.submissionId);
+}): Promise<ProductSubmissionFileModel> {
+  const submission = await getProductSubmissionById(params.submissionId);
   if (!submission) {
-    throw new AuthError("Banner submission not found.", 404);
+    throw new AuthError("Product submission not found.", 404);
   }
   if (submission.status === "Approved" || submission.status === "Completed") {
     throw new AuthError(
@@ -1444,9 +1427,10 @@ export async function replaceBannerSubmissionFile(params: {
   }
 
   const [existingRows] = await query<RowDataPacket[]>(
-    `SELECT * FROM banner_submission_files WHERE id = ? AND submission_id = ?`,
+    `SELECT * FROM product_submission_files WHERE id = ? AND submission_id = ?`,
     [params.fileId, params.submissionId],
   );
+
   if (existingRows.length === 0) {
     throw new AuthError("Target photo file to replace not found.", 404);
   }
@@ -1455,7 +1439,7 @@ export async function replaceBannerSubmissionFile(params: {
   const nextVersion = Number(existing.version || 1) + 1;
 
   const [res] = await execute<ResultSetHeader>(
-    `INSERT INTO banner_submission_files (submission_id, version, file_url, file_name, uploaded_by, sort_order, replaced_file_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO product_submission_files (submission_id, version, file_url, file_name, uploaded_by, sort_order, replaced_file_id) VALUES (?, ?, ?, ?, ?, ?, ?)`,
     [
       params.submissionId,
       nextVersion,
@@ -1467,10 +1451,10 @@ export async function replaceBannerSubmissionFile(params: {
     ],
   );
 
-  // Status Flow: User upload or staff replacing requested changes moves submission back to "In Review"
+  // Status Flow
   if (params.uploadedByRole === "user" || submission.status === "Changes Requested") {
     await execute(
-      `UPDATE banner_customizations SET status = 'In Review', updated_at = NOW() WHERE id = ?`,
+      `UPDATE product_customizations SET status = 'In Review', updated_at = NOW() WHERE id = ?`,
       [params.submissionId],
     ).catch(() => {});
   }
@@ -1488,4 +1472,3 @@ export async function replaceBannerSubmissionFile(params: {
     isReplaced: false,
   };
 }
-

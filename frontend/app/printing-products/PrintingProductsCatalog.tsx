@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { buildApiUrl, getApiBaseUrl } from "@/app/lib/client/api-url";
-import { resolveImageUrl } from "@/app/lib/client/banner-template-api";
+import { resolveImageUrl } from "@/app/lib/client/product-template-api";
 import { ArrowRight, FileImage, Search } from "lucide-react";
 
 type PrintingProduct = {

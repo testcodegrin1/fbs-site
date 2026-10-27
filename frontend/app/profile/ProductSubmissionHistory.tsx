@@ -16,12 +16,12 @@ import {
 import type { AuthUser } from "@/app/lib/auth/types";
 import { authApi } from "@/app/lib/client/auth-api";
 import {
-  bannerTemplateApi,
+  productTemplateApi,
   resolveImageUrl,
-  type BannerSubmissionDetail,
-  type BannerSubmissionListItem,
-  type BannerSubmissionThread,
-} from "@/app/lib/client/banner-template-api";
+  type ProductSubmissionDetail,
+  type ProductSubmissionListItem,
+  type ProductSubmissionThread,
+} from "@/app/lib/client/product-template-api";
 
 function statusClass(status: string) {
   switch (status.toLowerCase().replaceAll("_", " ")) {
@@ -50,12 +50,12 @@ function Status({ value }: { value: string }) {
   );
 }
 
-export function BannerSubmissionHistory({ user }: { user: AuthUser }) {
-  const [submissions, setSubmissions] = useState<BannerSubmissionListItem[]>(
+export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
+  const [submissions, setSubmissions] = useState<ProductSubmissionListItem[]>(
     [],
   );
-  const [selected, setSelected] = useState<BannerSubmissionDetail | null>(null);
-  const [thread, setThread] = useState<BannerSubmissionThread | null>(null);
+  const [selected, setSelected] = useState<ProductSubmissionDetail | null>(null);
+  const [thread, setThread] = useState<ProductSubmissionThread | null>(null);
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState("");
@@ -69,8 +69,8 @@ export function BannerSubmissionHistory({ user }: { user: AuthUser }) {
     let active = true;
     setLoading(true);
     setError("");
-    bannerTemplateApi
-      .getMyBannerSubmissions()
+    productTemplateApi
+      .getMyProductSubmissions()
       .then((result) => {
         if (active) setSubmissions(result.submissions);
       })
@@ -79,7 +79,7 @@ export function BannerSubmissionHistory({ user }: { user: AuthUser }) {
           setError(
             loadError instanceof Error
               ? loadError.message
-              : "Unable to load banner submissions.",
+              : "Unable to load product submissions.",
           );
       })
       .finally(() => {
@@ -105,9 +105,9 @@ export function BannerSubmissionHistory({ user }: { user: AuthUser }) {
     setError("");
     try {
       const reviewThread =
-        await bannerTemplateApi.getBannerSubmissionThread(id);
+        await productTemplateApi.getProductSubmissionThread(id);
       if (!reviewThread?.submission)
-        throw new Error("Banner submission was not found.");
+        throw new Error("Product submission was not found.");
       setThread(reviewThread);
       setSelected(reviewThread.submission);
     } catch (detailError) {
@@ -134,13 +134,13 @@ export function BannerSubmissionHistory({ user }: { user: AuthUser }) {
     setSendingReply(true);
     setError("");
     try {
-      await bannerTemplateApi.sendBannerSubmissionMessage(
+      await productTemplateApi.sendProductSubmissionMessage(
         selected.id,
         message,
         null,
         statusAction,
       );
-      const updatedThread = await bannerTemplateApi.getBannerSubmissionThread(
+      const updatedThread = await productTemplateApi.getProductSubmissionThread(
         selected.id,
       );
       setThread(updatedThread);
@@ -186,10 +186,10 @@ export function BannerSubmissionHistory({ user }: { user: AuthUser }) {
               Signed in as {user.name}
             </p>
             <h1 className="mt-1 text-2xl font-bold text-primary-dark md:text-3xl">
-              Banner submissions
+              Product submissions
             </h1>
             <p className="mt-1 text-sm text-primary-dark/65">
-              Review your banner orders, proofs, and current status.
+              Review your product orders, proofs, and current status.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
@@ -224,7 +224,7 @@ export function BannerSubmissionHistory({ user }: { user: AuthUser }) {
               type="search"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search banner submissions..."
+              placeholder="Search product submissions..."
               className="w-full rounded-xl border border-slate-300 bg-white py-2.5 pl-10 pr-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
             />
           </label>
@@ -252,18 +252,18 @@ export function BannerSubmissionHistory({ user }: { user: AuthUser }) {
             role="status"
             className="rounded-2xl bg-white p-12 text-center text-slate-500 shadow-sm"
           >
-            Loading banner submissions...
+            Loading product submissions...
           </div>
         ) : filtered.length === 0 ? (
           <div className="rounded-2xl bg-white p-12 text-center shadow-sm">
             <FileImage size={40} className="mx-auto text-slate-300" />
             <h2 className="mt-4 text-lg font-semibold text-slate-800">
-              No banner submissions found
+              No product submissions found
             </h2>
             <p className="mt-2 text-slate-500">
               {search
                 ? "No submission matches your search."
-                : "Your banner requests will appear here after submission."}
+                : "Your product requests will appear here after submission."}
             </p>
             <Link
               href="/printing-products"
@@ -501,3 +501,4 @@ export function BannerSubmissionHistory({ user }: { user: AuthUser }) {
     </main>
   );
 }
+

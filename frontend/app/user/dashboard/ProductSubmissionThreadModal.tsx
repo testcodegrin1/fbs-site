@@ -2,13 +2,13 @@
 
 import { useEffect, useState, useRef } from "react";
 import {
-  bannerTemplateApi,
+  productTemplateApi,
   resolveImageUrl,
-  type BannerSubmissionDetail,
-  type BannerSubmissionFile,
-  type BannerSubmissionMessage,
-  type BannerSubmissionStatus,
-} from "@/app/lib/client/banner-template-api";
+  type ProductSubmissionDetail,
+  type ProductSubmissionFile,
+  type ProductSubmissionMessage,
+  type ProductSubmissionStatus,
+} from "@/app/lib/client/product-template-api";
 import { Button, Input, Textarea, Badge } from "@/app/Components/ui";
 import {
   X,
@@ -37,7 +37,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
-interface BannerSubmissionThreadModalProps {
+interface ProductSubmissionThreadModalProps {
   submissionId: number | null;
   isOpen: boolean;
   onClose: () => void;
@@ -48,7 +48,7 @@ interface BannerSubmissionThreadModalProps {
   embedded?: boolean;
 }
 
-const STATUS_OPTIONS: BannerSubmissionStatus[] = [
+const STATUS_OPTIONS: ProductSubmissionStatus[] = [
   "Pending",
   "In Review",
   "Changes Requested",
@@ -106,7 +106,7 @@ function getStatusBadge(status: string) {
   }
 }
 
-export function BannerSubmissionThreadModal({
+export function ProductSubmissionThreadModal({
   submissionId,
   isOpen,
   onClose,
@@ -115,14 +115,14 @@ export function BannerSubmissionThreadModal({
   onStatusUpdated,
   onSubmissionUpdated,
   embedded = false,
-}: BannerSubmissionThreadModalProps) {
+}: ProductSubmissionThreadModalProps) {
   const [loading, setLoading] = useState(false);
-  const [submission, setSubmission] = useState<BannerSubmissionDetail | null>(
+  const [submission, setSubmission] = useState<ProductSubmissionDetail | null>(
     null,
   );
-  const [files, setFiles] = useState<BannerSubmissionFile[]>([]);
+  const [files, setFiles] = useState<ProductSubmissionFile[]>([]);
   const [selectedFileIndex, setSelectedFileIndex] = useState(0);
-  const [messages, setMessages] = useState<BannerSubmissionMessage[]>([]);
+  const [messages, setMessages] = useState<ProductSubmissionMessage[]>([]);
 
   // Per-photo reply drafts: key = file.id
   const [tileReplies, setTileReplies] = useState<Record<number, string>>({});
@@ -165,14 +165,14 @@ export function BannerSubmissionThreadModal({
 
     try {
       const data =
-        await bannerTemplateApi.getBannerSubmissionThread(submissionId);
+        await productTemplateApi.getProductSubmissionThread(submissionId);
       if (data) {
         setSubmission(data.submission);
         setFiles(data.files || []);
         setMessages(data.messages || []);
       }
     } catch (err) {
-      console.error("Failed to load banner submission thread:", err);
+      console.error("Failed to load product submission thread:", err);
     } finally {
       if (!isSilent) setLoading(false);
     }
@@ -219,7 +219,7 @@ export function BannerSubmissionThreadModal({
     }
 
     if (statusAction === "approved" && !text) {
-      text = "Approved banner proof.";
+      text = "Approved product proof.";
     }
 
     if (!text) return;
@@ -231,7 +231,7 @@ export function BannerSubmissionThreadModal({
     }
 
     try {
-      const newMsg = await bannerTemplateApi.sendBannerSubmissionMessage(
+      const newMsg = await productTemplateApi.sendProductSubmissionMessage(
         submissionId,
         text,
         imageId,
@@ -283,7 +283,7 @@ export function BannerSubmissionThreadModal({
     setReplacingFileId(fileId);
 
     try {
-      await bannerTemplateApi.replaceBannerSubmissionFile(
+      await productTemplateApi.replaceProductSubmissionFile(
         submissionId,
         fileId,
         file,
@@ -318,7 +318,7 @@ export function BannerSubmissionThreadModal({
     setAddingPhoto(true);
 
     try {
-      await bannerTemplateApi.addBannerSubmissionFile(
+      await productTemplateApi.addProductSubmissionFile(
         submissionId,
         newPhotoFile,
         newPhotoCaption.trim() || newPhotoFile.name,
@@ -356,7 +356,7 @@ export function BannerSubmissionThreadModal({
     setStatusMessage(null);
 
     try {
-      await bannerTemplateApi.updateBannerSubmissionStatus(
+      await productTemplateApi.updateProductSubmissionStatus(
         submissionId,
         newStatus,
       );
@@ -375,7 +375,7 @@ export function BannerSubmissionThreadModal({
   }
 
   // Download banner helper
-  function handleDownloadBanner(url: string, filename: string) {
+  function handleDownloadProduct(url: string, filename: string) {
     const fullUrl = resolveImageUrl(url);
     const link = document.createElement("a");
     link.href = fullUrl;
@@ -415,7 +415,7 @@ export function BannerSubmissionThreadModal({
           )}
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-extrabold text-lg sm:text-xl text-slate-900 tracking-tight truncate">
-              {submission?.templateName || `Banner Submission #${submissionId}`}
+              {submission?.templateName || `Product Submission #${submissionId}`}
             </h3>
             {submission && getStatusBadge(submission.status)}
           </div>
@@ -474,7 +474,7 @@ export function BannerSubmissionThreadModal({
           </div>
         ) : !submission ? (
           <div className="py-16 text-center text-red-600 text-xs font-semibold">
-            Failed to load banner submission details.
+            Failed to load product submission details.
           </div>
         ) : (
           <>
@@ -505,7 +505,7 @@ export function BannerSubmissionThreadModal({
                 <div className="p-8 rounded-2xl bg-slate-50 border border-dashed border-slate-200 text-center space-y-2">
                   <FileImage size={28} className="mx-auto text-slate-400" />
                   <p className="text-xs text-slate-500 font-medium">
-                    No individual photo tiles uploaded yet for this banner.
+                    No individual photo tiles uploaded yet for this product.
                   </p>
                 </div>
               ) : (
@@ -575,7 +575,7 @@ export function BannerSubmissionThreadModal({
                                 variant="secondary"
                                 className="h-8 px-2.5 text-xs bg-white/95 hover:bg-white text-slate-800 shadow gap-1"
                                 onClick={() =>
-                                  handleDownloadBanner(
+                                  handleDownloadProduct(
                                     file.fileUrl,
                                     file.fileName || `photo-${idx + 1}.png`,
                                   )
@@ -897,7 +897,7 @@ export function BannerSubmissionThreadModal({
                             ) : (
                               <Plus size={14} />
                             )}
-                            Upload Tile & Append to Banner
+                            Upload Tile & Append to Product
                           </Button>
                           <label className="h-9 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold cursor-pointer transition inline-flex items-center">
                             Change File
@@ -995,7 +995,7 @@ export function BannerSubmissionThreadModal({
                           ) : (
                             <Plus size={14} />
                           )}
-                          Upload Tile & Append to Banner
+                          Upload Tile & Append to Product
                         </Button>
                         <label className="h-9 px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold cursor-pointer transition inline-flex items-center">
                           Change File
@@ -1172,7 +1172,7 @@ export function BannerSubmissionThreadModal({
     if (!submission) {
       return (
         <div className="py-16 text-center text-red-600 text-xs font-semibold">
-          Failed to load banner submission details.
+          Failed to load product submission details.
         </div>
       );
     }
@@ -1254,19 +1254,19 @@ export function BannerSubmissionThreadModal({
 
         {/* 2-Column Review Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-          {/* LEFT COLUMN: Project Banners (8 cols) */}
+          {/* LEFT COLUMN: Project Products (8 cols) */}
           <div className="lg:col-span-8 space-y-4">
             <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-4">
               <div className="flex items-center justify-between gap-3">
                 <h3 className="text-[13px] font-bold uppercase tracking-[0.08em] text-indigo-600">
-                  PROJECT BANNERS ({files.length || 1})
+                  PROJECT PRODUCTS ({files.length || 1})
                 </h3>
                 <p className="text-[13px] text-slate-400 font-medium">
-                  Review &amp; approve on each banner
+                  Review &amp; approve on each product
                 </p>
               </div>
 
-              {/* Banner Proof Container */}
+              {/* Product proof Container */}
               <div className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 space-y-4 transition">
                 <div className="flex items-start justify-between gap-3 flex-wrap">
                   <div className="min-w-0 space-y-1">
@@ -1332,7 +1332,7 @@ export function BannerSubmissionThreadModal({
                 {files.length > 1 && (
                   <div className="space-y-1.5 pt-1">
                     <span className="text-[13px] font-bold text-slate-600 block">
-                      Switch Banner File:
+                      Switch Product File:
                     </span>
                     <div className="flex items-center gap-2 overflow-x-auto pb-1">
                       {files.map((f, idx) => (
@@ -1365,12 +1365,12 @@ export function BannerSubmissionThreadModal({
 
           {/* RIGHT COLUMN: Review Actions, Submitted Fields, Activity History */}
           <div className="lg:col-span-4 space-y-4">
-            {/* Banner Review Action Card */}
+            {/* Product Review Action Card */}
             <div className="rounded-2xl bg-white border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-3">
               <div className="flex items-center justify-between text-xs pb-1 border-b border-slate-100">
                 <span className="font-bold text-slate-800 flex items-center gap-1.5">
                   <CheckCircle2 size={14} className="text-indigo-600" />
-                  Banner Review Action
+                  Product Review Action
                 </span>
               </div>
 
@@ -1394,7 +1394,7 @@ export function BannerSubmissionThreadModal({
                 }
                 placeholder={
                   isReadOnly
-                    ? `This banner proof has already been ${normStatus === "completed" ? "completed" : "approved"}.`
+                    ? `This product proof has already been ${normStatus === "completed" ? "completed" : "approved"}.`
                     : `Feedback or change requests for "${submission.templateName}"...`
                 }
                 className="w-full rounded-xl border border-slate-200 p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition resize-none bg-white disabled:bg-slate-50 disabled:text-slate-400 disabled:cursor-not-allowed"
@@ -1438,7 +1438,7 @@ export function BannerSubmissionThreadModal({
                     <CheckCircle2 size={13} />
                   )}
                   <span className="truncate">
-                    {isReadOnly ? "Approved" : "Approve Banner"}
+                    {isReadOnly ? "Approved" : "Approve Product"}
                   </span>
                 </Button>
               </div>
@@ -1591,7 +1591,7 @@ export function BannerSubmissionThreadModal({
                       Pending Review
                     </span>
                     <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-150 text-slate-700 text-[13px] leading-relaxed">
-                      Initial banner uploaded
+                      Initial product uploaded
                     </div>
                     <span className="text-[10px] text-slate-400 block">
                       {new Date(submission.createdAt).toLocaleDateString()}, FBS
@@ -1638,3 +1638,4 @@ export function BannerSubmissionThreadModal({
     </div>
   );
 }
+

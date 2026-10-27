@@ -10,14 +10,14 @@ import {
   DragEvent,
 } from "react";
 import {
-  bannerTemplateApi,
+  productTemplateApi,
   resolveImageUrl,
   getCandidateImageUrls,
-  type BannerTemplateModel,
-  type CreateBannerTemplatePayload,
-  type BannerTemplateField,
-  type BannerFieldType,
-} from "@/app/lib/client/banner-template-api";
+  type ProductTemplateModel,
+  type CreateProductTemplatePayload,
+  type ProductTemplateField,
+  type ProductFieldType,
+} from "@/app/lib/client/product-template-api";
 import {
   Button,
   Card,
@@ -66,7 +66,7 @@ interface TemplateFormData {
   height_px: number;
   is_active: boolean;
   images: FormImageItem[];
-  fields: BannerTemplateField[];
+  fields: ProductTemplateField[];
 }
 
 const defaultFormData: TemplateFormData = {
@@ -80,7 +80,7 @@ const defaultFormData: TemplateFormData = {
   fields: [],
 };
 
-const FIELD_TYPE_OPTIONS: { value: BannerFieldType; label: string }[] = [
+const FIELD_TYPE_OPTIONS: { value: ProductFieldType; label: string }[] = [
   { value: "text", label: "Text" },
   { value: "email", label: "Email" },
   { value: "phone", label: "Phone" },
@@ -270,8 +270,8 @@ function ImagePreviewWithFallback({
   );
 }
 
-export function BannerTemplateManagement() {
-  const [templates, setTemplates] = useState<BannerTemplateModel[]>([]);
+export function ProductTemplateManagement() {
+  const [templates, setTemplates] = useState<ProductTemplateModel[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -287,7 +287,7 @@ export function BannerTemplateManagement() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingTemplate, setEditingTemplate] =
-    useState<BannerTemplateModel | null>(null);
+    useState<ProductTemplateModel | null>(null);
   const [formData, setFormData] = useState<TemplateFormData>(defaultFormData);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -305,10 +305,10 @@ export function BannerTemplateManagement() {
 
   // View modal state
   const [viewingTemplate, setViewingTemplate] =
-    useState<BannerTemplateModel | null>(null);
+    useState<ProductTemplateModel | null>(null);
 
   // Delete modal state
-  const [deleteTarget, setDeleteTarget] = useState<BannerTemplateModel | null>(
+  const [deleteTarget, setDeleteTarget] = useState<ProductTemplateModel | null>(
     null,
   );
   const [isDeleting, setIsDeleting] = useState(false);
@@ -344,13 +344,13 @@ export function BannerTemplateManagement() {
     setLoadError(null);
 
     try {
-      const tData = await bannerTemplateApi.getBannerTemplates(true);
+      const tData = await productTemplateApi.getProductTemplates(true);
       setTemplates(tData);
     } catch (err: any) {
-      console.error("Failed to load banner templates:", err);
+      console.error("Failed to load product templates:", err);
       setLoadError(
         err?.message ||
-          "Failed to load banner templates. Please verify the backend connection.",
+          "Failed to load product templates. Please verify the backend connection.",
       );
     } finally {
       setIsLoading(false);
@@ -399,7 +399,7 @@ export function BannerTemplateManagement() {
   }
 
   // Open Edit Modal
-  async function handleOpenEditModal(template: BannerTemplateModel) {
+  async function handleOpenEditModal(template: ProductTemplateModel) {
     setEditingTemplate(template);
 
     setFormData({
@@ -431,7 +431,7 @@ export function BannerTemplateManagement() {
 
     // Fetch fresh single template record in background to ensure all fields are up to date
     try {
-      const fresh = await bannerTemplateApi.getBannerTemplate(template.id);
+      const fresh = await productTemplateApi.getProductTemplate(template.id);
       if (fresh) {
         setFormData((prev) => ({
           ...prev,
@@ -501,7 +501,7 @@ export function BannerTemplateManagement() {
 
     setFormData((prev) => ({
       ...prev,
-      preview_image_url: `/uploads/banners/${file.name}`,
+      preview_image_url: `/uploads/products/${file.name}`,
     }));
   }
 
@@ -547,7 +547,7 @@ export function BannerTemplateManagement() {
         images: [
           ...prev.images,
           {
-            imageUrl: `/uploads/banners/${file.name}`,
+            imageUrl: `/uploads/products/${file.name}`,
             file,
             previewUrl: objectUrl,
             sortOrder: prev.images.length,
@@ -583,7 +583,7 @@ export function BannerTemplateManagement() {
       const next = [...prev.images];
       next[index] = {
         ...next[index],
-        imageUrl: `/uploads/banners/${file.name}`,
+        imageUrl: `/uploads/products/${file.name}`,
         file,
         previewUrl: objectUrl,
       };
@@ -690,7 +690,7 @@ export function BannerTemplateManagement() {
           let finalUrl = img.imageUrl.trim();
           let finalName = img.file?.name;
           if (img.file) {
-            const uploadRes = await bannerTemplateApi.uploadBannerImage(
+            const uploadRes = await productTemplateApi.uploadProductImage(
               img.file,
             );
             finalUrl = uploadRes.imageUrl;
@@ -709,7 +709,7 @@ export function BannerTemplateManagement() {
       const validImages = uploadedImages.filter((img) => img.imageUrl !== "");
 
       // 2. Submit template payload with actual uploaded image URLs
-      const payload: CreateBannerTemplatePayload = {
+      const payload: CreateProductTemplatePayload = {
         name: formData.name.trim(),
         description: formData.description.trim(),
         orientation: formData.orientation,
@@ -723,18 +723,18 @@ export function BannerTemplateManagement() {
         fields: (formData.fields || []).filter((f) => f.label.trim() !== ""),
       };
 
-      await bannerTemplateApi.createBannerTemplate(payload);
+      await productTemplateApi.createProductTemplate(payload);
       setShowAddModal(false);
       setNotice({
         type: "success",
-        message: `Banner template "${formData.name}" created successfully!`,
+        message: `Product template "${formData.name}" created successfully!`,
       });
       await loadData(true);
     } catch (err: any) {
-      console.error("Failed to create banner template:", err);
+      console.error("Failed to create product template:", err);
       setFormServerError(
         err?.message ||
-          "Failed to create banner template. Please check the backend response.",
+          "Failed to create product template. Please check the backend response.",
       );
     } finally {
       setIsSubmitting(false);
@@ -756,7 +756,7 @@ export function BannerTemplateManagement() {
           let finalUrl = img.imageUrl.trim();
           let finalName = img.file?.name;
           if (img.file) {
-            const uploadRes = await bannerTemplateApi.uploadBannerImage(
+            const uploadRes = await productTemplateApi.uploadProductImage(
               img.file,
             );
             finalUrl = uploadRes.imageUrl;
@@ -775,7 +775,7 @@ export function BannerTemplateManagement() {
       const validImages = uploadedImages.filter((img) => img.imageUrl !== "");
 
       // 2. Submit update payload with actual uploaded image URLs
-      const payload: Partial<CreateBannerTemplatePayload> = {
+      const payload: Partial<CreateProductTemplatePayload> = {
         name: formData.name.trim(),
         description: formData.description.trim(),
         orientation: formData.orientation,
@@ -789,16 +789,16 @@ export function BannerTemplateManagement() {
         fields: (formData.fields || []).filter((f) => f.label.trim() !== ""),
       };
 
-      await bannerTemplateApi.updateBannerTemplate(editingTemplate.id, payload);
+      await productTemplateApi.updateProductTemplate(editingTemplate.id, payload);
       setShowEditModal(false);
       setNotice({
         type: "success",
-        message: `Banner template "${formData.name}" updated successfully!`,
+        message: `Product template "${formData.name}" updated successfully!`,
       });
       await loadData(true);
     } catch (err: any) {
-      console.error("Failed to update banner template:", err);
-      setFormServerError(err?.message || "Failed to update banner template.");
+      console.error("Failed to update product template:", err);
+      setFormServerError(err?.message || "Failed to update product template.");
     } finally {
       setIsSubmitting(false);
     }
@@ -810,15 +810,15 @@ export function BannerTemplateManagement() {
 
     setIsDeleting(true);
     try {
-      await bannerTemplateApi.deleteBannerTemplate(deleteTarget.id);
+      await productTemplateApi.deleteProductTemplate(deleteTarget.id);
       setNotice({
         type: "success",
-        message: `Banner template "${deleteTarget.name}" deleted successfully.`,
+        message: `Product template "${deleteTarget.name}" deleted successfully.`,
       });
       setDeleteTarget(null);
       await loadData(true);
     } catch (err: any) {
-      console.error("Failed to delete banner template:", err);
+      console.error("Failed to delete product template:", err);
       setNotice({
         type: "error",
         message:
@@ -1041,7 +1041,7 @@ export function BannerTemplateManagement() {
 
   function handleFieldChange(
     index: number,
-    patch: Partial<BannerTemplateField>,
+    patch: Partial<ProductTemplateField>,
   ) {
     setFormData((prev) => {
       const nextFields = [...prev.fields];
@@ -1141,7 +1141,7 @@ export function BannerTemplateManagement() {
               </Badge>
             </div>
             <p className="text-[13px] text-slate-500 mt-0.5">
-              Configure the fields users can fill for this banner template.
+              Configure the fields users can fill for this product template.
             </p>
           </div>
         </div>
@@ -1255,7 +1255,7 @@ export function BannerTemplateManagement() {
                         value={field.fieldType}
                         onChange={(e) =>
                           handleFieldChange(fIdx, {
-                            fieldType: e.target.value as BannerFieldType,
+                            fieldType: e.target.value as ProductFieldType,
                           })
                         }
                         className="w-full h-8 px-2 bg-white border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:ring-1 focus:ring-slate-900"
@@ -1473,7 +1473,7 @@ export function BannerTemplateManagement() {
               </div>
               <div>
                 <h1 className="text-xl font-black text-slate-900 tracking-tight">
-                  Banner Template Management
+                  Product Template Management
                 </h1>
                 <p className="text-xs text-slate-500 font-medium">
                   Manage technical banner blueprints, dimension specifications,
@@ -1504,7 +1504,7 @@ export function BannerTemplateManagement() {
               className="h-10 text-xs font-semibold gap-2 bg-slate-900 hover:bg-slate-800 text-white shadow-sm shadow-slate-900/10"
             >
               <Plus size={15} />
-              <span>Add Banner Template</span>
+              <span>Add Product Template</span>
             </Button>
           </div>
         </div>
@@ -1553,7 +1553,7 @@ export function BannerTemplateManagement() {
         <Card className="p-16 flex flex-col items-center justify-center text-center bg-white border border-slate-200/80 rounded-2xl">
           <Loader2 size={36} className="animate-spin text-slate-400 mb-3" />
           <p className="text-sm font-bold text-slate-700">
-            Loading banner templates...
+            Loading product templates...
           </p>
           <p className="text-xs text-slate-400 mt-1">
             Connecting to backend APIs...
@@ -1586,8 +1586,8 @@ export function BannerTemplateManagement() {
           <div>
             <h3 className="text-base font-bold text-slate-900">
               {searchQuery
-                ? "No Matching Banner Templates"
-                : "No Banner Templates Yet"}
+                ? "No Matching Product Templates"
+                : "No Product Templates Yet"}
             </h3>
             <p className="text-xs text-slate-500 mt-1 max-w-sm">
               {searchQuery
@@ -1766,7 +1766,7 @@ export function BannerTemplateManagement() {
       )}
 
       {/* ==================================================== */}
-      {/* MODAL 1: ADD BANNER TEMPLATE                         */}
+      {/* MODAL 1: ADD PRODUCT TEMPLATE                         */}
       {/* ==================================================== */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
@@ -1779,7 +1779,7 @@ export function BannerTemplateManagement() {
                 </div>
                 <div>
                   <h3 className="font-extrabold text-base text-slate-900">
-                    Add Banner Template
+                    Add Product Template
                   </h3>
                   <p className="text-xs text-slate-500">
                     Define specifications, dimensions, and upload template
@@ -1942,7 +1942,7 @@ export function BannerTemplateManagement() {
                   htmlFor="create-tpl-active"
                   className="text-xs font-bold text-slate-800 cursor-pointer"
                 >
-                  Active Banner Template
+                  Active Product Template
                 </Label>
               </div>
 
@@ -1982,7 +1982,7 @@ export function BannerTemplateManagement() {
       )}
 
       {/* ==================================================== */}
-      {/* MODAL 2: EDIT BANNER TEMPLATE                        */}
+      {/* MODAL 2: EDIT PRODUCT TEMPLATE                        */}
       {/* ==================================================== */}
       {showEditModal && editingTemplate && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
@@ -1995,7 +1995,7 @@ export function BannerTemplateManagement() {
                 </div>
                 <div>
                   <h3 className="font-extrabold text-base text-slate-900">
-                    Edit Banner Template #{editingTemplate.id}
+                    Edit Product Template #{editingTemplate.id}
                   </h3>
                   <p className="text-xs text-slate-500">
                     Update template specifications, replace images, and
@@ -2149,7 +2149,7 @@ export function BannerTemplateManagement() {
                   htmlFor="tpl-edit-active"
                   className="text-xs font-bold text-slate-800 cursor-pointer"
                 >
-                  Active Banner Template
+                  Active Product Template
                 </Label>
               </div>
 
@@ -2189,7 +2189,7 @@ export function BannerTemplateManagement() {
       )}
 
       {/* ==================================================== */}
-      {/* MODAL 3: VIEW BANNER TEMPLATE DETAILS                */}
+      {/* MODAL 3: VIEW PRODUCT TEMPLATE DETAILS                */}
       {/* ==================================================== */}
       {viewingTemplate && (
         <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
@@ -2372,7 +2372,7 @@ export function BannerTemplateManagement() {
             </div>
 
             <h3 className="font-extrabold text-base text-slate-900">
-              Delete Banner Template?
+              Delete Product Template?
             </h3>
             <p className="text-xs text-slate-600 mt-1.5 leading-relaxed">
               Are you sure you want to delete{" "}
@@ -2419,3 +2419,4 @@ export function BannerTemplateManagement() {
     </div>
   );
 }
+

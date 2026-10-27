@@ -1,4 +1,3 @@
-
 "use client";
 
 import { getStoredToken } from "@/app/lib/auth/token";
@@ -9,7 +8,7 @@ import {
 
 export { getApiBaseUrl } from "@/app/lib/client/api-url";
 
-export interface BannerTemplateImage {
+export interface ProductTemplateImage {
   id?: number;
   templateId?: number;
   imageUrl: string;
@@ -22,7 +21,7 @@ export interface BannerTemplateImage {
   updatedAt?: string;
 }
 
-export type BannerFieldType =
+export type ProductFieldType =
   | "text"
   | "email"
   | "phone"
@@ -35,12 +34,12 @@ export type BannerFieldType =
   | "checkbox"
   | "file";
 
-export interface BannerTemplateField {
+export interface ProductTemplateField {
   id?: number;
   templateId?: number;
   label: string;
   fieldLabel?: string;
-  fieldType: BannerFieldType | string;
+  fieldType: ProductFieldType | string;
   placeholder?: string;
   options?: string[];
   isRequired: boolean;
@@ -50,7 +49,7 @@ export interface BannerTemplateField {
   updatedAt?: string;
 }
 
-export interface BannerTemplateModel {
+export interface ProductTemplateModel {
   id: number;
   name: string;
   description?: string;
@@ -61,11 +60,11 @@ export interface BannerTemplateModel {
   isActive: boolean;
   createdAt?: string;
   updatedAt?: string;
-  images: BannerTemplateImage[];
-  fields?: BannerTemplateField[];
+  images: ProductTemplateImage[];
+  fields?: ProductTemplateField[];
 }
 
-export interface CreateBannerTemplatePayload {
+export interface CreateProductTemplatePayload {
   name: string;
   description: string;
   orientation: "landscape" | "portrait";
@@ -82,15 +81,11 @@ export interface CreateBannerTemplatePayload {
     imageName?: string | null;
     sortOrder: number;
   }>;
-  fields?: BannerTemplateField[];
+  fields?: ProductTemplateField[];
 }
 
 /**
  * Resolves an image path to an absolute URL based on the environment backend URL.
- * Handles:
- * - Already absolute URLs (http://, https://)
- * - Temporary client preview URLs (blob:, data:)
- * - Backend relative paths (/uploads/banners/...)
  */
 export function resolveImageUrl(path?: string | null): string {
   if (!path || typeof path !== "string") return "";
@@ -144,7 +139,7 @@ export function getCandidateImageUrls(path?: string | null): string[] {
   // 3. Frontend public root
   candidates.push(cleanPath);
 
-  // 4. Filename in public root (e.g. /Dunkins.png if in frontend/public)
+  // 4. Filename in public root
   const filename = cleanPath.split("/").pop();
   if (filename && `/${filename}` !== cleanPath) {
     candidates.push(`/${filename}`);
@@ -153,7 +148,7 @@ export function getCandidateImageUrls(path?: string | null): string[] {
   return [...new Set(candidates)];
 }
 
-function normalizeTemplate(raw: any): BannerTemplateModel {
+function normalizeTemplate(raw: any): ProductTemplateModel {
   if (!raw || typeof raw !== "object") {
     return {
       id: 0,
@@ -174,7 +169,7 @@ function normalizeTemplate(raw: any): BannerTemplateModel {
         : true;
 
   const rawImages = Array.isArray(raw.images) ? raw.images : [];
-  const normalizedImages: BannerTemplateImage[] = rawImages.map(
+  const normalizedImages: ProductTemplateImage[] = rawImages.map(
     (img: any, idx: number) => ({
       id: img.id ? Number(img.id) : undefined,
       templateId: img.templateId || img.template_id,
@@ -198,7 +193,7 @@ function normalizeTemplate(raw: any): BannerTemplateModel {
             ? Number(img.sort_order)
             : idx,
       title: img.title ?? img.imageName ?? img.image_name ?? null,
-      imageType: img.imageType || img.image_type || "banner",
+      imageType: img.imageType || img.image_type || "product",
       isActive:
         img.isActive !== undefined
           ? Boolean(img.isActive)
@@ -209,27 +204,6 @@ function normalizeTemplate(raw: any): BannerTemplateModel {
       updatedAt: img.updatedAt || img.updated_at,
     }),
   );
-
-  // Safely extract masterImageUrl across both camelCase and snake_case backend responses
-  const masterUrl =
-    (typeof raw.masterImageUrl === "string" && raw.masterImageUrl.trim()) ||
-    (typeof raw.master_image_url === "string" && raw.master_image_url.trim()) ||
-    (typeof raw.masterUrl === "string" && raw.masterUrl.trim()) ||
-    (typeof raw.master_url === "string" && raw.master_url.trim()) ||
-    (typeof raw.masterImage === "string" && raw.masterImage.trim()) ||
-    (typeof raw.master_image === "string" && raw.master_image.trim()) ||
-    undefined;
-
-  // Safely extract previewImageUrl across both camelCase and snake_case backend responses
-  const previewUrl =
-    (typeof raw.previewImageUrl === "string" && raw.previewImageUrl.trim()) ||
-    (typeof raw.preview_image_url === "string" && raw.preview_image_url.trim()) ||
-    (typeof raw.previewUrl === "string" && raw.previewUrl.trim()) ||
-    (typeof raw.preview_url === "string" && raw.preview_url.trim()) ||
-    (typeof raw.previewImage === "string" && raw.previewImage.trim()) ||
-    (typeof raw.preview_image === "string" && raw.preview_image.trim()) ||
-    masterUrl ||
-    undefined;
 
   return {
     id: Number(raw.id),
@@ -349,16 +323,16 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   }
 }
 
-export const bannerTemplateApi = {
+export const productTemplateApi = {
   getApiBaseUrl,
   resolveImageUrl,
   getCandidateImageUrls,
 
   /**
-   * Upload Banner Image File
-   * POST /api/uploadBannerImage
+   * Upload Product Image File
+   * POST /api/uploadProductImage
    */
-  async uploadBannerImage(file: File): Promise<{
+  async uploadProductImage(file: File): Promise<{
     imageUrl: string;
     filename: string;
     originalName: string;
@@ -367,35 +341,34 @@ export const bannerTemplateApi = {
     const formData = new FormData();
     formData.append("image", file);
 
-    return request<{
+    return await request<{
       imageUrl: string;
       filename: string;
       originalName: string;
       size: number;
-    }>("/api/uploadBannerImage", {
+    }>("/api/uploadProductImage", {
       method: "POST",
       body: formData,
     });
   },
 
   /**
-   * 1. GET /api/getBannerTemplates
-   * Fetches all banner templates
+   * Fetches all product templates
+   * GET /api/getProductTemplates
    */
-  async getBannerTemplates(
+  async getProductTemplates(
     includeInactive = true,
-  ): Promise<BannerTemplateModel[]> {
+  ): Promise<ProductTemplateModel[]> {
     const params = new URLSearchParams();
     if (includeInactive) {
       params.append("includeInactive", "true");
     }
     const queryString = params.toString();
     const url = queryString
-      ? `/api/getBannerTemplates?${queryString}`
-      : "/api/getBannerTemplates";
-    const data = await request<any>(url, {
-      method: "GET",
-    });
+      ? `/api/getProductTemplates?${queryString}`
+      : "/api/getProductTemplates";
+
+    const data = await request<any>(url, { method: "GET" });
 
     const list = Array.isArray(data)
       ? data
@@ -403,19 +376,21 @@ export const bannerTemplateApi = {
         ? data.templates
         : Array.isArray(data?.data)
           ? data.data
-          : Array.isArray(data?.bannerTemplates)
-            ? data.bannerTemplates
-            : [];
+          : Array.isArray(data?.products)
+            ? data.products
+            : Array.isArray(data?.productTemplates)
+              ? data.productTemplates
+              : [];
 
     return list.map(normalizeTemplate);
   },
 
   /**
-   * 2. GET /api/getBannerTemplate/:id
-   * Fetches single banner template details
+   * Fetches single product template details
+   * GET /api/getProductTemplate/:id
    */
-  async getBannerTemplate(id: number): Promise<BannerTemplateModel> {
-    const data = await request<any>(`/api/getBannerTemplate/${id}`, {
+  async getProductTemplate(id: number): Promise<ProductTemplateModel> {
+    const data = await request<any>(`/api/getProductTemplate/${id}`, {
       method: "GET",
     });
 
@@ -424,12 +399,12 @@ export const bannerTemplateApi = {
   },
 
   /**
-   * 3. POST /api/createBannerTemplate
-   * Submits JSON payload to create a new banner template
+   * Submits JSON payload to create a new product template
+   * POST /api/createProductTemplate
    */
-  async createBannerTemplate(
-    payload: CreateBannerTemplatePayload,
-  ): Promise<BannerTemplateModel> {
+  async createProductTemplate(
+    payload: CreateProductTemplatePayload,
+  ): Promise<ProductTemplateModel> {
     const body = {
       name: payload.name,
       description: payload.description,
@@ -447,7 +422,7 @@ export const bannerTemplateApi = {
       fields: payload.fields || [],
     };
 
-    const data = await request<any>("/api/createBannerTemplate", {
+    const data = await request<any>("/api/createProductTemplate", {
       method: "POST",
       body: JSON.stringify(body),
     });
@@ -457,93 +432,56 @@ export const bannerTemplateApi = {
   },
 
   /**
-   * 5. Update Banner Template
-   * Attempts PUT /api/updateBannerTemplate/:id or POST /api/updateBannerTemplate/:id
+   * Update Product Template
    */
-  async updateBannerTemplate(
+  async updateProductTemplate(
     id: number,
-    payload: Partial<CreateBannerTemplatePayload>,
-  ): Promise<BannerTemplateModel> {
+    payload: Partial<CreateProductTemplatePayload>,
+  ): Promise<ProductTemplateModel> {
     const body = {
       ...payload,
       id,
     };
 
-    try {
-      const data = await request<any>(`/api/updateBannerTemplate/${id}`, {
-        method: "PUT",
-        body: JSON.stringify(body),
-      });
-      const raw = data?.template || data?.data || data;
-      return normalizeTemplate(raw);
-    } catch (err: any) {
-      if (err?.status === 404 || err?.status === 405) {
-        // Try POST fallback
-        try {
-          const data = await request<any>(`/api/updateBannerTemplate/${id}`, {
-            method: "POST",
-            body: JSON.stringify(body),
-          });
-          const raw = data?.template || data?.data || data;
-          return normalizeTemplate(raw);
-        } catch (postErr: any) {
-          throw new Error(
-            `Backend update endpoint (/api/updateBannerTemplate/${id}) is not provided by the server (${postErr.message || "404 Not Found"}).`,
-          );
-        }
-      }
-      throw err;
-    }
+    const data = await request<any>(`/api/updateProductTemplate/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    });
+    const raw = data?.template || data?.data || data;
+    return normalizeTemplate(raw);
   },
 
   /**
-   * 6. Delete Banner Template
-   * Attempts DELETE /api/deleteBannerTemplate/:id
+   * Delete Product Template
    */
-  async deleteBannerTemplate(id: number): Promise<boolean> {
-    try {
-      await request<any>(`/api/deleteBannerTemplate/${id}`, {
-        method: "DELETE",
-      });
-      return true;
-    } catch (err: any) {
-      if (err?.status === 404 || err?.status === 405) {
-        // Try fallback POST /api/deleteBannerTemplate/:id
-        try {
-          await request<any>(`/api/deleteBannerTemplate/${id}`, {
-            method: "POST",
-          });
-          return true;
-        } catch (postErr: any) {
-          throw new Error(
-            `Backend delete endpoint (/api/deleteBannerTemplate/${id}) is not provided by the server (${postErr.message || "404 Not Found"}).`,
-          );
-        }
-      }
-      throw err;
-    }
+  async deleteProductTemplate(id: number): Promise<boolean> {
+    await request<any>(`/api/deleteProductTemplate/${id}`, {
+      method: "DELETE",
+    });
+    return true;
   },
 
   /**
-   * 7. GET /api/getBannerTemplateFields/:id
+   * GET fields for a template
    */
-  async getBannerTemplateFields(id: number): Promise<BannerTemplateField[]> {
-    const data = await request<any>(`/api/getBannerTemplateFields/${id}`, {
+  async getProductTemplateFields(id: number): Promise<ProductTemplateField[]> {
+    const data = await request<any>(`/api/getProductTemplateFields/${id}`, {
       method: "GET",
     });
     return Array.isArray(data?.fields) ? data.fields : [];
   },
 
   /**
-   * 7. POST /api/saveBannerCustomization
+   * Save Product Customization (draft / save)
    */
-  async saveBannerCustomization(
+  async saveProductCustomization(
     templateIdOrOptions:
       | number
       | {
           templateId: number;
           values: Record<string, any>;
           files?: Record<string, File>;
+          quantity?: number;
         },
     values?: Record<string, any>,
     files?: Record<string, File>,
@@ -557,7 +495,7 @@ export const bannerTemplateApi = {
       tId = templateIdOrOptions.templateId;
       vals = templateIdOrOptions.values;
       fls = templateIdOrOptions.files;
-      qty = (templateIdOrOptions as any).quantity;
+      qty = templateIdOrOptions.quantity;
     } else {
       tId = templateIdOrOptions;
       vals = values || {};
@@ -579,27 +517,26 @@ export const bannerTemplateApi = {
       }
     }
 
-    const data = await request<any>("/api/saveBannerCustomization", {
+    return await request<any>("/api/saveProductCustomization", {
       method: "POST",
       body: formData,
     });
-    return data;
   },
 
   /**
-   * 8. GET /api/getBannerCustomization/:id
+   * Get Product Customization
    */
-  async getBannerCustomization(templateId: number): Promise<any> {
-    const data = await request<any>(`/api/getBannerCustomization/${templateId}`, {
+  async getProductCustomization(templateId: number): Promise<any> {
+    const data = await request<any>(`/api/getProductCustomization/${templateId}`, {
       method: "GET",
     });
     return data?.customization ?? null;
   },
 
   /**
-   * 9. POST /api/submitBannerCustomization
+   * Submit Product Customization
    */
-  async submitBannerCustomization(options: {
+  async submitProductCustomization(options: {
     templateId: number;
     values: Record<string, any>;
     files?: Record<string, File>;
@@ -620,28 +557,29 @@ export const bannerTemplateApi = {
       }
     }
 
-    const data = await request<any>("/api/submitBannerCustomization", {
+    return await request<any>("/api/submitProductCustomization", {
       method: "POST",
       body: formData,
     });
-    return data;
   },
 
   /**
-   * 10. GET /api/bannerSubmissions
+   * GET Submissions for Super Admin & Staff
    */
-  async getBannerSubmissions(params?: {
+  async getProductSubmissions(params?: {
     search?: string;
     status?: string;
-  }): Promise<{ submissions: BannerSubmissionListItem[]; total: number }> {
+  }): Promise<{ submissions: ProductSubmissionListItem[]; total: number }> {
     const queryParts: string[] = [];
     if (params?.search) queryParts.push(`search=${encodeURIComponent(params.search)}`);
     if (params?.status && params.status !== "all") queryParts.push(`status=${encodeURIComponent(params.status)}`);
 
     const qs = queryParts.length > 0 ? `?${queryParts.join("&")}` : "";
-    const data = await request<any>(`/api/bannerSubmissions${qs}`, {
+
+    const data = await request<any>(`/api/productSubmissions${qs}`, {
       method: "GET",
     });
+
     return {
       submissions: Array.isArray(data?.submissions) ? data.submissions : [],
       total: data?.total ?? (data?.submissions?.length || 0),
@@ -649,35 +587,34 @@ export const bannerTemplateApi = {
   },
 
   /**
-   * 12. GET /api/bannerSubmissions/:id
+   * GET single submission by ID
    */
-  async getBannerSubmissionById(id: number): Promise<BannerSubmissionDetail | null> {
-    const data = await request<any>(`/api/bannerSubmissions/${id}`, {
+  async getProductSubmissionById(id: number): Promise<ProductSubmissionDetail | null> {
+    const data = await request<any>(`/api/productSubmissions/${id}`, {
       method: "GET",
     });
     return data?.submission ?? null;
   },
 
   /**
-   * 13. PUT /api/bannerSubmissions/:id/status
+   * Update submission status
    */
-  async updateBannerSubmissionStatus(
+  async updateProductSubmissionStatus(
     id: number,
     status: string,
   ): Promise<{ id: number; status: string; message: string }> {
-    const data = await request<any>(`/api/bannerSubmissions/${id}/status`, {
+    return await request<any>(`/api/productSubmissions/${id}/status`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status }),
     });
-    return data;
   },
 
   /**
-   * 14. GET /api/myBannerSubmissions
+   * GET My Submissions
    */
-  async getMyBannerSubmissions(): Promise<{ submissions: BannerSubmissionListItem[]; total: number }> {
-    const data = await request<any>("/api/myBannerSubmissions", {
+  async getMyProductSubmissions(): Promise<{ submissions: ProductSubmissionListItem[]; total: number }> {
+    const data = await request<any>("/api/myProductSubmissions", {
       method: "GET",
     });
     return {
@@ -687,50 +624,52 @@ export const bannerTemplateApi = {
   },
 
   /**
-   * 15. GET /api/bannerSubmissions/:id/thread
+   * GET submission thread
    */
-  async getBannerSubmissionThread(id: number): Promise<BannerSubmissionThread> {
-    const data = await request<BannerSubmissionThread>(`/api/bannerSubmissions/${id}/thread`, {
+  async getProductSubmissionThread(id: number): Promise<ProductSubmissionThread> {
+    return await request<ProductSubmissionThread>(`/api/productSubmissions/${id}/thread`, {
       method: "GET",
     });
-    return data;
   },
 
   /**
-   * 16. POST /api/bannerSubmissions/:id/messages
+   * Send submission thread message
    */
-  async sendBannerSubmissionMessage(
+  async sendProductSubmissionMessage(
     id: number,
     message: string,
     imageId?: number | null,
     statusAction?: "approved" | "changes_requested" | string,
-  ): Promise<BannerSubmissionMessage> {
-    const data = await request<any>(`/api/bannerSubmissions/${id}/messages`, {
+  ): Promise<ProductSubmissionMessage> {
+    const body = {
+      message,
+      imageId: imageId ?? null,
+      statusAction: statusAction || undefined,
+    };
+
+    const data = await request<any>(`/api/productSubmissions/${id}/messages`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message,
-        imageId: imageId ?? null,
-        statusAction: statusAction || undefined,
-      }),
+      body: JSON.stringify(body),
     });
     return data?.data || data;
   },
 
   /**
-   * 17. POST /api/bannerSubmissions/:id/files
+   * Add photo file to submission
    */
-  async addBannerSubmissionFile(
+  async addProductSubmissionFile(
     id: number,
     file: File,
     fileName?: string,
-  ): Promise<BannerSubmissionFile> {
+  ): Promise<ProductSubmissionFile> {
     const formData = new FormData();
     formData.append("file", file);
     if (fileName) {
       formData.append("fileName", fileName);
     }
-    const data = await request<any>(`/api/bannerSubmissions/${id}/files`, {
+
+    const data = await request<any>(`/api/productSubmissions/${id}/files`, {
       method: "POST",
       body: formData,
     });
@@ -738,20 +677,21 @@ export const bannerTemplateApi = {
   },
 
   /**
-   * 18. PUT /api/bannerSubmissions/:id/files/:fileId
+   * Replace photo file in submission
    */
-  async replaceBannerSubmissionFile(
+  async replaceProductSubmissionFile(
     id: number,
     fileId: number,
     file: File,
     fileName?: string,
-  ): Promise<BannerSubmissionFile> {
+  ): Promise<ProductSubmissionFile> {
     const formData = new FormData();
     formData.append("file", file);
     if (fileName) {
       formData.append("fileName", fileName);
     }
-    const data = await request<any>(`/api/bannerSubmissions/${id}/files/${fileId}`, {
+
+    const data = await request<any>(`/api/productSubmissions/${id}/files/${fileId}`, {
       method: "PUT",
       body: formData,
     });
@@ -759,7 +699,7 @@ export const bannerTemplateApi = {
   },
 };
 
-export type BannerSubmissionStatus =
+export type ProductSubmissionStatus =
   | "Pending"
   | "In Review"
   | "Changes Requested"
@@ -767,7 +707,7 @@ export type BannerSubmissionStatus =
   | "Rejected"
   | "Completed";
 
-export interface BannerSubmissionFile {
+export interface ProductSubmissionFile {
   id: number;
   submissionId: number;
   version: number;
@@ -779,10 +719,10 @@ export interface BannerSubmissionFile {
   replacedFileId?: number | null;
   createdAt: string;
   isReplaced?: boolean;
-  history?: BannerSubmissionFile[];
+  history?: ProductSubmissionFile[];
 }
 
-export interface BannerSubmissionMessage {
+export interface ProductSubmissionMessage {
   id: number;
   submissionId: number;
   imageId?: number | null;
@@ -793,13 +733,13 @@ export interface BannerSubmissionMessage {
   createdAt: string;
 }
 
-export interface BannerSubmissionThread {
-  submission: BannerSubmissionDetail;
-  files: BannerSubmissionFile[];
-  messages: BannerSubmissionMessage[];
+export interface ProductSubmissionThread {
+  submission: ProductSubmissionDetail;
+  files: ProductSubmissionFile[];
+  messages: ProductSubmissionMessage[];
 }
 
-export interface BannerSubmissionListItem {
+export interface ProductSubmissionListItem {
   id: number;
   templateId: number;
   templateName: string;
@@ -811,13 +751,13 @@ export interface BannerSubmissionListItem {
   userId: number;
   userName: string;
   userEmail: string;
-  status: BannerSubmissionStatus | string;
+  status: ProductSubmissionStatus | string;
   customizationValues: Record<string, any>;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface BannerSubmissionDetail {
+export interface ProductSubmissionDetail {
   id: number;
   templateId: number;
   templateName: string;
@@ -825,12 +765,12 @@ export interface BannerSubmissionDetail {
   heightPx: number;
   dimensionsLabel?: string;
   previewImageUrl?: string | null;
-  images?: BannerTemplateImage[];
+  images?: ProductTemplateImage[];
   quantity?: number;
   userId: number;
   userName: string;
   userEmail: string;
-  status: BannerSubmissionStatus | string;
+  status: ProductSubmissionStatus | string;
   customizationValues: Record<string, any>;
   submittedFields: Array<{
     id: number | string;
@@ -841,4 +781,3 @@ export interface BannerSubmissionDetail {
   createdAt: string;
   updatedAt: string;
 }
-

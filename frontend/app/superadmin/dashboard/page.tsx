@@ -20,8 +20,8 @@ import {
 } from "@/app/Components/ui";
 import { UserManagement } from "@/app/super-admin/dashboard/UserManagement";
 import { RolePermissionManagement } from "@/app/super-admin/dashboard/RolePermissionManagement";
-import { BannerTemplateManagement } from "@/app/super-admin/dashboard/BannerTemplateManagement";
-import { BannerSubmissionsManagement } from "@/app/super-admin/dashboard/BannerSubmissionsManagement";
+import { ProductTemplateManagement } from "@/app/super-admin/dashboard/ProductTemplateManagement";
+import { ProductSubmissionsManagement } from "@/app/super-admin/dashboard/ProductSubmissionsManagement";
 import {
   canvasApi,
   type ProjectModel,
@@ -169,8 +169,8 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
       icon: Layers,
       badge: diagrams.length,
     },
-    { id: "banner-templates", label: "Banner Templates", icon: LayoutTemplate },
-    { id: "banner-submissions", label: "Banner Submissions", icon: Inbox },
+    { id: "product-templates", label: "Product Templates", icon: LayoutTemplate },
+    { id: "product-submissions", label: "Product Submissions", icon: Inbox },
   ];
 
   async function loadData(opts?: { refreshDetails?: boolean }) {
@@ -443,7 +443,7 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
   return (
     <SidebarLayout
       title="Super Admin Command Center"
-      subtitle="Full control of Projects, Users, Roles, Diagrams & Banner Templates"
+      subtitle="Full control of Projects, Users, Roles, Diagrams & Product Templates"
       roleName="Super Admin"
       userEmail={superAdminUser.email}
       userName={superAdminUser.name}
@@ -887,11 +887,15 @@ function SuperAdminContent({ superAdminUser }: { superAdminUser: any }) {
         />
       )}
 
-      {/* TAB 5: BANNER TEMPLATES */}
-      {activeTab === "banner-templates" && <BannerTemplateManagement />}
+      {/* TAB 5: PRODUCT TEMPLATES */}
+      {activeTab === "product-templates" && (
+        <ProductTemplateManagement />
+      )}
 
-      {/* TAB 7: BANNER SUBMISSIONS */}
-      {activeTab === "banner-submissions" && <BannerSubmissionsManagement />}
+      {/* TAB 7: PRODUCT SUBMISSIONS */}
+      {activeTab === "product-submissions" && (
+        <ProductSubmissionsManagement />
+      )}
 
       {/* MODAL: CREATE / EDIT DIAGRAM TEMPLATE */}
       {showDiagramModal && (

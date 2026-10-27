@@ -1,7 +1,7 @@
 "use client";
 
 import { AuthGuard } from "@/app/Components/auth/AuthGuard";
-import { BannerSubmissionHistory } from "@/app/profile/BannerSubmissionHistory";
+import { ProductSubmissionHistory } from "@/app/profile/ProductSubmissionHistory";
 
 export default function OrderHistoryPage() {
   return (
@@ -9,7 +9,7 @@ export default function OrderHistoryPage() {
       requiredRole="user"
       loginPath="/profile/sign-in?returnTo=%2Forder-history"
     >
-      {(user) => <BannerSubmissionHistory user={user} />}
+      {(user) => <ProductSubmissionHistory user={user} />}
     </AuthGuard>
   );
 }

@@ -5,7 +5,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { buildApiUrl, getApiBaseUrl } from "@/app/lib/client/api-url";
 import { getStoredToken } from "@/app/lib/auth/token";
-import { bannerTemplateApi } from "@/app/lib/client/banner-template-api";
+import { productTemplateApi } from "@/app/lib/client/product-template-api";
 
 type ProductField = {
   id: number;
@@ -117,7 +117,7 @@ export default function PrintingProductDetail({ productId }: { productId: string
     setSubmitting(true);
     setError("");
     try {
-      const result = await bannerTemplateApi.submitBannerCustomization({
+      const result = await productTemplateApi.submitProductCustomization({
         templateId: product.id,
         quantity,
         values,

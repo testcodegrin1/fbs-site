@@ -3,14 +3,14 @@ import { DetailRow } from "@/app/Components/ui/detail-row";
 
 import { useEffect, useState, useMemo, Fragment } from "react";
 import {
-  bannerTemplateApi,
+  productTemplateApi,
   resolveImageUrl,
-  type BannerSubmissionListItem,
-  type BannerSubmissionDetail,
-  type BannerSubmissionStatus,
-  type BannerSubmissionFile,
-} from "@/app/lib/client/banner-template-api";
-import { BannerSubmissionThreadModal } from "@/app/user/dashboard/BannerSubmissionThreadModal";
+  type ProductSubmissionListItem,
+  type ProductSubmissionDetail,
+  type ProductSubmissionStatus,
+  type ProductSubmissionFile,
+} from "@/app/lib/client/product-template-api";
+import { ProductSubmissionThreadModal } from "@/app/user/dashboard/ProductSubmissionThreadModal";
 import { Card, CardHeader, Button, Input, Badge } from "@/app/Components/ui";
 import {
   Search,
@@ -43,7 +43,7 @@ import {
   ChevronUp,
 } from "lucide-react";
 
-const STATUS_OPTIONS: BannerSubmissionStatus[] = [
+const STATUS_OPTIONS: ProductSubmissionStatus[] = [
   "Pending",
   "In Review",
   "Changes Requested",
@@ -101,16 +101,16 @@ function getStatusBadge(status: string) {
   }
 }
 
-export interface ClientBannerSubmissionsGroup {
+export interface ClientProductSubmissionsGroup {
   userId: number;
   userName: string;
   userEmail: string;
-  orders: BannerSubmissionListItem[];
+  orders: ProductSubmissionListItem[];
   totalOrders: number;
 }
 
-export function BannerSubmissionsManagement() {
-  const [submissions, setSubmissions] = useState<BannerSubmissionListItem[]>(
+export function ProductSubmissionsManagement() {
+  const [submissions, setSubmissions] = useState<ProductSubmissionListItem[]>(
     [],
   );
   const [loading, setLoading] = useState(true);
@@ -134,12 +134,12 @@ export function BannerSubmissionsManagement() {
     number | null
   >(null);
   const [selectedSubmissionFiles, setSelectedSubmissionFiles] = useState<
-    BannerSubmissionFile[]
+    ProductSubmissionFile[]
   >([]);
   const [threadSubmissionId, setThreadSubmissionId] = useState<number | null>(
     null,
   );
-  const [detailData, setDetailData] = useState<BannerSubmissionDetail | null>(
+  const [detailData, setDetailData] = useState<ProductSubmissionDetail | null>(
     null,
   );
   const [loadingDetail, setLoadingDetail] = useState(false);
@@ -160,7 +160,7 @@ export function BannerSubmissionsManagement() {
     else setLoading(true);
 
     try {
-      const subsRes = await bannerTemplateApi.getBannerSubmissions({
+      const subsRes = await productTemplateApi.getProductSubmissions({
         search: search || undefined,
         status: statusFilter !== "all" ? statusFilter : undefined,
       });
@@ -178,7 +178,7 @@ export function BannerSubmissionsManagement() {
         }
       }
     } catch (err) {
-      console.error("Failed to load banner submissions:", err);
+      console.error("Failed to load product submissions:", err);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -197,8 +197,8 @@ export function BannerSubmissionsManagement() {
 
     try {
       const [detail, thread] = await Promise.all([
-        bannerTemplateApi.getBannerSubmissionById(id),
-        bannerTemplateApi.getBannerSubmissionThread(id).catch(() => null),
+        productTemplateApi.getProductSubmissionById(id),
+        productTemplateApi.getProductSubmissionThread(id).catch(() => null),
       ]);
 
       setDetailData(detail);
@@ -225,7 +225,7 @@ export function BannerSubmissionsManagement() {
     setStatusMessage(null);
 
     try {
-      await bannerTemplateApi.updateBannerSubmissionStatus(
+      await productTemplateApi.updateProductSubmissionStatus(
         selectedSubmissionId,
         newStatus,
       );
@@ -254,12 +254,12 @@ export function BannerSubmissionsManagement() {
     }
   }
 
-  function handleDownloadBanner(imgUrl?: string | null, name?: string) {
+  function handleDownloadProduct(imgUrl?: string | null, name?: string) {
     if (!imgUrl) return;
     const fullUrl = resolveImageUrl(imgUrl);
     const link = document.createElement("a");
     link.href = fullUrl;
-    link.download = name || "banner.png";
+    link.download = name || "product.png";
     link.target = "_blank";
     document.body.appendChild(link);
     link.click();
@@ -286,8 +286,8 @@ export function BannerSubmissionsManagement() {
     });
   }, [submissions, statusFilter, search]);
 
-  const groupedSubmissions = useMemo<ClientBannerSubmissionsGroup[]>(() => {
-    const map = new Map<number, ClientBannerSubmissionsGroup>();
+  const groupedSubmissions = useMemo<ClientProductSubmissionsGroup[]>(() => {
+    const map = new Map<number, ClientProductSubmissionsGroup>();
 
     for (const sub of filteredSubmissions) {
       const uId = sub.userId;
@@ -408,7 +408,7 @@ export function BannerSubmissionsManagement() {
         <Card className="p-16 text-center space-y-3 bg-white border-slate-200/80">
           <Loader2 size={26} className="animate-spin mx-auto text-indigo-600" />
           <p className="text-xs font-semibold text-slate-600">
-            Loading banner submissions...
+            Loading product submissions...
           </p>
         </Card>
       ) : filteredSubmissions.length === 0 ? (
@@ -418,7 +418,7 @@ export function BannerSubmissionsManagement() {
           </div>
           <div className="space-y-1">
             <p className="text-sm font-bold text-slate-800">
-              No Banner Submissions Found
+              No Product Submissions Found
             </p>
             <p className="text-xs text-slate-500 max-w-sm mx-auto">
               {search || statusFilter !== "all"
@@ -570,12 +570,12 @@ export function BannerSubmissionsManagement() {
                                     type="button"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      handleDownloadBanner(
+                                      handleDownloadProduct(
                                         order.previewImageUrl,
                                         `${order.templateName}.png`,
                                       );
                                     }}
-                                    title="Download Banner"
+                                    title="Download Product"
                                     className="p-1 rounded-md text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
                                   >
                                     <Download size={12} />
@@ -614,7 +614,7 @@ export function BannerSubmissionsManagement() {
                 <Card className="p-5 space-y-4 rounded-2xl border-slate-200/90 bg-white shadow-xs">
                   <div className="flex items-center justify-between">
                     <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                      PROJECT BANNERS (
+                      PROJECT PRODUCTS (
                       {selectedSubmissionFiles.length > 0
                         ? selectedSubmissionFiles.length
                         : selectedSubmission.previewImageUrl
@@ -725,8 +725,8 @@ export function BannerSubmissionsManagement() {
                                 <strong className="text-slate-800">
                                   {selectedSubmission.quantity || 1}{" "}
                                   {Number(selectedSubmission.quantity || 1) > 1
-                                    ? "Banners"
-                                    : "Banner"}
+                                    ? "Products"
+                                    : "Product"}
                                 </strong>
                               </div>
                             </div>
@@ -740,7 +740,7 @@ export function BannerSubmissionsManagement() {
                                   setThreadSubmissionId(selectedSubmission.id)
                                 }
                               >
-                                <Edit3 size={13} /> View / Edit Banner
+                                <Edit3 size={13} /> View / Edit Product
                               </Button>
                             </div>
                           </Card>
@@ -748,7 +748,7 @@ export function BannerSubmissionsManagement() {
                       })}
                     </div>
                   ) : selectedSubmission.previewImageUrl ? (
-                    /* Main Banner Proof Canvas */
+                    /* Main Product proof Canvas */
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <Card className="p-3.5 space-y-3 rounded-2xl bg-white border-slate-200 transition hover:shadow-md hover:border-slate-300 group">
                         <div className="aspect-[4/3] bg-slate-50 rounded-xl overflow-hidden relative group border border-slate-100 flex items-center justify-center">
@@ -818,8 +818,8 @@ export function BannerSubmissionsManagement() {
                             <strong className="text-slate-800">
                               {selectedSubmission.quantity || 1}{" "}
                               {Number(selectedSubmission.quantity || 1) > 1
-                                ? "Banners"
-                                : "Banner"}
+                                ? "Products"
+                                : "Product"}
                             </strong>
                           </div>
                         </div>
@@ -833,7 +833,7 @@ export function BannerSubmissionsManagement() {
                               setThreadSubmissionId(selectedSubmission.id)
                             }
                           >
-                            <Edit3 size={13} /> View / Edit Banner
+                            <Edit3 size={13} /> View / Edit Product
                           </Button>
                         </div>
                       </Card>
@@ -858,7 +858,7 @@ export function BannerSubmissionsManagement() {
                   Select a submission
                 </p>
                 <p className="text-xs">
-                  Choose a banner submission from the left to view banners.
+                  Choose a product submission from the left to view banners.
                 </p>
               </div>
             )}
@@ -875,7 +875,7 @@ export function BannerSubmissionsManagement() {
                 <tr className="bg-slate-50/75 border-b border-slate-200/80 text-slate-600 font-bold uppercase tracking-wider text-[13px]">
                   <th className="py-3.5 px-4">ID</th>
                   <th className="py-3.5 px-4">Preview</th>
-                  <th className="py-3.5 px-4">Banner Template</th>
+                  <th className="py-3.5 px-4">Product Template</th>
                   <th className="py-3.5 px-4">User</th>
                   <th className="py-3.5 px-4">Submitted At</th>
                   <th className="py-3.5 px-4">Status</th>
@@ -982,12 +982,12 @@ export function BannerSubmissionsManagement() {
                                   variant="outline"
                                   size="sm"
                                   onClick={() =>
-                                    handleDownloadBanner(
+                                    handleDownloadProduct(
                                       sub.previewImageUrl,
                                       `${sub.templateName}-submission-${sub.id}.png`,
                                     )
                                   }
-                                  title="Download Banner Template"
+                                  title="Download Product Template"
                                   className="text-xs h-7.5 w-7.5 p-0 text-slate-600"
                                 >
                                   <Download size={12} />
@@ -1010,7 +1010,7 @@ export function BannerSubmissionsManagement() {
       {/* BANNER SUBMISSION THREAD MODAL (EDIT CANVAS / REVISIONS)                  */}
       {/* ========================================================================= */}
       {threadSubmissionId !== null && (
-        <BannerSubmissionThreadModal
+        <ProductSubmissionThreadModal
           submissionId={threadSubmissionId}
           isOpen={true}
           onClose={() => {
@@ -1062,3 +1062,4 @@ export function BannerSubmissionsManagement() {
     </div>
   );
 }
+
