@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { buildApiUrl, getApiBaseUrl } from "@/app/lib/client/api-url";
 import { resolveImageUrl } from "@/app/lib/client/product-template-api";
-import { ArrowRight, FileImage, Search } from "lucide-react";
+import { FileImage, Search } from "lucide-react";
 
 type PrintingProduct = {
   id: number;
@@ -55,29 +55,9 @@ function ProductCard({ product }: { product: PrintingProduct }) {
           {product.name}
         </h2>
 
-        <p className="mt-1 text-xs text-slate-500 line-clamp-2 min-h-[32px]">
+        <p className="mt-1 text-xs text-slate-500 line-clamp-2">
           {product.description || "Contact our team for details about this printing product."}
         </p>
-
-        {/* Dimension & Orientation Badges */}
-        <div className="mt-auto flex flex-wrap gap-1.5 pt-3 text-[11px] text-slate-600 font-medium">
-          {product.widthPx > 0 && product.heightPx > 0 && (
-            <span className="rounded-md bg-slate-100/80 px-2 py-0.5 border border-slate-200/60 font-mono text-[10.5px]">
-              {product.widthPx} × {product.heightPx} px
-            </span>
-          )}
-          {product.orientation && (
-            <span className="rounded-md bg-slate-100/80 px-2 py-0.5 border border-slate-200/60 capitalize text-[10.5px]">
-              {product.orientation}
-            </span>
-          )}
-        </div>
-
-        {/* Action Link */}
-        <div className="mt-3.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs font-semibold text-primary">
-          <span>Open product</span>
-          <ArrowRight size={13} className="transition-transform group-hover:translate-x-1" />
-        </div>
       </div>
     </Link>
   );

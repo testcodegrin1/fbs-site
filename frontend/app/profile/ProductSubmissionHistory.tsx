@@ -66,6 +66,7 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
   const [signingOut, setSigningOut] = useState(false);
   const [reply, setReply] = useState("");
   const [sendingReply, setSendingReply] = useState(false);
+  const [selectedFileIdx, setSelectedFileIdx] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -116,6 +117,7 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
   }, [search, submissions]);
 
   async function openSubmission(id: number) {
+    setSelectedFileIdx(0);
     setDetailLoading(true);
     setError("");
     try {
@@ -348,6 +350,8 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
             if (event.target === event.currentTarget) {
               setSelected(null);
               setThread(null);
+              setReply("");
+              setSelectedFileIdx(0);
             }
           }}
         >
@@ -361,7 +365,7 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
                   <Status value={selected.status} />
                 </div>
                 <p className="mt-1 text-sm text-slate-500">
-                  Order #{selected.id} · Quantity {selected.quantity || 1}
+                  Order #{selected.id}
                 </p>
               </div>
               <button
@@ -370,6 +374,7 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
                   setSelected(null);
                   setThread(null);
                   setReply("");
+                  setSelectedFileIdx(0);
                 }}
                 aria-label="Close submission details"
                 className="rounded-full p-2 text-slate-500 hover:bg-slate-100"
@@ -387,15 +392,52 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
             )}
             <div className="grid gap-6 p-5 md:grid-cols-[1.1fr_0.9fr] md:p-6">
               <div className="space-y-5">
-                {selected.previewImageUrl && (
-                  <div className="flex max-h-96 items-center justify-center overflow-hidden rounded-xl bg-slate-100 p-4">
-                    <img
-                      src={resolveImageUrl(selected.previewImageUrl)}
-                      alt={selected.templateName}
-                      className="max-h-80 max-w-full object-contain"
-                    />
-                  </div>
-                )}
+                {(() => {
+                  const activeFiles = thread?.files || [];
+                  const currentFile = activeFiles[selectedFileIdx] || activeFiles[0];
+                  const displayImageUrl = currentFile?.fileUrl || selected.previewImageUrl;
+                  if (!displayImageUrl) return null;
+
+                  return (
+                    <div className="space-y-2">
+                      <div className="relative flex max-h-96 items-center justify-center overflow-hidden rounded-xl bg-slate-100 p-4">
+                        <img
+                          src={resolveImageUrl(displayImageUrl)}
+                          alt={selected.templateName}
+                          className="max-h-80 max-w-full object-contain"
+                        />
+                        {currentFile?.version && currentFile.version > 1 && (
+                          <span className="absolute top-3 right-3 rounded-md bg-slate-900/85 px-2 py-0.5 text-xs font-mono font-bold text-white shadow backdrop-blur-sm">
+                            v{currentFile.version}
+                          </span>
+                        )}
+                      </div>
+                      {activeFiles.length > 1 && (
+                        <div className="flex flex-wrap gap-1.5 pt-1">
+                          {activeFiles.map((file, idx) => (
+                            <button
+                              key={file.id}
+                              type="button"
+                              onClick={() => setSelectedFileIdx(idx)}
+                              className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition ${
+                                idx === selectedFileIdx
+                                  ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
+                                  : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50"
+                              }`}
+                            >
+                              <span>{file.fileName || `Photo #${idx + 1}`}</span>
+                              {file.version > 1 && (
+                                <span className="text-[10px] opacity-75 font-mono">
+                                  v{file.version}
+                                </span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
                 <section>
                   <h3 className="mb-2.5 text-sm font-semibold text-slate-900">
                     Submitted information

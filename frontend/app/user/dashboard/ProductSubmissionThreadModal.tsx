@@ -413,40 +413,20 @@ export function ProductSubmissionThreadModal({
               </Button>
             </div>
           )}
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2.5 flex-wrap">
             <h3 className="font-extrabold text-lg sm:text-xl text-slate-900 tracking-tight truncate">
               {submission?.templateName ||
                 `Product Submission #${submissionId}`}
             </h3>
             {submission && getStatusBadge(submission.status)}
-          </div>
-
-          <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
-            {submission?.dimensionsLabel && (
-              <span className="font-mono text-slate-600 bg-white px-2 py-0.5 rounded border border-slate-200/60 font-semibold">
-                {submission.dimensionsLabel}
+            {submission?.createdAt && (
+              <span className="text-xs text-slate-500">
+                Submitted:{" "}
+                <span className="text-slate-700 font-medium">
+                  {new Date(submission.createdAt).toLocaleDateString()}
+                </span>
               </span>
             )}
-            <span className="font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 text-[13px]">
-              Qty: {submission?.quantity || 1}
-            </span>
-            {!isStaff && (
-              <span>
-                By:{" "}
-                <strong className="text-slate-800">
-                  {submission?.userName || "Client"}
-                </strong>{" "}
-                ({submission?.userEmail || "-"})
-              </span>
-            )}
-            <span>
-              Submitted:{" "}
-              <span className="text-slate-700 font-medium">
-                {submission?.createdAt
-                  ? new Date(submission.createdAt).toLocaleDateString()
-                  : "-"}
-              </span>
-            </span>
           </div>
         </div>
 
@@ -491,16 +471,6 @@ export function ProductSubmissionThreadModal({
 
             {/* PHOTO TILES SECTION */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between gap-2 flex-wrap">
-                <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-700 flex items-center gap-1.5">
-                  <LayoutGrid size={15} /> Photo Tiles ({files.length})
-                </span>
-                <span className="text-[13px] text-slate-400">
-                  {isReadOnly
-                    ? "Viewing submission photos"
-                    : "Replace photos requested for change or leave tile-specific replies"}
-                </span>
-              </div>
 
               {files.length === 0 ? (
                 <div className="p-8 rounded-2xl bg-slate-50 border border-dashed border-slate-200 text-center space-y-2">
@@ -516,11 +486,28 @@ export function ProductSubmissionThreadModal({
                     {files.map((file, idx) => {
                       const tileImgUrl = resolveImageUrl(file.fileUrl);
                       const isUpdating = replacingFileId === file.id;
-                      const tileMessages = messages.filter(
-                        (m) =>
-                          m.imageId === file.id ||
-                          (!m.imageId && (files.length <= 1 || idx === 0)),
-                      );
+                      const tileFileIds = new Set<number>([file.id]);
+                      if (file.replacedFileId) tileFileIds.add(Number(file.replacedFileId));
+                      if (file.history) {
+                        file.history.forEach((h) => {
+                          tileFileIds.add(Number(h.id));
+                          if (h.replacedFileId) tileFileIds.add(Number(h.replacedFileId));
+                        });
+                      }
+
+                      const tileMessages = messages.filter((m) => {
+                        if (files.length <= 1) return true;
+                        if (m.imageId && tileFileIds.has(Number(m.imageId))) return true;
+                        if (!m.imageId && idx === 0) return true;
+                        const isClaimedByAny = files.some(
+                          (f) =>
+                            f.id === m.imageId ||
+                            f.replacedFileId === m.imageId ||
+                            f.history?.some((h) => h.id === m.imageId),
+                        );
+                        if (!isClaimedByAny && idx === 0) return true;
+                        return false;
+                      });
                       const draft = tileReplies[file.id] || "";
                       const isSubmittingReply = sendingReplyKey === file.id;
                       const hasHistory =

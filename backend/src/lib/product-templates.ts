@@ -860,6 +860,33 @@ export async function listProductSubmissions(filter?: {
     imagesByTemplateId.get(tId)!.push(mapProductTemplateImage(img));
   }
 
+  const submissionIds = rows.map((r) => Number(r.id)).filter((id) => !isNaN(id) && id > 0);
+  const activeFileBySubId = new Map<number, string>();
+  if (submissionIds.length > 0) {
+    const subPlaceholders = submissionIds.map(() => "?").join(",");
+    try {
+      const [allFiles] = await query<RowDataPacket[]>(
+        `SELECT id, submission_id, file_url, replaced_file_id, sort_order 
+         FROM product_submission_files 
+         WHERE submission_id IN (${subPlaceholders})
+         ORDER BY sort_order ASC, id ASC`,
+        submissionIds,
+      );
+      const replacedSet = new Set<number>();
+      for (const f of allFiles) {
+        if (f.replaced_file_id) replacedSet.add(Number(f.replaced_file_id));
+      }
+      for (const f of allFiles) {
+        const subId = Number(f.submission_id);
+        if (!activeFileBySubId.has(subId) && !replacedSet.has(Number(f.id)) && f.file_url) {
+          activeFileBySubId.set(subId, f.file_url);
+        }
+      }
+    } catch {
+      // product_submission_files might not be present or populated
+    }
+  }
+
   return rows.map((r) => {
     let vals: Record<string, any> = {};
     try {
@@ -874,6 +901,7 @@ export async function listProductSubmissions(filter?: {
     const tId = Number(r.template_id);
     const tImages = imagesByTemplateId.get(tId) || [];
     const previewImageUrl =
+      activeFileBySubId.get(Number(r.id)) ||
       vals._selectedImageUrl ||
       (vals._selectedImageIndex !== undefined && tImages[Number(vals._selectedImageIndex)]
         ? tImages[Number(vals._selectedImageIndex)].imageUrl
@@ -1015,11 +1043,28 @@ export async function getProductSubmissionById(
       ? `${r.template_name} (#${Number(vals._selectedImageIndex) + 1})`
       : r.template_name || `Product #${templateId}`);
 
-  const previewImageUrl =
+  let previewImageUrl =
     vals._selectedImageUrl ||
     (vals._selectedImageIndex !== undefined && images[Number(vals._selectedImageIndex)]
       ? images[Number(vals._selectedImageIndex)].imageUrl
       : images[0]?.imageUrl || null);
+
+  try {
+    const [subFiles] = await query<RowDataPacket[]>(
+      `SELECT id, file_url, replaced_file_id FROM product_submission_files WHERE submission_id = ? ORDER BY sort_order ASC, id ASC`,
+      [Number(r.id)],
+    );
+    if (subFiles.length > 0) {
+      const rep = new Set<number>();
+      for (const f of subFiles) {
+        if (f.replaced_file_id) rep.add(Number(f.replaced_file_id));
+      }
+      const active = subFiles.filter((f) => !rep.has(Number(f.id)));
+      if (active.length > 0 && active[0].file_url) {
+        previewImageUrl = active[0].file_url;
+      }
+    }
+  } catch {}
 
   return {
     id: Number(r.id),
@@ -1263,6 +1308,10 @@ export async function getProductSubmissionThread(
     }));
   } catch (err: any) {
     console.error("Error fetching submission messages:", err);
+  }
+
+  if (activeFiles.length > 0 && activeFiles[0].fileUrl) {
+    submission.previewImageUrl = activeFiles[0].fileUrl;
   }
 
   return {

@@ -659,25 +659,6 @@ export function ProductSubmissionsManagement() {
                                 className="w-full h-full object-contain bg-white"
                               />
 
-                              {/* Hover Fullscreen Overlay */}
-                              <div className="absolute inset-0 bg-slate-950/45 opacity-0 group-hover:opacity-100 transition flex items-center justify-center backdrop-blur-[1px]">
-                                <Button
-                                  variant="secondary"
-                                  size="sm"
-                                  className="bg-white/95 hover:bg-white shadow text-xs font-bold gap-1.5 rounded-lg"
-                                  onClick={() =>
-                                    setFullscreenImage({
-                                      url: thumb,
-                                      name:
-                                        file.fileName || `Photo #${idx + 1}`,
-                                      version: versionNum,
-                                    })
-                                  }
-                                  title="View Fullscreen Proof"
-                                >
-                                  <Maximize2 size={13} /> Fullscreen
-                                </Button>
-                              </div>
 
                               {/* Version Badge (Matching Screenshot) */}
                               <span className="absolute top-2 right-2 bg-slate-900/85 text-white text-[12px] font-mono font-bold px-2 py-0.5 rounded-md backdrop-blur-sm shadow">
@@ -759,24 +740,6 @@ export function ProductSubmissionsManagement() {
                             alt={selectedSubmission.templateName}
                             className="w-full h-full object-contain bg-white"
                           />
-                          <div className="absolute inset-0 bg-slate-950/45 opacity-0 group-hover:opacity-100 transition flex items-center justify-center backdrop-blur-[1px]">
-                            <Button
-                              variant="secondary"
-                              size="sm"
-                              className="bg-white/95 hover:bg-white shadow text-xs font-bold gap-1.5 rounded-lg"
-                              onClick={() =>
-                                setFullscreenImage({
-                                  url: resolveImageUrl(
-                                    selectedSubmission.previewImageUrl,
-                                  ),
-                                  name: selectedSubmission.templateName,
-                                  version: 1,
-                                })
-                              }
-                            >
-                              <Maximize2 size={13} /> Fullscreen
-                            </Button>
-                          </div>
                           <span className="absolute top-2 right-2 bg-slate-900/85 text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded-md backdrop-blur-sm shadow">
                             v1
                           </span>
