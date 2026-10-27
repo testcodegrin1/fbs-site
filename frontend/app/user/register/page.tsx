@@ -7,7 +7,7 @@ import { Building2, Mail, Lock, User as UserIcon, Loader2 } from "lucide-react";
 import { authApi } from "@/app/lib/client/auth-api";
 import { Button, Card, Input, Label } from "@/app/Components/ui";
 
-export default function UserRegisterPage() {
+export function UserRegistrationForm({ redirectTo = "/user/dashboard", loginPath = "/user/login" }: { redirectTo?: string; loginPath?: string }) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -62,7 +62,7 @@ export default function UserRegisterPage() {
         Number(selectedFranchiseId),
       );
       if (response.token) {
-        router.push("/user/dashboard");
+        router.push(redirectTo);
         router.refresh();
         return;
       }
@@ -214,11 +214,15 @@ export default function UserRegisterPage() {
 
         <div className="mt-6 text-center text-xs text-slate-500">
           Already have an account?{" "}
-          <Link href="/user/login" className="font-bold text-slate-900 hover:underline">
+          <Link href={loginPath} className="font-bold text-slate-900 hover:underline">
             Sign In
           </Link>
         </div>
       </Card>
     </main>
   );
+}
+
+export default function UserRegisterPage() {
+  return <UserRegistrationForm />;
 }

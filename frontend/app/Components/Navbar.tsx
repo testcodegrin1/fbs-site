@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { FiArrowUpRight } from "react-icons/fi";
 import { IoClose } from "react-icons/io5";
 import { IoIosMenu } from "react-icons/io";
-import { FaEnvelope, FaMapMarkerAlt, FaPhoneAlt } from "react-icons/fa";
+import { FaEnvelope, FaMapMarkerAlt, FaPhoneAlt, FaUserCircle } from "react-icons/fa";
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -77,11 +77,18 @@ export default function Navbar() {
 
   // Close everything whenever route changes
   useEffect(() => {
+    // This reset intentionally follows navigation so an open mobile/dropdown
+    // menu never remains over the newly rendered page.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setHoverOpen(false);
     setClickLocked(false);
     setMenuOpen(false);
     setServiceOpen(false);
   }, [pathname]);
+
+  // The protected dashboard handles signed-out visitors by sending them to the
+  // user login, keeping account access inside the user panel.
+  const profileHref = "/profile";
 
   const linkClass = (path: string) =>
     `relative px-3 py-2 text-black transition
@@ -91,13 +98,16 @@ export default function Navbar() {
      hover:after:w-full hover:after:left-0
      ${pathname === path ? "after:w-full after:left-0" : ""}`;
 
+  const isServicesActive =
+    pathname.startsWith("/services") || pathname.startsWith("/printing-products");
+
   const parentLinkClass = (path: string) =>
     `relative px-3 py-2 text-black transition
      after:content-[''] after:absolute after:right-0 after:bottom-0
      after:h-[2px] after:w-0 after:bg-black
      after:transition-all after:duration-300
      hover:after:w-full hover:after:left-0
-     ${pathname.startsWith(path) ? "after:w-full after:left-0" : ""}`;
+     ${(path === "/services" ? isServicesActive : pathname.startsWith(path)) ? "after:w-full after:left-0" : ""}`;
 
   const dropdownLinkClass = (path: string) =>
     pathname === path
@@ -105,7 +115,7 @@ export default function Navbar() {
       : "block px-4 py-2 rounded-lg text-primary-dark/60 transition hover:text-primary-dark/80";
 
   const servicesLinks = [
-    ["Printing Product", "/services/printing-products"],
+    ["Products", "/printing-products"],
     ["Signage", "/services/signage"],
     ["Direct Mailing", "/services/direct-mailing"],
     ["Web Design", "/services/web-design"],
@@ -141,7 +151,7 @@ export default function Navbar() {
           </Link>
 
           {/* DESKTOP MENU */}
-          <ul className="hidden lg:flex items-center gap-2 text-xl font-medium">
+          <ul className="hidden xl:flex items-center gap-1 text-base 2xl:text-xl font-medium whitespace-nowrap">
             <li>
               <Link href="/" className={linkClass("/")}>
                 Home
@@ -219,7 +229,7 @@ export default function Navbar() {
           </ul>
 
           {/* DESKTOP RIGHT */}
-          <div className="hidden lg:flex items-center gap-3">
+          <div className="hidden xl:flex items-center gap-3">
             <Image
               src="/images/brand/one-hundred-percent-badge.gif"
               alt="100 percent satisfaction badge"
@@ -228,6 +238,14 @@ export default function Navbar() {
               unoptimized
               className="w-20 xl:w-24 h-auto"
             />
+            <Link
+              href={profileHref}
+              aria-label="Open user profile and submission history"
+              title="Account"
+              className="flex h-12 w-12 items-center justify-center rounded-full border border-primary text-primary transition hover:bg-primary hover:text-white"
+            >
+              <FaUserCircle className="text-xl" />
+            </Link>
             <Link
               href="/contact"
               className="flex items-center gap-3 bg-primary px-3 py-2 rounded-full"
@@ -244,7 +262,7 @@ export default function Navbar() {
           {/* MOBILE MENU BUTTON */}
           <button
             type="button"
-            className={`lg:hidden z-[60] transition-opacity duration-300 p-1
+            className={`xl:hidden z-[60] transition-opacity duration-300 p-1
             ${menuOpen ? "opacity-0 pointer-events-none" : "opacity-100"}`}
             onClick={() => setMenuOpen(true)}
             aria-label="Open menu"
@@ -262,7 +280,7 @@ export default function Navbar() {
         className={`fixed top-0 left-0 h-dvh w-full max-w-full bg-white z-50
         transform transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]
         ${menuOpen ? "translate-x-0" : "-translate-x-full"}
-        lg:hidden flex flex-col overflow-y-auto overscroll-contain
+        xl:hidden flex flex-col overflow-y-auto overscroll-contain
         pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]`}
       >
         {/* TOP BAR */}
@@ -308,7 +326,7 @@ export default function Navbar() {
                 type="button"
                 onClick={() => setServiceOpen((prev) => !prev)}
                 className={`w-full flex items-center justify-between py-2 text-lg sm:text-xl tracking-[0.10em]
-                ${pathname.startsWith("/services") ? "text-primary font-semibold" : "text-black"}`}
+                ${isServicesActive ? "text-primary font-semibold" : "text-black"}`}
                 aria-expanded={serviceOpen}
                 aria-controls="mobile-services-panel"
               >
@@ -372,6 +390,19 @@ export default function Navbar() {
                 ${pathname === "/contact" ? "text-primary font-semibold" : "text-black"}`}
               >
                 CONTACT US
+              </Link>
+            </li>
+
+            <li>
+              <Link
+                href={profileHref}
+                onClick={() => setMenuOpen(false)}
+                aria-label="Open account"
+                title="Account"
+                className={`flex items-center border-b border-black/[0.06] py-3 text-2xl transition-colors duration-300
+                ${pathname.startsWith("/user") ? "text-primary font-semibold" : "text-black"}`}
+              >
+                <FaUserCircle />
               </Link>
             </li>
           </ul>

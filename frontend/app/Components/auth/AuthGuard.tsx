@@ -14,10 +14,11 @@ import { ROLE_LOGIN_PATHS } from "@/app/lib/auth/roles";
 
 type AuthGuardProps = {
   requiredRole: AuthRole;
+  loginPath?: string;
   children: (user: AuthUser) => ReactNode;
 };
 
-export function AuthGuard({ requiredRole, children }: AuthGuardProps) {
+export function AuthGuard({ requiredRole, loginPath, children }: AuthGuardProps) {
   const router = useRouter();
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -29,7 +30,7 @@ export function AuthGuard({ requiredRole, children }: AuthGuardProps) {
       const token = getStoredToken(requiredRole);
       if (!token) {
         if (isMounted) {
-          router.push(ROLE_LOGIN_PATHS[requiredRole]);
+          router.push(loginPath || ROLE_LOGIN_PATHS[requiredRole]);
         }
         return;
       }
@@ -65,7 +66,7 @@ export function AuthGuard({ requiredRole, children }: AuthGuardProps) {
       } catch {
         removeStoredToken(requiredRole);
         if (isMounted) {
-          router.push(ROLE_LOGIN_PATHS[requiredRole]);
+          router.push(loginPath || ROLE_LOGIN_PATHS[requiredRole]);
         }
       }
     }
@@ -75,7 +76,7 @@ export function AuthGuard({ requiredRole, children }: AuthGuardProps) {
     return () => {
       isMounted = false;
     };
-  }, [requiredRole, router]);
+  }, [requiredRole, loginPath, router]);
 
   if (loading || !user) {
     return (

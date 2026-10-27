@@ -672,11 +672,14 @@ export async function saveBannerCustomization(
   if (!template) {
     throw new AuthError("Banner template not found.", 404);
   }
+  if (!template.isActive) {
+    throw new AuthError("This printing product is no longer available.", 400);
+  }
 
   // Validate required fields
   if (template.fields && template.fields.length > 0) {
     for (const f of template.fields) {
-      if (f.isRequired) {
+      if (f.isRequired && f.isEditable) {
         const val = customizationValues[f.id] ?? customizationValues[f.label];
         if (
           val === undefined ||
@@ -689,6 +692,7 @@ export async function saveBannerCustomization(
       }
       // Check options for dropdown or radio
       if (
+        f.isEditable &&
         (f.fieldType === "dropdown" || f.fieldType === "radio") &&
         Array.isArray(f.options) &&
         f.options.length > 0

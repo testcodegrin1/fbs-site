@@ -28,6 +28,77 @@ import {
 
 export const bannerTemplatesRouter = Router();
 
+// Public catalog uses the same active templates managed in the admin panel.
+// Return display information only, without customization fields or account data.
+bannerTemplatesRouter.get("/printing-products", async (_req, res) => {
+  try {
+    const templates = await listBannerTemplates(undefined, false);
+    res.setHeader("Cache-Control", "no-store");
+    res.json({
+      products: templates.map(template => ({
+        id: template.id,
+        name: template.name,
+        description: template.description,
+        widthPx: template.widthPx,
+        heightPx: template.heightPx,
+        orientation: template.orientation,
+        images: (template.images || [])
+          .filter(image => image.isActive !== false)
+          .map(image => ({ id: image.id, imageUrl: image.imageUrl })),
+      })),
+    });
+  } catch (error) {
+    const { message, status } = getErrorResponse(error);
+    res.status(status).json({ message });
+  }
+});
+
+// Public product detail. The editable field definitions are supplied by the
+// same admin-managed banner template used by the authenticated order flow.
+bannerTemplatesRouter.get("/printing-products/:id", async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isSafeInteger(id) || id <= 0) {
+      res.status(400).json({ message: "Valid product ID is required." });
+      return;
+    }
+
+    const template = await getBannerTemplateById(id);
+    if (!template || !template.isActive) {
+      res.status(404).json({ message: "Printing product not found." });
+      return;
+    }
+
+    res.setHeader("Cache-Control", "no-store");
+    res.json({
+      product: {
+        id: template.id,
+        franchiseId: template.franchiseId,
+        name: template.name,
+        description: template.description,
+        widthPx: template.widthPx,
+        heightPx: template.heightPx,
+        orientation: template.orientation,
+        images: (template.images || [])
+          .filter(image => image.isActive !== false)
+          .map(image => ({ id: image.id, imageUrl: image.imageUrl })),
+        fields: (template.fields || []).map(field => ({
+          id: field.id,
+          label: field.label,
+          fieldType: field.fieldType,
+          placeholder: field.placeholder,
+          options: field.options,
+          isRequired: field.isRequired,
+          isEditable: field.isEditable,
+        })),
+      },
+    });
+  } catch (error) {
+    const { message, status } = getErrorResponse(error);
+    res.status(status).json({ message });
+  }
+});
+
 // Setup banner uploads directory
 const BANNERS_UPLOAD_DIR = path.join(UPLOADS_DIR, "banners");
 void fs.mkdir(BANNERS_UPLOAD_DIR, { recursive: true });

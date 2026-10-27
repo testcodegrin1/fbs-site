@@ -15,9 +15,11 @@ import { Button, Card, Input, Label } from "@/app/Components/ui";
 type LoginFormProps = {
   role: AuthRole;
   title: string;
+  redirectTo?: string;
+  registerPath?: string;
 };
 
-export function LoginForm({ role, title }: LoginFormProps) {
+export function LoginForm({ role, title, redirectTo, registerPath = "/user/register" }: LoginFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,10 +31,10 @@ export function LoginForm({ role, title }: LoginFormProps) {
     if (token) {
       const userRole = getRoleFromToken(token);
       if (userRole) {
-        router.push(getDashboardPathFromRole(userRole));
+        router.push(redirectTo || getDashboardPathFromRole(userRole));
       }
     }
-  }, [role, router]);
+  }, [role, redirectTo, router]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -47,7 +49,7 @@ export function LoginForm({ role, title }: LoginFormProps) {
         (response.user?.roles?.[0] as AuthRole) ||
         role;
 
-      router.push(getDashboardPathFromRole(userRole));
+      router.push(redirectTo || getDashboardPathFromRole(userRole));
       router.refresh();
     } catch (loginError) {
       setError(
@@ -130,7 +132,7 @@ export function LoginForm({ role, title }: LoginFormProps) {
           <div className="mt-6 text-center text-xs text-slate-500">
             Don&apos;t have an account or password yet?{" "}
             <a
-              href="/user/register"
+              href={registerPath}
               className="font-bold text-slate-900 hover:underline"
             >
               Create Account / Set Password
