@@ -36,11 +36,7 @@ export default function HomeContactSection() {
               <h2 className="text-2xl sm:text-3xl font-bold text-primary leading-tight">
                 Contact Us If You Need A Custom
                 <span className="block text-primary">
-                  Design{" "}
-                  <span className="bg-linear-to-r from-primary to-primary-dark bg-clip-text text-transparent">
-                    Without
-                  </span>{" "}
-                  Delay!
+                  Design Without Delay!
                 </span>
               </h2>
               <p className="mt-2 text-sm text-primary-dark/70">
@@ -61,17 +57,17 @@ export default function HomeContactSection() {
               src="/images/home/contact-section-background.webp"
               alt="Contact FBS Prints"
               fill
-              className="object-cover z-10 blur-xs"
+              className="object-cover blur-xs"
             />
 
             {/* Dark gradient overlay for legibility */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/10" />
+            <div className="absolute inset-0 bg-linear-to-t from-black/60 via-black/25 to-black/10 z-0" />
 
             {/* Overlaid content */}
             <div className="relative z-10 flex flex-col justify-center h-full p-4 sm:p-6 gap-2.5">
-              <p className="text-primary font-bold text-xs tracking-wide mb-0.5 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">
+              <span className="inline-flex items-center w-fit px-3.5 py-1 rounded-full bg-white text-primary text-xs font-bold uppercase tracking-wider shadow-sm mb-0.5">
                 GET IN TOUCH
-              </p>
+              </span>
 
               {/* Location */}
               <div className="flex items-center gap-3 rounded-xl bg-white border border-white/20 p-3">
