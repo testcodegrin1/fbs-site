@@ -433,7 +433,7 @@ export default function Navbar() {
                 <FaMapMarkerAlt />
               </span>
               <p className="text-black text-sm tracking-wide">
-                Serving Naperville & Schaumburg, IL
+                Naperville & Schaumburg, IL
               </p>
             </div>
           </div>

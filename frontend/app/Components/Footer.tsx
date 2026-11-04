@@ -151,7 +151,7 @@ export default function Footer() {
                 </p>
                 <p className="flex items-center gap-2 text-sm sm:text-base">
                   <FaMapMarkerAlt className="text-primary shrink-0" />
-                  <span>Serving Naperville &amp; Schaumburg, IL</span>
+                  <span>Naperville &amp; Schaumburg, IL</span>
                 </p>
               </div>
 

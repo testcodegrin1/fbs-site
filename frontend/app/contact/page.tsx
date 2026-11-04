@@ -189,7 +189,7 @@ export default function Page() {
               className="p-5 sm:p-6 md:p-10 bg-primary-light rounded-2xl shadow-lg flex flex-col gap-4 sm:gap-5"
             >
               <h2 className="text-3xl sm:text-4xl font-bold text-primary text-center lg:text-start">
-                Contact Me
+                Contact Us
               </h2>
               <p className="text-primary-dark/70 text-sm sm:text-base leading-relaxed text-center lg:text-start">
                 Reach out for inquiries, quotes, or just to say hello! We reply
@@ -200,7 +200,7 @@ export default function Page() {
                 <div className="flex items-center gap-3 sm:gap-4 justify-start text-left">
                   <FaMapMarkerAlt className="text-primary text-xl sm:text-2xl lg:text-3xl shrink-0" />
                   <p className="text-sm sm:text-base md:text-lg font-medium text-primary-dark">
-                    Serving Naperville & Schaumburg, IL
+                    Naperville & Schaumburg, IL
                   </p>
                 </div>
                 <div className="flex items-center gap-3 sm:gap-4 justify-start text-left">
