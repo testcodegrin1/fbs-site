@@ -384,6 +384,17 @@ export default function Navbar() {
 
             <li>
               <Link
+                href="/service-areas"
+                onClick={() => setMenuOpen(false)}
+                className={`block py-2 text-lg sm:text-xl tracking-[0.10em] border-b border-black/[0.06] transition-colors duration-300
+                ${pathname === "/service-areas" ? "text-primary font-semibold" : "text-black"}`}
+              >
+                SERVICE AREAS
+              </Link>
+            </li>
+
+            <li>
+              <Link
                 href="/contact"
                 onClick={() => setMenuOpen(false)}
                 className={`block py-2 text-lg sm:text-xl tracking-[0.10em] border-b border-black/[0.06] transition-colors duration-300

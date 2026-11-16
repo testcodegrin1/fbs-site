@@ -84,42 +84,42 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const printingProductPages: MetadataRoute.Sitemap = printingProducts.map((product) => ({
     url: absoluteUrl(`/services/printing-products/${product.slug}`, baseUrl),
     lastModified: printingProductsDate,
-    changeFrequency: "monthly",
+    changeFrequency: "weekly",
     priority: 0.8,
   }));
 
   const directMailPages: MetadataRoute.Sitemap = directMailData.formats.map((format) => ({
     url: absoluteUrl(`/services/direct-mailing/${format.slug}`, baseUrl),
     lastModified: directMailDate,
-    changeFrequency: "monthly",
+    changeFrequency: "weekly",
     priority: 0.8,
   }));
 
   const seoDetailPages: MetadataRoute.Sitemap = seoServices.map((service) => ({
     url: absoluteUrl(`/services/seo/${service.slug}`, baseUrl),
     lastModified: seoServicesDate,
-    changeFrequency: "monthly",
+    changeFrequency: "weekly",
     priority: 0.8,
   }));
 
   const webDesignDetailPages: MetadataRoute.Sitemap = webDesignServices.map((service) => ({
     url: absoluteUrl(`/services/web-design/${service.slug}`, baseUrl),
     lastModified: webDesignDate,
-    changeFrequency: "monthly",
+    changeFrequency: "weekly",
     priority: 0.8,
   }));
 
   const signageDetailPages: MetadataRoute.Sitemap = signageProducts.map((product) => ({
     url: absoluteUrl(`/services/signage/${product.slug}`, baseUrl),
     lastModified: signageProductsDate,
-    changeFrequency: "monthly",
+    changeFrequency: "weekly",
     priority: 0.8,
   }));
 
   const blogDetailPages: MetadataRoute.Sitemap = blogPosts.map((post) => ({
     url: absoluteUrl(`/blog/${post.slug}`, baseUrl),
     lastModified: new Date(post.date),
-    changeFrequency: "monthly",
+    changeFrequency: "weekly",
     priority: 0.7,
   }));
 

@@ -20,7 +20,7 @@ ${blogPosts
     (post) => `  <url>
     <loc>${escapeXml(absoluteUrl(`/blog/${post.slug}`, baseUrl))}</loc>
     <lastmod>${escapeXml(post.date)}</lastmod>
-    <changefreq>monthly</changefreq>
+    <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>`,
   )

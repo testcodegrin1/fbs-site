@@ -325,6 +325,25 @@ export const serviceAreas: ServiceAreaCity[] = [
     ],
     localSeoContent: "Our local SEO strategies for Hoffman Estates focus on generating local map packs and organic traffic from regions surrounding the NOW Arena, Barrington Road commercial hubs, and northern residential subdivisions.",
     landmarks: ["NOW Arena", "Hoffman Estates Park District", "Paul Douglas Forest Preserve", "Barrington Road Corridor", "Higgins Road Retail"],
+    quickAnswersTitle: "Hoffman Estates Signage & Commercial Print FAQs",
+    quickAnswers: [
+      {
+            "question": "Do commercial storefront signs require permits in Hoffman Estates, IL?",
+            "answer": "Yes. Exterior business signage in Hoffman Estates requires permit approval through the Village of Hoffman Estates Code Enforcement Division. FBS Signs prepares scaled drawings, electrical specifications, and manages permit submissions."
+      },
+      {
+            "question": "What types of custom business signs do you install in Hoffman Estates?",
+            "answer": "We design and install illuminated LED channel letters, freestanding monument signs, storefront blade signs, window graphics, and interior corporate lobby signs across the Barrington Road and Higgins Road corridors."
+      },
+      {
+            "question": "Can Hoffman Estates healthcare practices and corporate offices order full print suites?",
+            "answer": "Yes. We provide complete corporate print packages including premium business cards, presentation folders, appointment cards, brochures, and targeted EDDM direct mailers for Northwest Cook County."
+      },
+      {
+            "question": "Do you offer vehicle wraps and fleet lettering in Hoffman Estates?",
+            "answer": "Yes. We design and install full commercial vehicle wraps, partial fleet wraps, and vinyl lettering for service contractors and delivery vehicles across Hoffman Estates and I-90."
+      }
+],
     faqs: [
       {
         question: "Do you design outdoor signage for business parks in Hoffman Estates?",
@@ -505,6 +524,25 @@ export const serviceAreas: ServiceAreaCity[] = [
     ],
     localSeoContent: "We optimize your digital presence to rank for local service queries in Crest Hill, Lockport, and North Joliet. By utilizing geographic search intent, we ensure your business is visible when residents look for services in Will County.",
     landmarks: ["Weber Road Business District", "Crest Hill City Hall", "State Street Corridor", "Larkin Avenue area"],
+    quickAnswersTitle: "Crest Hill Signage & Business Print FAQs",
+    quickAnswers: [
+      {
+            "question": "Do exterior business signs require a permit in Crest Hill, IL?",
+            "answer": "Yes. Exterior commercial signs require approval from the City of Crest Hill Building and Zoning Department. We ensure setback, square footage, and electrical requirements meet city ordinances."
+      },
+      {
+            "question": "What storefront signs are recommended for Weber Road and Route 30 businesses?",
+            "answer": "For high-traffic corridors like Weber Road and Plainfield Road (Route 30), we recommend high-output front-lit LED channel letters, illuminated cabinet signs, and prominent road-facing monument signs."
+      },
+      {
+            "question": "What commercial printing services does FBS Signs provide in Crest Hill?",
+            "answer": "We produce bulk business cards, promotional flyers, brochures, custom invoices, waterproof outdoor banners, and EDDM direct mail postcards for Will County businesses."
+      },
+      {
+            "question": "Can you wrap service vehicles and contractor trucks in Crest Hill?",
+            "answer": "Yes. We design and apply durable cast vinyl vehicle wraps, box truck lettering, and USDOT compliant decals for local trade and service companies."
+      }
+],
     faqs: [
       {
         question: "Do you offer signage installation permits for businesses in Crest Hill?",
@@ -819,6 +857,25 @@ export const serviceAreas: ServiceAreaCity[] = [
     ],
     localSeoContent: "Our local SEO strategies for Lisle businesses center on the I-88 corporate strip, Route 53, and Ogden Avenue commercial areas, driving local organic search performance.",
     landmarks: ["Morton Arboretum", "Four Lakes Recreation Area", "Lisle Metra Station", "Ogden Avenue Strip", "Navistar Headquarters area"],
+    quickAnswersTitle: "Lisle Commercial Signage & Marketing FAQs",
+    quickAnswers: [
+      {
+            "question": "Do exterior signs require a permit in Lisle, IL?",
+            "answer": "Yes. Exterior commercial signage in Lisle requires permit review and approval by the Village of Lisle Development Services Department. FBS Signs handles architectural drawings and permit filings."
+      },
+      {
+            "question": "What signage solutions work best for I-88 corporate offices in Lisle?",
+            "answer": "We specialize in architectural monument signs with LED backlighting, dimensional acrylic and brushed metal lobby logos, ADA interior wayfinding, and frosted privacy film for corporate glass partitions."
+      },
+      {
+            "question": "Can Lisle businesses combine commercial printing with direct mail campaigns?",
+            "answer": "Yes. We provide integrated campaigns combining high-quality brochures, sales presentations, and Every Door Direct Mail (EDDM) targeting residential postal routes across Lisle and DuPage County."
+      },
+      {
+            "question": "Do you provide vehicle lettering and wraps for Lisle businesses?",
+            "answer": "Yes. We produce full and partial commercial vehicle wraps, van graphics, and magnetic signs engineered to endure Midwest weather conditions."
+      }
+],
     faqs: [
       {
         question: "Do you print custom calendars and seasonal materials in Lisle?",
@@ -928,6 +985,25 @@ export const serviceAreas: ServiceAreaCity[] = [
     ],
     localSeoContent: "Our local SEO campaigns for Plainfield focus on capturing search traffic from Will and Kendall counties, targeting keywords related to Route 59, historic downtown, and residential expansions.",
     landmarks: ["Historic Downtown Plainfield", "Settlers' Park", "Route 59 Corridor", "Plainfield Public Library", "Lake Renwick Preserve"],
+    quickAnswersTitle: "Plainfield Commercial Signs & Marketing FAQs",
+    quickAnswers: [
+      {
+            "question": "Do business signs require a permit in Plainfield, IL?",
+            "answer": "Yes. Exterior signs in Plainfield must be permitted through the Village of Plainfield Building Department. We manage municipal code compliance, scaled architectural proofs, and permit submittals."
+      },
+      {
+            "question": "What sign styles are permitted in Historic Downtown Plainfield versus Route 59?",
+            "answer": "Downtown Plainfield requires pedestrian-scale projecting blade signs, carved dimensional letters, and subtle illumination, while Route 59 commercial centers accommodate large illuminated LED channel letters and multi-tenant monuments."
+      },
+      {
+            "question": "Can new Plainfield businesses launch with complete brand packages?",
+            "answer": "Yes. We deliver turnkey branding packages including exterior signage, storefront window graphics, business cards, branded menus, flyers, and website design with local SEO."
+      },
+      {
+            "question": "How does direct mail marketing work for Plainfield neighborhoods?",
+            "answer": "Through USPS Every Door Direct Mail (EDDM), we print and deliver saturation postcards to targeted residential postal routes in Plainfield, acquiring local leads without requiring individual mailing lists."
+      }
+],
     faqs: [
       {
         question: "Do you help new businesses in Plainfield with complete branding packages?",
@@ -1037,6 +1113,25 @@ export const serviceAreas: ServiceAreaCity[] = [
     ],
     localSeoContent: "Our local SEO campaigns for Montgomery focus on capturing search traffic from the surrounding Fox River communities, utilizing search terms related to Route 30, Route 34, and regional industrial parks.",
     landmarks: ["Montgomery Village Hall", "Fox River Bike Trail", "Route 30 Business Corridor", "Douglas Road Shopping area", "Montgomery Fest grounds"],
+    quickAnswersTitle: "Montgomery Commercial Signs & Print FAQs",
+    quickAnswers: [
+      {
+            "question": "Are sign permits required for storefront signs in Montgomery, IL?",
+            "answer": "Yes. Commercial exterior signage requires approval from the Village of Montgomery Building and Zoning Division. FBS Signs prepares engineering plans and coordinates permit issuance."
+      },
+      {
+            "question": "What signs are best suited for Montgomery industrial and retail businesses?",
+            "answer": "We manufacture heavy-duty aluminum monument signs, LED illuminated channel letters, warehouse safety signs, and high-visibility roadside banners along Route 30 and Route 34."
+      },
+      {
+            "question": "Can Montgomery service businesses order contractor vehicle graphics?",
+            "answer": "Yes. We produce custom truck lettering, reflective fleet decals, and full vinyl wraps for trade contractors and industrial equipment across the Fox River Valley."
+      },
+      {
+            "question": "What commercial printing products can Montgomery businesses order?",
+            "answer": "We provide bulk flyer printing, corporate stationery, multi-page catalogs, promotional banners, and targeted EDDM mailers delivered to Kane and Kendall County households."
+      }
+],
     faqs: [
       {
         question: "Do you offer vehicle graphics for contractors in Montgomery?",
@@ -1217,6 +1312,25 @@ export const serviceAreas: ServiceAreaCity[] = [
     ],
     localSeoContent: "We specialize in local SEO and GEO optimization for Gurnee. Our strategies focus on ranking for searches near Grand Avenue, Tri-State Tollway (I-94), and local entertainment venues.",
     landmarks: ["Six Flags Great America", "Gurnee Mills Mall", "Great Wolf Lodge", "Grand Avenue Corridor", "Gurnee Park District"],
+    quickAnswersTitle: "Gurnee Commercial Signage & Retail FAQs",
+    quickAnswers: [
+      {
+            "question": "Do commercial storefront signs require permits in Gurnee, IL?",
+            "answer": "Yes. Exterior signage must be permitted and inspected by the Village of Gurnee Community Development Department. FBS Signs manages site surveys, permit drawings, and municipal submittals."
+      },
+      {
+            "question": "Do you fabricate mall-compliant storefront signs for Gurnee Mills retailers?",
+            "answer": "Yes. We fabricate storefront signs, dimensional acrylic letters, illuminated lightboxes, and window graphics adhering strictly to Gurnee Mills and Grand Avenue retail standards."
+      },
+      {
+            "question": "What hospitality and tourism print services do you provide in Gurnee?",
+            "answer": "We produce full-color tourism brochures, event banners, hotel keycard holders, restaurant menus, and large-format promotional signage for Lake County entertainment venues."
+      },
+      {
+            "question": "Can Gurnee businesses get fleet vehicle graphics and van wraps?",
+            "answer": "Yes. We design and install high-durability commercial vehicle wraps and vinyl lettering that withstand heavy travel on the Tri-State Tollway (I-94) and Route 132."
+      }
+],
     faqs: [
       {
         question: "Do you produce retail and mall-compliant signage for Gurnee Mills storefronts?",
@@ -1255,6 +1369,25 @@ export const serviceAreas: ServiceAreaCity[] = [
     ],
     localSeoContent: "Our local SEO campaigns for Waukegan target local search intent across Lake County, focusing on terms related to Waukegan Harbor, Genesee Theatre, and the Amstutz Expressway corridor.",
     landmarks: ["Genesee Theatre", "Waukegan Harbor & Marina", "Waukegan Municipal Airport", "Lake Michigan Waterfront", "Grand Avenue Corridor"],
+    quickAnswersTitle: "Waukegan Commercial Signage & Print FAQs",
+    quickAnswers: [
+      {
+            "question": "Do exterior signs require a permit in Waukegan, IL?",
+            "answer": "Yes. All exterior business signage in Waukegan requires approval from the City of Waukegan Building and Zoning Department. We handle structural plans and permit processing."
+      },
+      {
+            "question": "What signage materials withstand Lake Michigan lakefront weather in Waukegan?",
+            "answer": "We use marine-grade aluminum, anti-corrosive fasteners, UV-laminated inks, and sealed LED modules engineered to resist Lake Michigan humidity, wind, and winter conditions."
+      },
+      {
+            "question": "What commercial printing and direct mail options are available in Waukegan?",
+            "answer": "We offer business cards, presentation folders, bilingual marketing flyers, large-format vinyl banners, and targeted EDDM saturation mailers across Lake County zip codes."
+      },
+      {
+            "question": "Do you provide vehicle lettering and wraps for Waukegan fleets?",
+            "answer": "Yes. We install full vehicle wraps, partial wraps, and commercial fleet decals for contractors, delivery vehicles, and harbor marine operators."
+      }
+],
     faqs: [
       {
         question: "Do you design outdoor banners and signage for Waukegan Harbor businesses?",
@@ -1275,37 +1408,93 @@ export const serviceAreas: ServiceAreaCity[] = [
     state: "Illinois",
     stateCode: "IL",
     county: "Cook County",
-    introduction: "Chicago Heights, Illinois, known as the 'Crossroads of the Nation,' is a historic manufacturing and commercial suburb in southern Cook County. Located along the Lincoln Highway (Route 30) and Dixie Highway, Chicago Heights has a strong industrial foundation and a diverse community of local retail and service businesses. Local companies rely on high-visibility roadway signage and localized digital marketing.",
-    servicesDescription: "We provide comprehensive business solutions in Chicago Heights, including custom industrial signage, storefront signs, vehicle lettering, business printing, direct mail, web design, and local SEO. We support local contractors, manufacturing facilities, and retailers.",
+    introduction: "Chicago Heights, Illinois, historically known as the 'Crossroads of the Nation,' represents a pivotal manufacturing, logistics, and retail hub in southern Cook County. Located at the historic intersection of the Lincoln Highway (Route 30) and the Dixie Highway, Chicago Heights commands steady vehicular commerce connecting Northwest Indiana and the Chicago Southland. FBS Signs provides full-service commercial sign fabrication, illuminated LED storefront channel letters, architectural monument signs, industrial safety markers, fleet vehicle graphics, and commercial bulk printing tailored to the regulatory and commercial landscape of Chicago Heights, IL.",
+    servicesDescription: "We provide complete commercial signage, printing, and digital marketing solutions engineered for Chicago Heights: front-lit and halo-lit LED channel letters for retail plazas along Lincoln Highway, heavy-gauge aluminum monument signs for corporate parks, exterior warehouse numbers and OSHA loading dock displays for manufacturing plants, commercial fleet wraps for local contractors, and targeted Every Door Direct Mail (EDDM) saturation campaigns.",
+    whyChooseTitle: "Why Chicago Heights Businesses Choose FBS Signs",
     whyChooseUs: [
       {
-        title: "Lincoln Highway Route Visibility",
-        description: "We manufacture high-impact storefront signage, pylon signs, and banners designed to attract motorists along Route 30."
+        title: "Lincoln Highway & Dixie Highway Traffic Impact",
+        description: "We engineer freestanding roadside monument signs, illuminated cabinet headers, and front-lit LED channel letters designed for maximum visibility along high-speed commercial arterials like Route 30 and Dixie Highway."
       },
       {
-        title: "Industrial & Manufacturing Print",
-        description: "We print safety manuals, catalogs, invoices, and business stationery for industrial operations."
+        title: "City of Chicago Heights Code & Permitting Mastery",
+        description: "Our dedicated permitting specialists prepare stamped engineering calculations, scaled architectural drawings, and electrical plans to ensure fast approval through the City of Chicago Heights Building and Code Enforcement Department."
       },
       {
-        title: "Local Search Optimization",
-        description: "We optimize websites to rank for high-intent searches in Chicago Heights and the southern suburbs."
+        title: "Heavy-Gauge Industrial & Warehouse Manufacturing",
+        description: "For manufacturing plants and distribution hubs along State Street and 14th Street, we produce reflective aluminum building markers, dock door identifiers, OSHA hazard warnings, and durable floor graphics built to withstand heavy forklift traffic."
+      },
+      {
+        title: "Integrated Commercial Print & Direct Mail (EDDM)",
+        description: "We produce repeat-ready commercial print suites—including multi-page product catalogs, presentation folders, invoice NCR forms, and route-targeted USPS Every Door Direct Mail campaigns across 60411 and 60412."
       }
     ],
-    localSeoContent: "We optimize Chicago Heights business websites to target local search queries across southern Cook County, focusing on terms related to Route 30, Dixie Highway, and regional industrial parks.",
-    landmarks: ["Lincoln Highway Corridor", "Dixie Highway Commercial Strip", "Chicago Heights Park District", "Prairie State College area", "Historic Crossroads Monument"],
+    localSeoContent: "Our Chicago Heights commercial service footprint spans Lincoln Highway, Dixie Highway, Halsted Street, the Downtown Historic District, the industrial corridor bordering South Chicago Heights, and the educational hub near Prairie State College. By pairing physical storefront branding with local schema markup, Google Maps citation optimization, and geo-targeted landing pages, we help Chicago Heights companies capture local and regional search authority throughout southern Cook County.",
+    landmarks: [
+      "Lincoln Highway Corridor (Route 30)",
+      "Dixie Highway Commercial Strip",
+      "Prairie State College Campus",
+      "Chicago Heights Park District & Bloom Township",
+      "Historic Crossroads of the Nation Monument",
+      "State Street & 14th Street Industrial Hub"
+    ],
+    quickAnswersTitle: "Chicago Heights Commercial Signs & Print Quick Answers",
+    quickAnswers: [
+      {
+        question: "Is a sign permit required for commercial signs in Chicago Heights, IL?",
+        answer: "Yes. Exterior commercial signs require approval and a sign permit from the City of Chicago Heights Building Department. FBS Signs prepares scaled drawings, electrical schematics, and manages the entire municipal review and inspection process."
+      },
+      {
+        question: "What signs are recommended for Lincoln Highway and Dixie Highway businesses?",
+        answer: "High-visibility illuminated pylon signs, LED channel letters, architectural masonry monument signs, and bold perforated window graphics are ideal for capturing drive-by traffic along Route 30 and Dixie Highway."
+      },
+      {
+        question: "Can Chicago Heights industrial plants order safety and warehouse signage?",
+        answer: "Yes. We manufacture heavy-gauge reflective aluminum building numbers, interior OSHA hazard signs, dock bay markers, exterior overhead clearances, and directional traffic signs for manufacturing facilities."
+      },
+      {
+        question: "What commercial printing services do you offer for Chicago Heights businesses?",
+        answer: "We supply premium business cards, multi-page catalogs, promotional flyers, presentation folders, vinyl banners, and EDDM direct mailers targeted to southern Cook County postal routes."
+      }
+    ],
+    faqTitle: "Frequently Asked Questions About Signage & Printing in Chicago Heights",
     faqs: [
       {
-        question: "Do you offer vehicle graphics for contractors in Chicago Heights?",
-        answer: "Yes, we produce custom truck decals, magnetics, and partial wraps to brand your vehicles for local exposure."
+        question: "How long does custom sign fabrication and installation take in Chicago Heights?",
+        answer: "Following sign permit approval from the City of Chicago Heights Building Department, custom fabrication and certified installation typically take between 2 to 3 weeks. Rush fabrication options are available for grand openings."
       },
       {
-        question: "Can we print direct mailers for a local service business in Chicago Heights?",
-        answer: "Absolutely. We manage everything from print production to delivery coordination to reach local residents."
+        question: "What types of storefront signs are approved in Chicago Heights retail centers?",
+        answer: "Front-lit LED channel letters, halo-lit reverse letters, raceway-mounted cabinet signs, and illuminated monument signs are commonly approved. All signage must comply with municipal square footage, setback, and height limits."
+      },
+      {
+        question: "Do you design and install vehicle wraps for Chicago Heights trade contractors?",
+        answer: "Yes. We design, print, and install full vehicle wraps, partial fleet wraps, box truck lettering, and USDOT compliant door decals using premium 3M and Avery Dennison cast vinyl that withstands Midwest winters."
+      },
+      {
+        question: "Can you retrofit existing cabinet or pylon signs with energy-efficient LEDs?",
+        answer: "Yes. We specialize in LED retrofitting for aging fluorescent and neon signs along Route 30 and Dixie Highway. LED upgrades lower energy bills by up to 70%, improve night-time brightness, and reduce maintenance costs."
+      },
+      {
+        question: "How does Every Door Direct Mail (EDDM) work for Chicago Heights businesses?",
+        answer: "EDDM allows your business to reach every address on selected postal carrier routes across Chicago Heights zip codes 60411 and 60412 without purchasing a mailing list. FBS Signs manages design, printing, USPS bundling, and delivery paperwork."
+      },
+      {
+        question: "What materials are best for outdoor signs in the Chicago Southland climate?",
+        answer: "We recommend powder-coated marine-grade aluminum, sealed acrylic faces, polycarbonate shields for impact resistance, and weather-sealed commercial LED modules engineered to endure temperature swings and severe winds."
+      },
+      {
+        question: "What artwork files are needed for commercial printing and sign fabrication?",
+        answer: "Vector formats such as AI, EPS, or high-resolution vector PDF with outlined fonts provide the best production quality. If you only have raster files (PNG, JPEG), our in-house graphics team can re-vectorize your brand assets."
+      },
+      {
+        question: "How can local SEO and Google Maps optimization help a Chicago Heights business?",
+        answer: "Local SEO optimizes your website architecture, Google Business Profile, and local citations so your business ranks in local map pack results when potential clients search for commercial services in Chicago Heights and southern Cook County."
       }
     ],
-    nearbyCities: ["Homewood", "Flossmoor", "Park Forest", "South Chicago Heights"],
-    nearbyCitySlugs: ["chicago", "chicago", "chicago", "chicago"], // Fallback to Chicago
-    updatedAt: "2026-07-06"
+    nearbyCities: ["Chicago", "Joliet", "Crest Hill", "Romeoville", "Bolingbrook"],
+    nearbyCitySlugs: ["chicago", "joliet", "crest-hill", "romeoville", "bolingbrook"],
+    updatedAt: "2026-11-16"
   },
   {
     slug: "west-chicago",
@@ -1331,6 +1520,25 @@ export const serviceAreas: ServiceAreaCity[] = [
     ],
     localSeoContent: "Our local SEO campaigns for West Chicago focus on capturing search traffic from western DuPage and eastern Kane counties, targeting keywords related to Route 59, Route 64, and the DuPage Airport.",
     landmarks: ["DuPage Airport", "West Chicago Prairie Forest Preserve", "Route 59 Business Corridor", "Historic Downtown Railroad District", "Geneva Road area"],
+    quickAnswersTitle: "West Chicago Commercial Printing & Sign FAQs",
+    quickAnswers: [
+      {
+            "question": "Do exterior business signs require a permit in West Chicago, IL?",
+            "answer": "Yes. Commercial exterior signage requires permit approval through the City of West Chicago Community Development Department. FBS Signs prepares scaled drawings and handles the submission."
+      },
+      {
+            "question": "What signage do you manufacture for industrial parks and DuPage Airport businesses?",
+            "answer": "We fabricate heavy-duty architectural monument signs, dimensional building letters, reflective directional wayfinding, and industrial safety signage engineered for large facilities."
+      },
+      {
+            "question": "Can West Chicago companies order bulk commercial printing and brochures?",
+            "answer": "Yes. We print high-volume product catalogs, presentation folders, brochures, invoices, and trade show banners with fast local delivery across western DuPage County."
+      },
+      {
+            "question": "Do you install vehicle lettering and fleet wraps in West Chicago?",
+            "answer": "Yes. We design and install durable commercial vehicle wraps, truck door lettering, and trailer decals using premium 3M and Avery Dennison vinyl."
+      }
+],
     faqs: [
       {
         question: "Do you design outdoor signs for business parks in West Chicago?",
@@ -1369,6 +1577,25 @@ export const serviceAreas: ServiceAreaCity[] = [
     ],
     localSeoContent: "Our local SEO campaigns for North Aurora focus on capturing search traffic from Kane County, utilizing search terms related to I-88, Orchard Road, and the Fox River region.",
     landmarks: ["North Aurora Island Park", "Fox River Bike Trail", "Orchard Road Commercial Corridor", "I-88 Interchange", "Route 31 Strip"],
+    quickAnswersTitle: "North Aurora Business Signs & Marketing FAQs",
+    quickAnswers: [
+      {
+            "question": "Do storefront signs require permits in North Aurora, IL?",
+            "answer": "Yes. Exterior signs in North Aurora require review and approval by the Village of North Aurora Building Division. We manage code compliance, structural details, and permit paperwork."
+      },
+      {
+            "question": "What signs are recommended for businesses along Route 31 and Orchard Road?",
+            "answer": "We recommend energy-efficient LED channel letters, illuminated cabinet signs, freestanding monument signs, and vibrant window vinyls for high visibility along North Aurora thoroughfares."
+      },
+      {
+            "question": "Can North Aurora contractors and service shops get vehicle wraps?",
+            "answer": "Yes. We design and install full vehicle wraps, partial wraps, and vinyl lettering that transform service vans and pickup trucks into rolling advertising across Kane County."
+      },
+      {
+            "question": "What direct mail and commercial printing options are available in North Aurora?",
+            "answer": "We provide USPS Every Door Direct Mail (EDDM) saturation campaigns, custom postcard printing, brochures, business cards, and outdoor event banners."
+      }
+],
     faqs: [
       {
         question: "Do you offer vehicle graphics for contractors in North Aurora?",

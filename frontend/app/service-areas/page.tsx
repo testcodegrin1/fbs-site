@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import Link from "next/link";
 import ServiceAreasClient from "./ServiceAreasClient";
 import { serviceAreas } from "@/app/data/service-areas-data";
 import { getRequestBaseUrl } from "@/app/lib/request-url";
@@ -10,9 +11,9 @@ export async function generateMetadata(): Promise<Metadata> {
   const canonical = absoluteUrl("/service-areas", baseUrl);
 
   return {
-    title: "FBS Prints Service Areas in Illinois | Signage, Printing & SEO",
+    title: "Illinois Service Areas | Custom Signs, Print & Marketing | FBS Signs",
     description:
-      "Explore FBS Prints service areas across Illinois for custom signage, printing, direct mail, web design, and SEO services for local businesses.",
+      "Explore FBS Signs service areas across 25 Illinois cities for custom commercial signage, LED channel letters, printing, direct mail, web design, and local SEO.",
     alternates: {
       canonical,
     },
@@ -25,9 +26,9 @@ export async function generateMetadata(): Promise<Metadata> {
       locale: siteConfig.locale,
       url: canonical,
       siteName: siteConfig.name,
-      title: "FBS Prints Service Areas in Illinois | Signage, Printing & SEO",
+      title: "Illinois Service Areas | Custom Signs, Print & Marketing | FBS Signs",
       description:
-        "Explore FBS Prints service areas across Illinois for custom signage, printing, direct mail, web design, and SEO services for local businesses.",
+        "Explore FBS Signs service areas across 25 Illinois cities for custom commercial signage, LED channel letters, printing, direct mail, web design, and local SEO.",
       images: [
         {
           url: absoluteUrl(
@@ -42,9 +43,9 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: "summary_large_image",
-      title: "FBS Prints Service Areas in Illinois | Signage, Printing & SEO",
+      title: "Illinois Service Areas | Custom Signs, Print & Marketing | FBS Signs",
       description:
-        "Explore FBS Prints service areas across Illinois for custom signage, printing, direct mail, web design, and SEO services for local businesses.",
+        "Explore FBS Signs service areas across 25 Illinois cities for custom commercial signage, LED channel letters, printing, direct mail, web design, and local SEO.",
       images: [
         absoluteUrl("/images/services/signage/signage-service.webp", baseUrl),
       ],
@@ -81,9 +82,9 @@ export default async function ServiceAreasListingPage() {
     "@context": "https://schema.org",
     "@type": "WebPage",
     "@id": `${canonical}#webpage`,
-    name: "FBS Prints Service Areas in Illinois | Signage, Printing & SEO",
+    name: "Illinois Service Areas | Custom Signs, Print & Marketing | FBS Signs",
     description:
-      "Explore FBS Prints service areas across Illinois for custom signage, printing, direct mail, web design, and SEO services for local businesses.",
+      "Explore FBS Signs service areas across 25 Illinois cities for custom commercial signage, LED channel letters, printing, direct mail, web design, and local SEO.",
     url: canonical,
     inLanguage: "en-US",
     isPartOf: {
@@ -138,6 +139,24 @@ export default async function ServiceAreasListingPage() {
 
         {/* Interactive Cities List */}
         <ServiceAreasClient cities={serviceAreas} />
+
+        {/* Crawlable HTML Directory for Search Engines & Robots */}
+        <section className="container py-8 px-4 max-w-6xl mx-auto border-t border-primary-light/40">
+          <h2 className="text-xl font-bold text-primary-dark mb-4">
+            Browse All Illinois Service Area Locations
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 text-sm">
+            {serviceAreas.map((city) => (
+              <Link
+                key={`static-link-${city.slug}`}
+                href={`/service-areas/${city.slug}`}
+                className="text-primary-dark/80 hover:text-primary hover:underline transition-colors py-1"
+              >
+                {city.name}, IL ({city.county})
+              </Link>
+            ))}
+          </div>
+        </section>
 
         {/* Local Commitment Section */}
         <section className="container py-16 px-4">

@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { serviceAreas, getServiceArea } from "@/app/data/service-areas-data";
+import { getCitySeo } from "@/app/lib/city-seo-config";
 import { getRequestBaseUrl } from "@/app/lib/request-url";
 import {
   absoluteUrl,
@@ -38,10 +39,22 @@ export async function generateMetadata({
 
   const baseUrl = await getRequestBaseUrl();
   const canonical = absoluteUrl(`/service-areas/${area.slug}`, baseUrl);
+  const citySeo = getCitySeo(area.slug);
+
+  const title =
+    citySeo?.seoTitle ||
+    `Custom Signs, Print & SEO in ${area.name}, IL | ${area.county} | FBS Signs`;
+  const description =
+    citySeo?.metaDescription ||
+    `Need signage or marketing in ${area.name}, IL? FBS Signs provides storefront signs, commercial printing, direct mail, web design, and local SEO across ${area.county}.`;
+  const keywords: string[] = citySeo
+    ? [...citySeo.secondaryKeywords, ...siteConfig.defaultKeywords]
+    : [...siteConfig.defaultKeywords];
 
   return {
-    title: `Custom Signs, Print & SEO in ${area.name}, IL | ${area.county} | FBS Signs`,
-    description: `Need signage or marketing in ${area.name}, IL? FBS Signs provides storefront signs, commercial printing, direct mail, web design, and local SEO across ${area.county}.`,
+    title,
+    description,
+    keywords,
     alternates: {
       canonical,
     },
@@ -61,8 +74,8 @@ export async function generateMetadata({
       locale: siteConfig.locale,
       url: canonical,
       siteName: siteConfig.name,
-      title: `Custom Signs, Print & SEO in ${area.name}, IL | ${area.county} | FBS Signs`,
-      description: `Need signage or marketing in ${area.name}, IL? FBS Signs provides storefront signs, commercial printing, direct mail, web design, and local SEO across ${area.county}.`,
+      title,
+      description,
       images: [
         {
           url: absoluteUrl(
@@ -77,8 +90,8 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: `Custom Signs, Print & SEO in ${area.name}, IL | ${area.county} | FBS Signs`,
-      description: `Need signage or marketing in ${area.name}, IL? FBS Signs provides storefront signs, commercial printing, direct mail, web design, and local SEO across ${area.county}.`,
+      title,
+      description,
       images: [
         absoluteUrl("/images/services/signage/signage-service.webp", baseUrl),
       ],
@@ -96,6 +109,14 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
 
   const baseUrl = await getRequestBaseUrl();
   const canonical = absoluteUrl(`/service-areas/${area.slug}`, baseUrl);
+  const citySeo = getCitySeo(area.slug);
+
+  const pageTitle =
+    citySeo?.seoTitle ||
+    `Signage, Printing & SEO in ${area.name}, IL`;
+  const pageDescription =
+    citySeo?.metaDescription ||
+    `FBS Signs provides custom signage, printing products, direct mailing, web design, and SEO services for businesses in ${area.name}, Illinois.`;
 
   const breadcrumbSchema = buildBreadcrumbSchema(
     [
@@ -111,8 +132,8 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
     "@context": "https://schema.org",
     "@type": "WebPage",
     "@id": `${canonical}#webpage`,
-    name: `Signage, Printing & SEO in ${area.name}, IL`,
-    description: `FBS Signs provides custom signage, printing products, direct mailing, web design, and SEO services for businesses in ${area.name}, Illinois.`,
+    name: pageTitle,
+    description: pageDescription,
     url: canonical,
     inLanguage: "en-US",
     dateModified: area.updatedAt,
@@ -131,9 +152,9 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
     "@context": "https://schema.org",
     "@type": "Service",
     "@id": `${canonical}#service`,
-    name: `Signage, Printing, Direct Mail, Web Design, and SEO in ${area.name}, IL`,
+    name: citySeo ? `${citySeo.primaryKeyword} - ${area.name}, IL` : `Signage, Printing, Direct Mail, Web Design, and SEO in ${area.name}, IL`,
     serviceType: "Business signage, printing, direct mail, web design, and SEO",
-    description: `FBS Signs provides custom signage, printing products, direct mailing, web design, and SEO services for businesses in ${area.name}, Illinois.`,
+    description: pageDescription,
     url: canonical,
     provider: {
       "@id": organizationId(baseUrl),
@@ -307,10 +328,16 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div>
                 <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight tracking-tight mb-6">
-                  Signage, Printing &amp; SEO in <br />
-                  <span className="bg-linear-to-r from-primary to-primary-dark bg-clip-text text-transparent">
-                    {area.name}, IL
-                  </span>
+                  {citySeo ? (
+                    citySeo.h1
+                  ) : (
+                    <>
+                      Signage, Printing &amp; SEO in <br />
+                      <span className="bg-linear-to-r from-primary to-primary-dark bg-clip-text text-transparent">
+                        {area.name}, IL
+                      </span>
+                    </>
+                  )}
                 </h1>
 
                 {/* Breadcrumbs */}
@@ -362,7 +389,7 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
                   <div className="relative h-60 rounded-2xl overflow-hidden shadow-md float-1">
                     <Image
                       src="/images/services/signage/signage-service.webp"
-                      alt="Custom storefront sign"
+                      alt={`Custom storefront signs and channel letters in ${area.name}, IL`}
                       fill
                       className="object-cover"
                     />
@@ -370,7 +397,7 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
                   <div className="relative h-60 rounded-2xl overflow-hidden shadow-md float-2 mt-8">
                     <Image
                       src="/images/services/printing/printing-products-service.webp"
-                      alt="High quality print collateral"
+                      alt={`Commercial business printing and marketing collateral in ${area.name}, IL`}
                       fill
                       className="object-cover"
                     />
@@ -566,7 +593,7 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
                 <div className="relative h-48 w-full rounded-2xl overflow-hidden mb-6">
                   <Image
                     src={service.image}
-                    alt={service.title}
+                    alt={`${service.title} in ${area.name}, IL`}
                     fill
                     className="object-cover transition-transform duration-300 group-hover:scale-105"
                   />
