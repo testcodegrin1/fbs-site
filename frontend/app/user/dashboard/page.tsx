@@ -145,7 +145,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
   >({});
   const [loadingCustomization, setLoadingCustomization] = useState(false);
   const [savingCustomization, setSavingCustomization] = useState(false);
-  const [customizationQuantity, setCustomizationQuantity] = useState<number>(1);
+  const [customizationQuantity, setCustomizationQuantity] = useState<number | "">(1);
   const [customizationNotice, setCustomizationNotice] = useState<{
     type: "success" | "error";
     message: string;
@@ -336,13 +336,18 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
           ? `${viewingTemplate.name} (#${activeImageIndex + 1})`
           : viewingTemplate.name;
 
+      const finalQty =
+        typeof customizationQuantity === "number" && customizationQuantity >= 1
+          ? customizationQuantity
+          : 1;
+
       const res = await productTemplateApi.submitProductCustomization({
         templateId: viewingTemplate.id,
-        quantity: customizationQuantity,
+        quantity: finalQty,
         values: {
           ...customFieldValues,
-          quantity: customizationQuantity,
-          _quantity: customizationQuantity,
+          quantity: finalQty,
+          _quantity: finalQty,
           _selectedImageIndex: activeImageIndex,
           _selectedImageUrl: currentImage?.imageUrl || "",
           _productTitle: variantTitle,
@@ -1252,7 +1257,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                           type="button"
                           onClick={() =>
                             setCustomizationQuantity((prev) =>
-                              Math.max(1, prev - 1),
+                              Math.max(1, (Number(prev) || 1) - 1),
                             )
                           }
                           className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center transition cursor-pointer text-sm"
@@ -1262,27 +1267,55 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                         <Input
                           type="number"
                           min={1}
+                          max={999999}
                           value={customizationQuantity}
+                          onFocus={(e) => e.target.select()}
                           onChange={(e) => {
-                            const val = parseInt(e.target.value, 10);
-                            setCustomizationQuantity(
-                              isNaN(val) || val < 1 ? 1 : val,
-                            );
+                            const val = e.target.value;
+                            if (val === "") {
+                              setCustomizationQuantity("");
+                              return;
+                            }
+                            const cleanVal = val.replace(/\D/g, "").slice(0, 6);
+                            if (cleanVal === "") {
+                              setCustomizationQuantity("");
+                              return;
+                            }
+                            const parsed = parseInt(cleanVal, 10);
+                            if (!isNaN(parsed)) {
+                              setCustomizationQuantity(Math.min(999999, parsed));
+                            }
+                          }}
+                          onBlur={() => {
+                            if (
+                              customizationQuantity === "" ||
+                              Number(customizationQuantity) < 1
+                            ) {
+                              setCustomizationQuantity(1);
+                            } else if (Number(customizationQuantity) > 999999) {
+                              setCustomizationQuantity(999999);
+                            }
                           }}
                           className="h-8 w-20 text-center font-bold text-xs bg-slate-50/50 focus:bg-white"
                           required
                         />
                         <button
                           type="button"
-                          onClick={() =>
-                            setCustomizationQuantity((prev) => prev + 1)
+                          disabled={
+                            typeof customizationQuantity === "number" &&
+                            customizationQuantity >= 999999
                           }
-                          className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center transition cursor-pointer text-sm"
+                          onClick={() =>
+                            setCustomizationQuantity((prev) =>
+                              Math.min(999999, (Number(prev) || 0) + 1),
+                            )
+                          }
+                          className="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold flex items-center justify-center transition cursor-pointer text-sm disabled:opacity-40"
                         >
                           +
                         </button>
                         <span className="text-xs text-slate-500 font-medium ml-1">
-                          {customizationQuantity > 1 ? "Products" : "Product"}
+                          {(Number(customizationQuantity) || 1) > 1 ? "Products" : "Product"}
                         </span>
                       </div>
                     </div>
