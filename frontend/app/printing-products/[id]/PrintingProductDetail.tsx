@@ -98,7 +98,7 @@ export default function PrintingProductDetail({ productId }: { productId: string
   const [product, setProduct] = useState<PrintingProduct | null>(null);
   const [values, setValues] = useState<Record<string, string | boolean>>({});
   const [files, setFiles] = useState<Record<string, File>>({});
-  const [quantity, setQuantity] = useState(1);
+  const [quantity, setQuantity] = useState<number | "">(1);
   const [activeImage, setActiveImage] = useState(0);
   const [imageError, setImageError] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -161,9 +161,11 @@ export default function PrintingProductDetail({ productId }: { productId: string
     setSubmitting(true);
     setError("");
     try {
+      const finalQuantity =
+        typeof quantity === "number" && quantity >= 1 ? quantity : 1;
       const result = await productTemplateApi.submitProductCustomization({
         templateId: product.id,
-        quantity,
+        quantity: finalQuantity,
         values,
         files,
       });
@@ -599,8 +601,13 @@ export default function PrintingProductDetail({ productId }: { productId: string
                       <button
                         type="button"
                         aria-label="Decrease quantity"
-                        disabled={submitting || quantity <= 1}
-                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                        disabled={
+                          submitting ||
+                          (typeof quantity === "number" && quantity <= 1)
+                        }
+                        onClick={() =>
+                          setQuantity((q) => Math.max(1, (Number(q) || 1) - 1))
+                        }
                         className="h-10 w-10 text-lg text-primary-dark transition hover:bg-slate-100 disabled:opacity-40"
                       >
                         −
@@ -609,20 +616,50 @@ export default function PrintingProductDetail({ productId }: { productId: string
                         id="product-quantity"
                         type="number"
                         min={1}
+                        max={999999}
                         step={1}
                         required
                         disabled={submitting}
-                        className="h-10 w-16 border-x border-slate-200 text-center text-sm font-semibold text-primary-dark outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                        className="h-10 w-20 border-x border-slate-200 text-center text-sm font-semibold text-primary-dark outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                         value={quantity}
-                        onChange={(event) =>
-                          setQuantity(Math.max(1, Number(event.target.value) || 1))
-                        }
+                        onFocus={(e) => e.target.select()}
+                        onChange={(event) => {
+                          const val = event.target.value;
+                          if (val === "") {
+                            setQuantity("");
+                            return;
+                          }
+                          // Limit to maximum 6 digits (up to 999999)
+                          const cleanVal = val.replace(/\D/g, "").slice(0, 6);
+                          if (cleanVal === "") {
+                            setQuantity("");
+                            return;
+                          }
+                          const parsed = parseInt(cleanVal, 10);
+                          if (!isNaN(parsed)) {
+                            setQuantity(Math.min(999999, parsed));
+                          }
+                        }}
+                        onBlur={() => {
+                          if (quantity === "" || Number(quantity) < 1) {
+                            setQuantity(1);
+                          } else if (Number(quantity) > 999999) {
+                            setQuantity(999999);
+                          }
+                        }}
                       />
                       <button
                         type="button"
                         aria-label="Increase quantity"
-                        disabled={submitting}
-                        onClick={() => setQuantity((q) => q + 1)}
+                        disabled={
+                          submitting ||
+                          (typeof quantity === "number" && quantity >= 999999)
+                        }
+                        onClick={() =>
+                          setQuantity((q) =>
+                            Math.min(999999, (Number(q) || 0) + 1),
+                          )
+                        }
                         className="h-10 w-10 text-lg text-primary-dark transition hover:bg-slate-100 disabled:opacity-40"
                       >
                         +
