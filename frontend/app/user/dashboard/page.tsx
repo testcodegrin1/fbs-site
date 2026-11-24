@@ -127,9 +127,6 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [refreshingProducts, setRefreshingProducts] = useState(false);
   const [productSearch, setProductSearch] = useState("");
-  const [productOrientationFilter, setProductOrientationFilter] = useState<
-    "all" | "landscape" | "portrait"
-  >("all");
   const [productViewMode, setProductViewMode] = useState<"grid" | "list">("list");
   const [viewingTemplate, setViewingTemplate] =
     useState<ProductTemplateModel | null>(null);
@@ -481,17 +478,9 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
         }
       }
 
-      // Orientation matching
-      if (
-        productOrientationFilter !== "all" &&
-        item.orientation.toLowerCase() !== productOrientationFilter
-      ) {
-        return false;
-      }
-
       return true;
     });
-  }, [productTemplates, productSearch, productOrientationFilter]);
+  }, [productTemplates, productSearch]);
 
   // Flatten templates by their images so each image is displayed separately on the user side
   const productDisplayItems = useMemo(() => {
@@ -1007,14 +996,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                           {viewingTemplate.widthPx} × {viewingTemplate.heightPx} in
                         </span>
                       </div>
-                      <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-150">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">
-                          Orientation
-                        </span>
-                        <span className="capitalize font-bold text-slate-900 mt-0.5 block">
-                          {viewingTemplate.orientation}
-                        </span>
-                      </div>
+
                       <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-150">
                         <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">
                           Format

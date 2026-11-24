@@ -566,10 +566,6 @@ export function ProductSubmissionsManagement() {
                                     {order.widthPx} × {order.heightPx} in
                                   </span>
                                   <span className="text-slate-300">·</span>
-                                  <span className="capitalize">
-                                    {order.orientation}
-                                  </span>
-                                  <span className="text-slate-300">·</span>
                                   <span className="font-bold text-indigo-600">
                                     Qty: {order.quantity || 1}
                                   </span>

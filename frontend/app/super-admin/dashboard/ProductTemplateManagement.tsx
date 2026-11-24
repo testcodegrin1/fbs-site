@@ -320,11 +320,9 @@ export function ProductTemplateManagement() {
 
   // Multiple Dimensions (+) state
   const [showAddDimForm, setShowAddDimForm] = useState(false);
+  const [editingDimensionIndex, setEditingDimensionIndex] = useState<number | null>(null);
   const [newDimWidth, setNewDimWidth] = useState<number | "">("");
   const [newDimHeight, setNewDimHeight] = useState<number | "">("");
-  const [newDimOrientation, setNewDimOrientation] = useState<
-    "landscape" | "portrait"
-  >("landscape");
 
   // View modal state
   const [viewingTemplate, setViewingTemplate] =
@@ -412,6 +410,7 @@ export function ProductTemplateManagement() {
     setPreviewImagePreview(null);
 
     setShowAddDimForm(false);
+    setEditingDimensionIndex(null);
     setFormData({
       ...defaultFormData,
       images: [],
@@ -426,6 +425,7 @@ export function ProductTemplateManagement() {
   async function handleOpenEditModal(template: ProductTemplateModel) {
     setEditingTemplate(template);
     setShowAddDimForm(false);
+    setEditingDimensionIndex(null);
 
     const rawW = Number(template.widthPx ?? 0);
     const rawH = Number(template.heightPx ?? 0);
@@ -460,36 +460,7 @@ export function ProductTemplateManagement() {
     setFormServerError(null);
     setShowEditModal(true);
 
-    // Fetch fresh single template record in background to ensure all fields are up to date
-    try {
-      const fresh = await productTemplateApi.getProductTemplate(template.id);
-      if (fresh) {
-        setFormData((prev) => ({
-          ...prev,
-          name: fresh.name || prev.name,
-          images:
-            fresh.images && fresh.images.length > 0
-              ? fresh.images.map((img, i) => ({
-                  id: img.id,
-                  imageUrl: img.imageUrl,
-                  file: null,
-                  previewUrl: null,
-                  sortOrder: img.sortOrder ?? i,
-                }))
-              : prev.images,
-          fields:
-            fresh.fields && fresh.fields.length > 0
-              ? [...fresh.fields]
-              : prev.fields,
-          available_sizes:
-            fresh.availableSizes && fresh.availableSizes.length > 0
-              ? fresh.availableSizes
-              : prev.available_sizes,
-        }));
-      }
-    } catch {
-      // Keep existing data if fresh fetch fails
-    }
+
   }
 
   // Master image file upload handler
@@ -545,6 +516,7 @@ export function ProductTemplateManagement() {
       ...prev,
       width_px: width,
       height_px: height,
+      orientation: width >= height ? "landscape" : "portrait",
     }));
   }
 
@@ -554,26 +526,6 @@ export function ProductTemplateManagement() {
 
   function handleNewDimHeightChange(val: number | "") {
     setNewDimHeight(val);
-  }
-
-  function handleNewDimOrientationChange(
-    newOrient: "landscape" | "portrait",
-  ) {
-    setNewDimOrientation(newOrient);
-    const w = typeof newDimWidth === "number" ? newDimWidth : 0;
-    const h = typeof newDimHeight === "number" ? newDimHeight : 0;
-    if (w > 0 && h > 0) {
-      if (newOrient === "portrait" && w > h) {
-        setNewDimWidth(h);
-        setNewDimHeight(w);
-      } else if (newOrient === "landscape" && h > w) {
-        setNewDimWidth(h);
-        setNewDimHeight(w);
-      }
-    } else {
-      setNewDimWidth("");
-      setNewDimHeight("");
-    }
   }
 
   function handleAddDimension() {
@@ -594,38 +546,35 @@ export function ProductTemplateManagement() {
       return;
     }
 
-    let label = `${w}" × ${h}"`;
-    if (Math.abs(w - 20) < 0.05 && Math.abs(h - 11.25) < 0.05) {
-      label = "Standard 16:9";
-    } else if (Math.abs(w - 24) < 0.05 && Math.abs(h - 18) < 0.05) {
-      label = "Medium Sign";
-    } else if (Math.abs(w - 36) < 0.05 && Math.abs(h - 24) < 0.05) {
-      label = "Large Banner";
-    } else if (Math.abs(w - 11.25) < 0.05 && Math.abs(h - 20) < 0.05) {
-      label = "Standard 9:16";
-    } else if (Math.abs(w - 18) < 0.05 && Math.abs(h - 24) < 0.05) {
-      label = "Medium Sign";
-    } else if (Math.abs(w - 24) < 0.05 && Math.abs(h - 36) < 0.05) {
-      label = "Large Banner";
-    }
-
+    const label = `${w}" × ${h}"`;
     const newSize = { label, width: w, height: h };
 
     setFormData((prev) => {
       const existing = prev.available_sizes || [];
+      if (editingDimensionIndex !== null) {
+        const previousSize = existing[editingDimensionIndex];
+        if (!previousSize) return prev;
+        const sizes = existing.map((size, index) => index === editingDimensionIndex ? newSize : size);
+        const isOriginal = Number(previousSize.width) === Number(prev.width_px) && Number(previousSize.height) === Number(prev.height_px);
+        return {
+          ...prev,
+          ...(isOriginal ? { width_px: w, height_px: h, orientation: w >= h ? "landscape" : "portrait" } : {}),
+          available_sizes: sizes,
+        };
+      }
       return {
         ...prev,
-        ...(existing.length === 0 ? { width_px: w, height_px: h, orientation: newDimOrientation } : {}),
+        ...(existing.length === 0 ? { width_px: w, height_px: h, orientation: w >= h ? "landscape" : "portrait" } : {}),
         available_sizes: [...existing, newSize],
       };
     });
-
     setNewDimWidth("");
     setNewDimHeight("");
     setShowAddDimForm(false);
+    setEditingDimensionIndex(null);
     setNotice({
       type: "success",
-      message: `Dimension "${label}" (${w} × ${h} in) added successfully!`,
+      message: `Dimension "${label}" (${w} × ${h} in) ${editingDimensionIndex === null ? "added" : "updated"} successfully!`,
     });
   }
 
@@ -663,11 +612,10 @@ export function ProductTemplateManagement() {
             <button
               type="button"
               onClick={() => {
-                const nextState = !showAddDimForm;
+                const nextState = !showAddDimForm || editingDimensionIndex !== null;
                 setShowAddDimForm(nextState);
+                setEditingDimensionIndex(null);
                 if (nextState) {
-                  const o = formData.orientation || "landscape";
-                  setNewDimOrientation(o);
                   setNewDimWidth("");
                   setNewDimHeight("");
                 }
@@ -706,6 +654,22 @@ export function ProductTemplateManagement() {
                     >
                       {preset.label || `${preset.width}" × ${preset.height}"`}
                     </span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        title="Edit dimension"
+                        aria-label={`Edit dimension ${preset.width} by ${preset.height} inches`}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          setEditingDimensionIndex(idx);
+                          setNewDimWidth(preset.width);
+                          setNewDimHeight(preset.height);
+                          setShowAddDimForm(true);
+                        }}
+                        className={`rounded-full p-1 transition hover:bg-black/10 ${active ? "text-white" : "text-slate-500 hover:text-indigo-600"}`}
+                      >
+                        <Edit size={13} />
+                      </button>
                     {currentSizes.length > 0 && (
                       <button
                         type="button"
@@ -713,6 +677,8 @@ export function ProductTemplateManagement() {
                         onClick={(e) => {
                           e.stopPropagation();
                           handleRemoveDimension(idx);
+                          setShowAddDimForm(false);
+                          setEditingDimensionIndex(null);
                         }}
                         className={`opacity-0 group-hover:opacity-100 transition rounded-full p-0.5 hover:bg-black/10 ${
                           active ? "text-white" : "text-slate-400 hover:text-red-600"
@@ -721,6 +687,7 @@ export function ProductTemplateManagement() {
                         <X size={12} />
                       </button>
                     )}
+                    </div>
                   </div>
                   <span
                     className={`text-xs font-mono mt-1 ${
@@ -740,7 +707,7 @@ export function ProductTemplateManagement() {
           <div className="p-3.5 rounded-xl border border-indigo-200 bg-indigo-50/70 space-y-3 animate-in fade-in duration-150">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
-                <Plus size={13} className="text-indigo-600" /> Add New Dimension for this Product
+                <Plus size={13} className="text-indigo-600" /> {editingDimensionIndex === null ? "Add New Dimension for this Product" : "Edit Dimension"}
               </span>
               <button
                 type="button"
@@ -791,23 +758,7 @@ export function ProductTemplateManagement() {
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-slate-700">
-                  Orientation
-                </Label>
-                <select
-                  value={newDimOrientation}
-                  onChange={(e) =>
-                    handleNewDimOrientationChange(
-                      e.target.value as "landscape" | "portrait",
-                    )
-                  }
-                  className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="landscape">Landscape</option>
-                  <option value="portrait">Portrait</option>
-                </select>
-              </div>
+
             </div>
 
             {/* Actions */}
@@ -828,7 +779,7 @@ export function ProductTemplateManagement() {
                   onClick={handleAddDimension}
                   className="h-7 text-xs px-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-xs"
                 >
-                  <Plus size={12} className="mr-1" /> Add Dimension
+                  {editingDimensionIndex === null ? <Plus size={12} className="mr-1" /> : <Edit size={12} className="mr-1" />} {editingDimensionIndex === null ? "Add Dimension" : "Save Dimension"}
                 </Button>
               </div>
             </div>
@@ -2063,9 +2014,6 @@ export function ProductTemplateManagement() {
                             {template.dimensionsLabel ||
                               `${template.widthPx} x ${template.heightPx} in`}
                           </span>
-                          <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
-                            {template.orientation}
-                          </span>
                         </div>
                       </td>
 
@@ -2235,7 +2183,7 @@ export function ProductTemplateManagement() {
               {renderImageUploadSection("create")}
 
               {/* Row 4.5: Custom Input Fields Builder (Only shown once an image is uploaded) */}
-              {formData.images.length > 0 && renderCustomInputFieldsSection()}
+              {renderCustomInputFieldsSection()}
 
               {/* Row 5: Active Status */}
               <div className="flex items-center gap-3 pt-1">
@@ -2382,7 +2330,7 @@ export function ProductTemplateManagement() {
               {renderImageUploadSection("edit")}
 
               {/* Custom Input Fields Builder (Only shown once an image is uploaded) */}
-              {formData.images.length > 0 && renderCustomInputFieldsSection()}
+              {renderCustomInputFieldsSection()}
 
               {/* Active Toggle */}
               <div className="flex items-center gap-3">
@@ -2480,14 +2428,7 @@ export function ProductTemplateManagement() {
                   </span>
                 </div>
 
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-                    Orientation
-                  </span>
-                  <span className="text-xs font-bold text-slate-800 capitalize mt-1 block">
-                    {viewingTemplate.orientation}
-                  </span>
-                </div>
+
 
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/60">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">

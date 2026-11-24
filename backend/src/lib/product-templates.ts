@@ -600,9 +600,12 @@ async function saveFieldsInTx(
   templateId: number,
   fields: any[],
 ) {
-  await conn.execute(`DELETE FROM product_template_fields WHERE template_id = ?`, [templateId]);
-
-  if (!Array.isArray(fields) || fields.length === 0) return;
+  const [existingRows] = await conn.query(
+    `SELECT id FROM product_template_fields WHERE template_id = ?`, [templateId],
+  );
+  const existingIds = new Set<number>(existingRows.map((row: any) => Number(row.id)));
+  const retainedIds = new Set<number>();
+  if (!Array.isArray(fields)) fields = [];
 
   for (let i = 0; i < fields.length; i++) {
     const f = fields[i];
@@ -626,6 +629,26 @@ async function saveFieldsInTx(
     const isEditable = f.isEditable !== false && f.is_editable !== false ? 1 : 0;
     const sortOrder = f.sortOrder !== undefined ? Number(f.sortOrder) : i;
 
+    const fieldId = Number(f.id);
+    if (Number.isSafeInteger(fieldId) && existingIds.has(fieldId)) {
+      if (retainedIds.has(fieldId)) throw new AuthError("Duplicate product field ID.", 400);
+      retainedIds.add(fieldId);
+      try {
+        await conn.execute(
+          `UPDATE product_template_fields SET label = ?, field_type = ?, placeholder = ?, options = ?, is_required = ?, is_editable = ?, sort_order = ? WHERE id = ? AND template_id = ?`,
+          [label, fieldType, placeholder, optionsJson, isRequired, isEditable, sortOrder, fieldId, templateId],
+        );
+      } catch (err: any) {
+        if (err.code !== "ER_BAD_FIELD_ERROR") throw err;
+        await conn.execute(
+          `UPDATE product_template_fields SET field_label = ?, field_type = ?, is_required = ?, is_editable = ? WHERE id = ? AND template_id = ?`,
+          [label, fieldType, isRequired, isEditable, fieldId, templateId],
+        );
+      }
+      continue;
+    }
+    if (f.id != null) throw new AuthError("Product field does not belong to this template.", 400);
+
     try {
       await conn.execute(
         `INSERT INTO product_template_fields (
@@ -648,6 +671,11 @@ async function saveFieldsInTx(
       } else {
         throw insertErr;
       }
+    }
+  }
+  for (const id of existingIds) {
+    if (!retainedIds.has(id)) {
+      await conn.execute(`DELETE FROM product_template_fields WHERE id = ? AND template_id = ?`, [id, templateId]);
     }
   }
 }
