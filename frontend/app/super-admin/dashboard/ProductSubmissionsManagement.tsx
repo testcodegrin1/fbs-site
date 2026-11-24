@@ -738,7 +738,6 @@ export function ProductSubmissionsManagement() {
                           {detailData && getStatusBadge(detailData.status)}
                         </div>
 
-
                       </Card>
                     </div>
                   ) : (

@@ -106,18 +106,26 @@ export default function PrintingProductDetail({ productId }: { productId: string
 
   const [selectedSizeIndex, setSelectedSizeIndex] = useState<number | "custom" | null>(null);
   const [customHeight, setCustomHeight] = useState("");
-  const baseWidth = product?.widthPx ?? 0;
-  const baseHeight = product?.heightPx ?? 0;
 
   const availableSizesList = useMemo(
     () => Array.isArray(product?.availableSizes) ? product.availableSizes : [],
     [product?.availableSizes],
   );
 
+  const baseSize = availableSizesList[0];
+  const baseWidth = Number(baseSize ? baseSize.width : product?.widthPx ?? 0);
+  const baseHeight = Number(baseSize ? baseSize.height : product?.heightPx ?? 0);
+  const validBase = Number.isFinite(baseWidth) && baseWidth > 0 && Number.isFinite(baseHeight) && baseHeight > 0;
+
   const customHeightValue = Number(customHeight);
-  const customWidth = customHeight === "" || !Number.isFinite(customHeightValue)
-    ? null
-    : Math.round((customHeightValue - (baseHeight - baseWidth)) * 100) / 100;
+  const heightHundredths = Math.round(customHeightValue * 100);
+  const validCustomHeight = customHeight !== "" && Number.isFinite(customHeightValue) &&
+    customHeightValue > 0 && Number.isSafeInteger(heightHundredths) &&
+    Math.abs(customHeightValue * 100 - heightHundredths) < 1e-7;
+  const widthHundredths = heightHundredths + Math.round(baseWidth * 100) - Math.round(baseHeight * 100);
+  const customWidth = validBase && validCustomHeight && Number.isSafeInteger(widthHundredths)
+    ? widthHundredths / 100
+    : null;
   const activeDimensions = selectedSizeIndex === "custom"
     ? { width: customWidth ?? 0, height: customHeightValue }
     : selectedSizeIndex !== null ? availableSizesList[selectedSizeIndex] : undefined;
@@ -183,7 +191,7 @@ export default function PrintingProductDetail({ productId }: { productId: string
     event.preventDefault();
     if (!product || !signedIn || submitting) return;
     if (selectedSizeIndex === "custom" &&
-      (!Number.isFinite(customHeightValue) || customHeightValue <= 0 || customWidth === null || customWidth <= 0)) {
+      (!validCustomHeight || customWidth === null || customWidth <= 0)) {
       setError("Enter a height that produces a positive width.");
       return;
     }
@@ -199,6 +207,7 @@ export default function PrintingProductDetail({ productId }: { productId: string
       const selectedLabel = `${activeDimensions.width} × ${activeDimensions.height} in`;
       const submissionValues = {
         ...values,
+        sizeType: selectedSizeIndex === "custom" ? "custom" : "preset",
         "Selected Size": `${activeDimensions.width} × ${activeDimensions.height} in`,
         selectedSize: `${activeDimensions.width} × ${activeDimensions.height} in`,
         selectedSizeLabel: selectedLabel,
@@ -669,7 +678,7 @@ export default function PrintingProductDetail({ productId }: { productId: string
                             id="custom-height"
                             type="number"
                             min="0.01"
-                            step="any"
+                            step="0.01"
                             required
                             value={customHeight}
                             onChange={(event) => setCustomHeight(event.target.value)}

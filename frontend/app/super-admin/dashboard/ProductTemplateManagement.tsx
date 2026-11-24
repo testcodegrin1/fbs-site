@@ -321,8 +321,8 @@ export function ProductTemplateManagement() {
   // Multiple Dimensions (+) state
   const [showAddDimForm, setShowAddDimForm] = useState(false);
   const [editingDimensionIndex, setEditingDimensionIndex] = useState<number | null>(null);
-  const [newDimWidth, setNewDimWidth] = useState<number | "">("");
-  const [newDimHeight, setNewDimHeight] = useState<number | "">("");
+  const [newDimWidth, setNewDimWidth] = useState("");
+  const [newDimHeight, setNewDimHeight] = useState("");
 
   // View modal state
   const [viewingTemplate, setViewingTemplate] =
@@ -520,22 +520,22 @@ export function ProductTemplateManagement() {
     }));
   }
 
-  function handleNewDimWidthChange(val: number | "") {
+  function handleNewDimWidthChange(val: string) {
     setNewDimWidth(val);
   }
 
-  function handleNewDimHeightChange(val: number | "") {
+  function handleNewDimHeightChange(val: string) {
     setNewDimHeight(val);
   }
 
   function handleAddDimension() {
     const w =
-      typeof newDimWidth === "number" && newDimWidth > 0
-        ? Number(newDimWidth.toFixed(2))
+      Number(newDimWidth) > 0 && Number.isFinite(Number(newDimWidth))
+        ? Number(Number(newDimWidth).toFixed(2))
         : 0;
     const h =
-      typeof newDimHeight === "number" && newDimHeight > 0
-        ? Number(newDimHeight.toFixed(2))
+      Number(newDimHeight) > 0 && Number.isFinite(Number(newDimHeight))
+        ? Number(Number(newDimHeight).toFixed(2))
         : 0;
 
     if (!w || !h) {
@@ -582,7 +582,14 @@ export function ProductTemplateManagement() {
     setFormData((prev) => {
       const existing = prev.available_sizes || [];
       const updated = existing.filter((_, i) => i !== indexToRemove);
-      return { ...prev, available_sizes: updated };
+      const removed = existing[indexToRemove];
+      const wasBase = removed && Number(removed.width) === Number(prev.width_px) && Number(removed.height) === Number(prev.height_px);
+      const nextBase = wasBase ? updated[0] : undefined;
+      return {
+        ...prev,
+        ...(nextBase ? { width_px: nextBase.width, height_px: nextBase.height, orientation: nextBase.width >= nextBase.height ? "landscape" : "portrait" } : {}),
+        available_sizes: updated,
+      };
     });
   }
 
@@ -662,8 +669,8 @@ export function ProductTemplateManagement() {
                         onClick={(event) => {
                           event.stopPropagation();
                           setEditingDimensionIndex(idx);
-                          setNewDimWidth(preset.width);
-                          setNewDimHeight(preset.height);
+                          setNewDimWidth(String(preset.width));
+                          setNewDimHeight(String(preset.height));
                           setShowAddDimForm(true);
                         }}
                         className={`rounded-full p-1 transition hover:bg-black/10 ${active ? "text-white" : "text-slate-500 hover:text-indigo-600"}`}
@@ -732,7 +739,7 @@ export function ProductTemplateManagement() {
                   value={newDimWidth}
                   onChange={(e) =>
                     handleNewDimWidthChange(
-                      e.target.value === "" ? "" : Number(e.target.value),
+                      e.target.value,
                     )
                   }
                   className="h-10 text-sm font-mono font-medium bg-white"
@@ -751,7 +758,7 @@ export function ProductTemplateManagement() {
                   value={newDimHeight}
                   onChange={(e) =>
                     handleNewDimHeightChange(
-                      e.target.value === "" ? "" : Number(e.target.value),
+                      e.target.value,
                     )
                   }
                   className="h-10 text-sm font-mono font-medium bg-white"

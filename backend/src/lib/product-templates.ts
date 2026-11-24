@@ -1,6 +1,7 @@
 import type { RowDataPacket, ResultSetHeader } from "mysql2/promise";
 import { query, execute, withTransaction } from "./db.js";
 import { AuthError } from "./errors.js";
+import { baseDimensions, customDimensions } from "./product-dimensions.js";
 import type {
   ProductOrientation,
   ProductTemplateFieldModel,
@@ -709,6 +710,23 @@ export async function saveProductCustomization(
   }
   if (!template.isActive) {
     throw new AuthError("This printing product is no longer available.", 400);
+  }
+
+  if (customizationValues.sizeType === "custom") {
+    let dimensions: { width: number; height: number };
+    try {
+      const base = baseDimensions(template.availableSizes, template.widthPx, template.heightPx);
+      dimensions = customDimensions(base.width, base.height, Number(customizationValues.selectedHeight));
+    } catch (error) {
+      throw new AuthError(error instanceof Error ? error.message : "Invalid dimensions.", 400);
+    }
+    const { width, height } = dimensions;
+    const label = `${width} ? ${height} in`;
+    customizationValues.selectedWidth = width;
+    customizationValues.selectedHeight = height;
+    customizationValues.selectedSize = label;
+    customizationValues.selectedSizeLabel = label;
+    customizationValues["Selected Size"] = label;
   }
 
   // Validate required fields
