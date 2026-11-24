@@ -774,9 +774,6 @@ export function ProductTemplateManagement() {
               Dimensions & Specification
             </p>
           </div>
-          <span className="text-[11px] font-semibold text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-200 shadow-2xs">
-            96 DPI Standard (Inches)
-          </span>
         </div>
 
         {/* Available Sizes List + Add Dimension (+) */}

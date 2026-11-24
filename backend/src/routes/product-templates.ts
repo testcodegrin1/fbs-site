@@ -2,6 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import path from "path";
 import fs from "fs/promises";
+import sharp from "sharp";
 import { getErrorResponse } from "../lib/errors.js";
 import { requireAuth, requirePermission, getCurrentUser } from "../lib/auth.js";
 import { UPLOADS_DIR } from "../lib/canvas/watermark.js";
@@ -63,6 +64,25 @@ productTemplatesRouter.get("/printing-products", async (_req, res) => {
   }
 });
 
+// Uploaded images can have proportions that differ from the product template.
+async function publicImageWithDimensions(image: { id: number; imageUrl: string }) {
+  const result = { id: image.id, imageUrl: image.imageUrl };
+  const prefix = "/uploads/";
+  if (!image.imageUrl.startsWith(prefix)) return result;
+  const root = path.resolve(UPLOADS_DIR);
+  const filePath = path.resolve(root, image.imageUrl.slice(prefix.length));
+  if (!filePath.startsWith(root + path.sep)) return result;
+  try {
+    const metadata = await sharp(filePath).metadata();
+    const rotated = metadata.orientation != null && metadata.orientation >= 5 && metadata.orientation <= 8;
+    const width = rotated ? metadata.height : metadata.width;
+    const height = rotated ? metadata.width : metadata.height;
+    return width && height ? { ...result, width, height } : result;
+  } catch {
+    return result;
+  }
+}
+
 // Public product detail (by ID or slug)
 productTemplatesRouter.get("/printing-products/:id", async (req, res) => {
   try {
@@ -95,6 +115,9 @@ productTemplatesRouter.get("/printing-products/:id", async (req, res) => {
       return;
     }
 
+    const images = await Promise.all(
+      (template.images || []).filter((image: any) => image.isActive !== false).map(publicImageWithDimensions),
+    );
     res.setHeader("Cache-Control", "no-store");
     res.json({
       product: {
@@ -106,9 +129,7 @@ productTemplatesRouter.get("/printing-products/:id", async (req, res) => {
         heightPx: template.heightPx,
         availableSizes: template.availableSizes || null,
         orientation: template.orientation,
-        images: (template.images || [])
-          .filter((image: any) => image.isActive !== false)
-          .map((image: any) => ({ id: image.id, imageUrl: image.imageUrl })),
+        images,
         fields: (template.fields || []).map((field: any) => ({
           id: field.id,
           label: field.label,
