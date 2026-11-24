@@ -50,6 +50,7 @@ productTemplatesRouter.get("/printing-products", async (_req, res) => {
         description: template.description,
         widthPx: template.widthPx,
         heightPx: template.heightPx,
+        availableSizes: template.availableSizes || null,
         orientation: template.orientation,
         images: (template.images || [])
           .filter((image) => image.isActive !== false)
@@ -103,6 +104,7 @@ productTemplatesRouter.get("/printing-products/:id", async (req, res) => {
         description: template.description,
         widthPx: template.widthPx,
         heightPx: template.heightPx,
+        availableSizes: template.availableSizes || null,
         orientation: template.orientation,
         images: (template.images || [])
           .filter((image: any) => image.isActive !== false)
@@ -244,6 +246,21 @@ const handleCreateTemplate = async (req: any, res: any) => {
       }
     }
 
+    if (typeof req.body.available_sizes === "string") {
+      try {
+        req.body.available_sizes = JSON.parse(req.body.available_sizes);
+      } catch {
+        req.body.available_sizes = undefined;
+      }
+    }
+    if (typeof req.body.availableSizes === "string") {
+      try {
+        req.body.availableSizes = JSON.parse(req.body.availableSizes);
+      } catch {
+        req.body.availableSizes = undefined;
+      }
+    }
+
     const created = await saveProductTemplate(req.body);
     res.status(201).json({
       message: "Product template created successfully",
@@ -311,6 +328,21 @@ const handleUpdateTemplate = async (req: any, res: any) => {
         req.body.fields = JSON.parse(req.body.fields);
       } catch {
         req.body.fields = [];
+      }
+    }
+
+    if (typeof req.body.available_sizes === "string") {
+      try {
+        req.body.available_sizes = JSON.parse(req.body.available_sizes);
+      } catch {
+        req.body.available_sizes = undefined;
+      }
+    }
+    if (typeof req.body.availableSizes === "string") {
+      try {
+        req.body.availableSizes = JSON.parse(req.body.availableSizes);
+      } catch {
+        req.body.availableSizes = undefined;
       }
     }
 

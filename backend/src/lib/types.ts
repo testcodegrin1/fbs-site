@@ -61,6 +61,7 @@ export type ProductTemplateModel = {
   widthPx: number;
   heightPx: number;
   dimensionsLabel: string | null;
+  availableSizes?: { label: string; width: number; height: number }[] | null;
   orientation: ProductOrientation;
   isActive: boolean;
   createdAt: string;

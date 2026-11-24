@@ -857,7 +857,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                 <span>
                   Size:{" "}
                   <strong className="text-slate-800 font-semibold font-mono">
-                    {viewingTemplate.widthPx} × {viewingTemplate.heightPx} px
+                    {viewingTemplate.widthPx} × {viewingTemplate.heightPx} in
                   </strong>
                 </span>
               </p>
@@ -1004,8 +1004,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                           Dimensions
                         </span>
                         <span className="font-mono font-bold text-slate-900 mt-0.5 block">
-                          {viewingTemplate.widthPx} × {viewingTemplate.heightPx}{" "}
-                          px
+                          {viewingTemplate.widthPx} × {viewingTemplate.heightPx} in
                         </span>
                       </div>
                       <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-150">
@@ -1881,7 +1880,7 @@ function ClientDashboardContent({ clientUser }: { clientUser: any }) {
                 </div>
                 <p className="text-xs text-slate-500 mt-0.5">
                   {selectedMySubmission.widthPx} ×{" "}
-                  {selectedMySubmission.heightPx} px · Submitted{" "}
+                  {selectedMySubmission.heightPx} in · Submitted{" "}
                   {new Date(
                     selectedMySubmission.createdAt,
                   ).toLocaleDateString()}

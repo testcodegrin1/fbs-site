@@ -36,6 +36,7 @@ function ProductCard({ product }: { product: PrintingProduct }) {
   return (
     <Link
       href={`/printing-products/${productSlug}`}
+      prefetch={false}
       aria-label={`View ${product.name} details`}
       className="group flex flex-col overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-primary/50 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
     >

@@ -48,6 +48,11 @@ import {
   Copy,
   Image as ImageIcon,
   RotateCcw,
+  Sparkles,
+  Lock,
+  Unlock,
+  Ruler,
+  Star,
 } from "lucide-react";
 
 interface FormImageItem {
@@ -58,12 +63,36 @@ interface FormImageItem {
   sortOrder: number;
 }
 
+export const DEFAULT_DPI = 96;
+
+export function pxToInches(px: number, dpi = DEFAULT_DPI): number {
+  return Math.round((px / dpi) * 100) / 100;
+}
+
+export function inchesToPx(inches: number, dpi = DEFAULT_DPI): number {
+  return Math.round(inches * dpi);
+}
+
+export const PREDEFINED_SIZES = {
+  landscape: [
+    { label: "Standard 16:9", width: 20, height: 11.25, badge: '20" × 11.25"' },
+    { label: "Medium Sign", width: 24, height: 18, badge: '24" × 18"' },
+    { label: "Large Banner", width: 36, height: 24, badge: '36" × 24"' },
+  ],
+  portrait: [
+    { label: "Standard 9:16", width: 11.25, height: 20, badge: '11.25" × 20"' },
+    { label: "Medium Sign", width: 18, height: 24, badge: '18" × 24"' },
+    { label: "Large Banner", width: 24, height: 36, badge: '24" × 36"' },
+  ],
+};
+
 interface TemplateFormData {
   name: string;
   description: string;
   orientation: "landscape" | "portrait";
   width_px: number;
   height_px: number;
+  available_sizes: { label: string; width: number; height: number }[];
   is_active: boolean;
   images: FormImageItem[];
   fields: ProductTemplateField[];
@@ -73,8 +102,13 @@ const defaultFormData: TemplateFormData = {
   name: "",
   description: "",
   orientation: "landscape",
-  width_px: 1920,
-  height_px: 1080,
+  width_px: 20,
+  height_px: 11.25,
+  available_sizes: [
+    { label: "Standard 16:9", width: 20, height: 11.25 },
+    { label: "Medium Sign", width: 24, height: 18 },
+    { label: "Large Banner", width: 36, height: 24 },
+  ],
   is_active: true,
   images: [],
   fields: [],
@@ -302,6 +336,15 @@ export function ProductTemplateManagement() {
   const [previewImagePreview, setPreviewImagePreview] = useState<string | null>(
     null,
   );
+  const [lockAspectRatio, setLockAspectRatio] = useState(true);
+
+  // Multiple Dimensions (+) state
+  const [showAddDimForm, setShowAddDimForm] = useState(false);
+  const [newDimWidth, setNewDimWidth] = useState<number | "">("");
+  const [newDimHeight, setNewDimHeight] = useState<number | "">("");
+  const [newDimOrientation, setNewDimOrientation] = useState<
+    "landscape" | "portrait"
+  >("landscape");
 
   // View modal state
   const [viewingTemplate, setViewingTemplate] =
@@ -402,12 +445,27 @@ export function ProductTemplateManagement() {
   async function handleOpenEditModal(template: ProductTemplateModel) {
     setEditingTemplate(template);
 
+    const rawW = Number(template.widthPx || 20);
+    const rawH = Number(template.heightPx || 11.25);
+    const w = rawW >= 100 ? pxToInches(rawW) : rawW;
+    const h = rawH >= 100 ? pxToInches(rawH) : rawH;
+
     setFormData({
       name: template.name,
       description: template.description || "",
       orientation: template.orientation || "landscape",
-      width_px: template.widthPx || 1920,
-      height_px: template.heightPx || 1080,
+      width_px: w,
+      height_px: h,
+      available_sizes:
+        template.availableSizes && template.availableSizes.length > 0
+          ? template.availableSizes
+          : [
+              {
+                label: "Standard",
+                width: w,
+                height: h,
+              },
+            ],
       is_active: template.isActive,
       images:
         template.images && template.images.length > 0
@@ -450,6 +508,10 @@ export function ProductTemplateManagement() {
             fresh.fields && fresh.fields.length > 0
               ? [...fresh.fields]
               : prev.fields,
+          available_sizes:
+            fresh.availableSizes && fresh.availableSizes.length > 0
+              ? fresh.availableSizes
+              : prev.available_sizes,
         }));
       }
     } catch {
@@ -509,9 +571,9 @@ export function ProductTemplateManagement() {
   function handleOrientationChange(newOrientation: "landscape" | "portrait") {
     setFormData((prev) => {
       let w =
-        Number(prev.width_px) || (newOrientation === "portrait" ? 1080 : 1920);
+        Number(prev.width_px) || (newOrientation === "portrait" ? 11.25 : 20);
       let h =
-        Number(prev.height_px) || (newOrientation === "portrait" ? 1920 : 1080);
+        Number(prev.height_px) || (newOrientation === "portrait" ? 20 : 11.25);
 
       if (prev.orientation !== newOrientation) {
         if (newOrientation === "portrait" && w > h) {
@@ -534,6 +596,489 @@ export function ProductTemplateManagement() {
         orientation: newOrientation,
         width_px: w,
         height_px: h,
+      };
+    });
+  }
+
+  function handleWidthChange(newVal: number) {
+    setFormData((prev) => {
+      const currentW = Number(prev.width_px) || 20;
+      const currentH = Number(prev.height_px) || 11.25;
+      const ratio = currentW / currentH || (prev.orientation === "portrait" ? 11.25 / 20 : 20 / 11.25);
+      const updatedH = lockAspectRatio && newVal > 0 ? Number((newVal / ratio).toFixed(2)) : currentH;
+      return {
+        ...prev,
+        width_px: newVal,
+        height_px: updatedH,
+      };
+    });
+  }
+
+  function handleHeightChange(newVal: number) {
+    setFormData((prev) => {
+      const currentW = Number(prev.width_px) || 20;
+      const currentH = Number(prev.height_px) || 11.25;
+      const ratio = currentW / currentH || (prev.orientation === "portrait" ? 11.25 / 20 : 20 / 11.25);
+      const updatedW = lockAspectRatio && newVal > 0 ? Number((newVal * ratio).toFixed(2)) : currentW;
+      return {
+        ...prev,
+        width_px: updatedW,
+        height_px: newVal,
+      };
+    });
+  }
+
+  function handleApplyPredefinedSize(width: number, height: number) {
+    setFormData((prev) => ({
+      ...prev,
+      width_px: width,
+      height_px: height,
+    }));
+  }
+
+  function handleNewDimWidthChange(val: number | "") {
+    setNewDimWidth(val);
+    if (lockAspectRatio && typeof val === "number" && val > 0) {
+      const ratio =
+        newDimOrientation === "portrait" ? 11.25 / 20 : 20 / 11.25;
+      setNewDimHeight(Number((val / ratio).toFixed(2)));
+    }
+  }
+
+  function handleNewDimHeightChange(val: number | "") {
+    setNewDimHeight(val);
+    if (lockAspectRatio && typeof val === "number" && val > 0) {
+      const ratio =
+        newDimOrientation === "portrait" ? 11.25 / 20 : 20 / 11.25;
+      setNewDimWidth(Number((val * ratio).toFixed(2)));
+    }
+  }
+
+  function handleNewDimOrientationChange(
+    newOrient: "landscape" | "portrait",
+  ) {
+    setNewDimOrientation(newOrient);
+    const w = typeof newDimWidth === "number" ? newDimWidth : 0;
+    const h = typeof newDimHeight === "number" ? newDimHeight : 0;
+    if (w > 0 && h > 0) {
+      if (newOrient === "portrait" && w > h) {
+        setNewDimWidth(h);
+        setNewDimHeight(w);
+      } else if (newOrient === "landscape" && h > w) {
+        setNewDimWidth(h);
+        setNewDimHeight(w);
+      }
+    } else {
+      if (newOrient === "portrait") {
+        setNewDimWidth(11.25);
+        setNewDimHeight(20);
+      } else {
+        setNewDimWidth(20);
+        setNewDimHeight(11.25);
+      }
+    }
+  }
+
+  function handleAddDimension() {
+    const w =
+      typeof newDimWidth === "number" && newDimWidth > 0
+        ? Number(newDimWidth.toFixed(2))
+        : 0;
+    const h =
+      typeof newDimHeight === "number" && newDimHeight > 0
+        ? Number(newDimHeight.toFixed(2))
+        : 0;
+
+    if (!w || !h) {
+      setNotice({
+        type: "error",
+        message: "Please enter valid Width and Height in inches.",
+      });
+      return;
+    }
+
+    let label = `${w}" × ${h}"`;
+    if (Math.abs(w - 20) < 0.05 && Math.abs(h - 11.25) < 0.05) {
+      label = "Standard 16:9";
+    } else if (Math.abs(w - 24) < 0.05 && Math.abs(h - 18) < 0.05) {
+      label = "Medium Sign";
+    } else if (Math.abs(w - 36) < 0.05 && Math.abs(h - 24) < 0.05) {
+      label = "Large Banner";
+    } else if (Math.abs(w - 11.25) < 0.05 && Math.abs(h - 20) < 0.05) {
+      label = "Standard 9:16";
+    } else if (Math.abs(w - 18) < 0.05 && Math.abs(h - 24) < 0.05) {
+      label = "Medium Sign";
+    } else if (Math.abs(w - 24) < 0.05 && Math.abs(h - 36) < 0.05) {
+      label = "Large Banner";
+    }
+
+    const newSize = { label, width: w, height: h };
+
+    setFormData((prev) => {
+      const existing = prev.available_sizes || [];
+      return {
+        ...prev,
+        orientation: newDimOrientation,
+        width_px: w,
+        height_px: h,
+        available_sizes: [...existing, newSize],
+      };
+    });
+
+    setNewDimWidth("");
+    setNewDimHeight("");
+    setShowAddDimForm(false);
+    setNotice({
+      type: "success",
+      message: `Dimension "${label}" (${w} × ${h} in) added successfully!`,
+    });
+  }
+
+  function handleRemoveDimension(indexToRemove: number) {
+    setFormData((prev) => {
+      const existing = prev.available_sizes || [];
+      if (existing.length <= 1) {
+        setNotice({
+          type: "error",
+          message: "At least one product dimension is required.",
+        });
+        return prev;
+      }
+      const updated = existing.filter((_, i) => i !== indexToRemove);
+      const nextActive = updated[0];
+      return {
+        ...prev,
+        width_px: nextActive.width,
+        height_px: nextActive.height,
+        available_sizes: updated,
+      };
+    });
+  }
+
+  function renderDimensionsSection(mode: "create" | "edit") {
+    const orient = formData.orientation || "landscape";
+    const currentSizes =
+      formData.available_sizes && formData.available_sizes.length > 0
+        ? formData.available_sizes
+        : PREDEFINED_SIZES[orient] || PREDEFINED_SIZES.landscape;
+
+    const currentW = Number(formData.width_px) || 0;
+    const currentH = Number(formData.height_px) || 0;
+
+    return (
+      <div className="p-4 bg-slate-50/70 border border-slate-200/80 rounded-xl space-y-3.5">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <Ruler size={15} className="text-indigo-600" />
+            <p className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
+              Dimensions & Specification
+            </p>
+          </div>
+          <span className="text-[11px] font-semibold text-slate-500 bg-white px-2 py-0.5 rounded-md border border-slate-200 shadow-2xs">
+            96 DPI Standard (Inches)
+          </span>
+        </div>
+
+        {/* Available Sizes List + Add Dimension (+) */}
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="text-[11.5px] font-bold text-slate-700">
+              Available Product Dimensions ({currentSizes.length})
+            </label>
+            <button
+              type="button"
+              onClick={() => {
+                const nextState = !showAddDimForm;
+                setShowAddDimForm(nextState);
+                if (nextState) {
+                  const o = formData.orientation || "landscape";
+                  setNewDimOrientation(o);
+                  setNewDimWidth(o === "portrait" ? 11.25 : 20);
+                  setNewDimHeight(o === "portrait" ? 20 : 11.25);
+                }
+              }}
+              className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2 py-0.5 rounded-md transition cursor-pointer shadow-2xs"
+            >
+              <Plus size={12} /> Add Dimension
+            </button>
+          </div>
+
+          {/* Cards Grid: Only size cards shown, dashed '+ Add Size' removed */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+            {currentSizes.map((preset, idx) => {
+              const active =
+                !showAddDimForm &&
+                Math.abs(preset.width - currentW) < 0.05 &&
+                Math.abs(preset.height - currentH) < 0.05;
+              return (
+                <div
+                  key={idx}
+                  className={`group relative flex flex-col justify-between p-2.5 rounded-lg border text-xs font-medium transition cursor-pointer ${
+                    active
+                      ? "bg-slate-900 text-white border-slate-900 shadow-xs ring-2 ring-indigo-300"
+                      : "bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:bg-slate-50"
+                  }`}
+                  onClick={() => {
+                    setShowAddDimForm(false);
+                    handleApplyPredefinedSize(preset.width, preset.height);
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-1">
+                    <span
+                      className={`font-bold text-[11px] truncate ${
+                        active ? "text-white" : "text-slate-800"
+                      }`}
+                    >
+                      {preset.label || `${preset.width}" × ${preset.height}"`}
+                    </span>
+                    {currentSizes.length > 1 && (
+                      <button
+                        type="button"
+                        title="Remove dimension"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleRemoveDimension(idx);
+                        }}
+                        className={`opacity-0 group-hover:opacity-100 transition rounded-full p-0.5 hover:bg-black/10 ${
+                          active ? "text-white" : "text-slate-400 hover:text-red-600"
+                        }`}
+                      >
+                        <X size={11} />
+                      </button>
+                    )}
+                  </div>
+                  <span
+                    className={`text-[10.5px] font-mono mt-1 ${
+                      active ? "text-slate-300" : "text-slate-500"
+                    }`}
+                  >
+                    {preset.width}" × {preset.height}"
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Dynamic section: When '+ Add Dimension' is open, show the 3 inputs with Add button; otherwise show the 3 inputs for active card */}
+        {showAddDimForm ? (
+          <div className="p-3.5 rounded-xl border border-indigo-200 bg-indigo-50/70 space-y-3 animate-in fade-in duration-150">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
+                <Plus size={13} className="text-indigo-600" /> Add New Dimension for this Product
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowAddDimForm(false)}
+                className="text-slate-400 hover:text-slate-600 p-0.5 rounded-md hover:bg-white/80 transition"
+              >
+                <X size={14} />
+              </button>
+            </div>
+
+            {/* The 3 inputs from Image 2 */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="space-y-1">
+                <Label className="text-[12.5px] font-bold text-slate-700">
+                  Width (in)
+                </Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min={0.5}
+                  placeholder="e.g. 24"
+                  value={newDimWidth}
+                  onChange={(e) =>
+                    handleNewDimWidthChange(
+                      e.target.value === "" ? "" : Number(e.target.value),
+                    )
+                  }
+                  className="h-9 text-xs font-mono font-medium bg-white"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-[12.5px] font-bold text-slate-700">
+                  Height (in)
+                </Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min={0.5}
+                  placeholder="e.g. 18"
+                  value={newDimHeight}
+                  onChange={(e) =>
+                    handleNewDimHeightChange(
+                      e.target.value === "" ? "" : Number(e.target.value),
+                    )
+                  }
+                  className="h-9 text-xs font-mono font-medium bg-white"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-[12.5px] font-bold text-slate-700">
+                  Orientation
+                </Label>
+                <select
+                  value={newDimOrientation}
+                  onChange={(e) =>
+                    handleNewDimOrientationChange(
+                      e.target.value as "landscape" | "portrait",
+                    )
+                  }
+                  className="w-full h-9 px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="landscape">Landscape</option>
+                  <option value="portrait">Portrait</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Lock Aspect Ratio + Actions */}
+            <div className="flex items-center justify-between flex-wrap gap-2 pt-1 border-t border-indigo-200/60">
+              <label className="inline-flex items-center gap-1.5 cursor-pointer text-slate-600 select-none text-xs">
+                <input
+                  type="checkbox"
+                  checked={lockAspectRatio}
+                  onChange={(e) => setLockAspectRatio(e.target.checked)}
+                  className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5"
+                />
+                {lockAspectRatio ? (
+                  <Lock size={12} className="text-indigo-600" />
+                ) : (
+                  <Unlock size={12} className="text-slate-400" />
+                )}
+                <span className="font-medium text-[11.5px]">
+                  Lock Aspect Ratio (Auto-Size)
+                </span>
+              </label>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAddDimForm(false)}
+                  className="h-7 text-xs px-2.5 bg-white hover:bg-slate-100"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleAddDimension}
+                  className="h-7 text-xs px-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-xs"
+                >
+                  <Plus size={12} className="mr-1" /> Add Dimension
+                </Button>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* The 3 inputs from Image 2 for active card */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+              <div className="space-y-1">
+                <Label className="text-[12.5px] font-bold text-slate-700">
+                  Width (in)
+                </Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min={0.5}
+                  value={formData.width_px}
+                  onWheel={(e) => e.currentTarget.blur()}
+                  onChange={(e) => handleWidthChange(Number(e.target.value))}
+                  className="h-9 text-xs font-mono font-medium bg-white"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-[12.5px] font-bold text-slate-700">
+                  Height (in)
+                </Label>
+                <Input
+                  id={mode === "create" ? "create-custom-height" : "edit-custom-height"}
+                  type="number"
+                  step="0.01"
+                  min={0.5}
+                  value={formData.height_px}
+                  onWheel={(e) => e.currentTarget.blur()}
+                  onChange={(e) => handleHeightChange(Number(e.target.value))}
+                  className="h-9 text-xs font-mono font-medium bg-white"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label className="text-[12.5px] font-bold text-slate-700">
+                  Orientation
+                </Label>
+                <select
+                  value={formData.orientation}
+                  onChange={(e) =>
+                    handleOrientationChange(
+                      e.target.value as "landscape" | "portrait",
+                    )
+                  }
+                  className="w-full h-9 px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="landscape">Landscape</option>
+                  <option value="portrait">Portrait</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Auto-Size Controls */}
+            <div className="flex items-center justify-between flex-wrap gap-2 pt-1 border-t border-slate-200/70 text-xs">
+              <label className="inline-flex items-center gap-1.5 cursor-pointer text-slate-600 select-none">
+                <input
+                  type="checkbox"
+                  checked={lockAspectRatio}
+                  onChange={(e) => setLockAspectRatio(e.target.checked)}
+                  className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5"
+                />
+                {lockAspectRatio ? (
+                  <Lock size={12} className="text-indigo-600" />
+                ) : (
+                  <Unlock size={12} className="text-slate-400" />
+                )}
+                <span className="font-medium text-[11.5px]">
+                  Lock Aspect Ratio (Auto-Size)
+                </span>
+              </label>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  }
+
+  // Handle adding multiple image files at once
+  function handleAddMultipleImages(files: File[]) {
+    if (!files || files.length === 0) return;
+    const newItems: FormImageItem[] = files.map((file, idx) => ({
+      imageUrl: `/uploads/products/${file.name}`,
+      file,
+      previewUrl: URL.createObjectURL(file),
+      sortOrder: formData.images.length + idx,
+    }));
+    setFormData((prev) => ({
+      ...prev,
+      images: [...prev.images, ...newItems],
+    }));
+  }
+
+  // Set an image as the primary cover image (move to index 0)
+  function handleSetAsPrimary(index: number) {
+    if (index === 0) return;
+    setFormData((prev) => {
+      const next = [...prev.images];
+      const [item] = next.splice(index, 1);
+      next.unshift(item);
+      return {
+        ...prev,
+        images: next.map((img, i) => ({ ...img, sortOrder: i })),
       };
     });
   }
@@ -717,6 +1262,8 @@ export function ProductTemplateManagement() {
         widthPx: Number(formData.width_px),
         height_px: Number(formData.height_px),
         heightPx: Number(formData.height_px),
+        available_sizes: formData.available_sizes,
+        availableSizes: formData.available_sizes,
         is_active: formData.is_active,
         isActive: formData.is_active,
         images: validImages,
@@ -783,6 +1330,8 @@ export function ProductTemplateManagement() {
         widthPx: Number(formData.width_px),
         height_px: Number(formData.height_px),
         heightPx: Number(formData.height_px),
+        available_sizes: formData.available_sizes,
+        availableSizes: formData.available_sizes,
         is_active: formData.is_active,
         isActive: formData.is_active,
         images: validImages,
@@ -838,17 +1387,17 @@ export function ProductTemplateManagement() {
     return (
       <div className="space-y-5">
         {/* ================================================= */}
-        {/* Main Image (MULTI-IMAGE LIST)  */}
+        {/* Product Images (MULTI-IMAGE GALLERY LIST)  */}
         {/* ================================================= */}
         <div className="p-5 bg-slate-50/80 border border-slate-200 rounded-2xl space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
               <Label className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                 <Layers size={15} className="text-emerald-600" />
-                Main Image ({formData.images.length})
+                Product Images / Gallery ({formData.images.length})
               </Label>
               <p className="text-[13px] text-slate-500 mt-0.5">
-                Attached angles, side proofs, or variations with sort ordering.
+                Upload multiple product images, angles, or mockups. The first image (#1) is used as the Primary Cover image.
               </p>
             </div>
 
@@ -858,7 +1407,7 @@ export function ProductTemplateManagement() {
                 className="px-3 py-1.5 bg-white hover:bg-slate-50 text-slate-700 rounded-lg text-xs font-semibold cursor-pointer border border-slate-200 flex items-center gap-1.5 shadow-2xs"
               >
                 <Upload size={12} />
-                <span>Upload File</span>
+                <span>Upload Multiple Files</span>
               </label>
               <input
                 id={`${inputIdPrefix}-add-multi-file`}
@@ -868,7 +1417,7 @@ export function ProductTemplateManagement() {
                 multiple
                 onChange={(e) => {
                   const files = Array.from(e.target.files || []);
-                  files.forEach((file) => handleAddImageSlot(file));
+                  handleAddMultipleImages(files);
                   e.target.value = "";
                 }}
               />
@@ -878,20 +1427,20 @@ export function ProductTemplateManagement() {
           {formData.images.length === 0 ? (
             <label
               htmlFor={`${inputIdPrefix}-add-multi-file`}
-              className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-50/50 rounded-xl cursor-pointer transition text-center group"
+              className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-slate-300 hover:border-indigo-400 bg-white hover:bg-indigo-50/20 rounded-xl cursor-pointer transition text-center group"
             >
-              <div className="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 group-hover:scale-105 transition-transform mb-3">
-                <Upload size={22} className="text-slate-600" />
+              <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 group-hover:scale-105 transition-transform mb-3">
+                <Upload size={22} className="text-indigo-600" />
               </div>
-              <p className="text-xs font-bold text-slate-800">
-                Click to upload Banner Image
+              <p className="text-sm font-bold text-slate-800">
+                Click to upload Product Images (Multiple allowed)
               </p>
-              <p className="text-[13px] text-slate-400 mt-1">
-                PNG, JPG, WebP supported
+              <p className="text-xs text-slate-400 mt-1">
+                PNG, JPG, WebP supported &middot; Hold Ctrl/Shift to select multiple images
               </p>
             </label>
           ) : (
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
               {formData.images.map((img, idx) => {
                 const effectiveSlotSrc =
                   img.previewUrl ||
@@ -901,43 +1450,67 @@ export function ProductTemplateManagement() {
                   (img.imageUrl
                     ? img.imageUrl.split("/").pop()
                     : `Image #${idx + 1}`);
+                const isPrimary = idx === 0;
 
                 return (
                   <div
                     key={idx}
-                    className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-2xs"
+                    className={`bg-white rounded-xl border overflow-hidden shadow-2xs flex flex-col justify-between transition-all ${
+                      isPrimary
+                        ? "border-emerald-400 ring-2 ring-emerald-100"
+                        : "border-slate-200 hover:border-slate-300"
+                    }`}
                   >
-                    {/* Banner Image Preview */}
-                    <div className="w-full h-56 sm:h-64 bg-slate-900/5 relative flex items-center justify-center p-2">
+                    {/* Image Preview & Badge */}
+                    <div className="relative w-full h-44 bg-slate-900/5 flex items-center justify-center p-2 group">
                       <ImagePreviewWithFallback
                         src={effectiveSlotSrc}
                         rawPath={img.imageUrl}
-                        alt={fileName || `Banner image ${idx + 1}`}
+                        alt={fileName || `Product image ${idx + 1}`}
                         containerClassName="w-full h-full flex items-center justify-center"
                         className="max-h-full max-w-full object-contain"
                       />
+
+                      <div className="absolute top-2 left-2 flex items-center gap-1">
+                        {isPrimary ? (
+                          <span className="bg-emerald-600 text-white text-[10.5px] font-bold px-2 py-0.5 rounded-md shadow-xs flex items-center gap-1">
+                            <Star size={11} fill="currentColor" /> Primary Cover
+                          </span>
+                        ) : (
+                          <span className="bg-slate-900/80 backdrop-blur-xs text-white text-[10.5px] font-bold px-2 py-0.5 rounded-md">
+                            #{idx + 1}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {/* Action Bar below image */}
-                    <div className="p-3 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-[13px] font-extrabold text-slate-400 bg-white border border-slate-200 rounded px-1.5 py-0.5">
-                          #{idx + 1}
-                        </span>
-                        <span className="text-xs font-semibold text-slate-700 truncate max-w-[200px] sm:max-w-[320px]">
-                          {fileName}
-                        </span>
+                    <div className="p-2.5 bg-slate-50 border-t border-slate-200 flex items-center justify-between gap-1.5 text-xs">
+                      <div className="min-w-0 flex-1">
+                        {!isPrimary ? (
+                          <button
+                            type="button"
+                            onClick={() => handleSetAsPrimary(idx)}
+                            className="text-[11px] font-bold text-emerald-700 hover:text-emerald-900 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded transition cursor-pointer"
+                            title="Make this the primary cover image"
+                          >
+                            Make Cover
+                          </button>
+                        ) : (
+                          <span className="text-[11px] font-semibold text-slate-500 truncate block">
+                            {fileName}
+                          </span>
+                        )}
                       </div>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
                         {/* Replace image */}
                         <label
                           htmlFor={`${inputIdPrefix}-slot-${idx}`}
-                          className="px-2.5 py-1.5 bg-white hover:bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold cursor-pointer border border-slate-200 flex items-center gap-1.5 transition-colors shadow-2xs"
+                          className="p-1 text-slate-500 hover:text-slate-800 hover:bg-slate-200 rounded cursor-pointer transition"
                           title="Replace image file"
                         >
                           <Upload size={13} />
-                          <span>Replace</span>
                         </label>
                         <input
                           id={`${inputIdPrefix}-slot-${idx}`}
@@ -949,44 +1522,56 @@ export function ProductTemplateManagement() {
                           }
                         />
 
-                        {/* Sort Controls (if multiple images) */}
+                        {/* Move Order */}
                         {formData.images.length > 1 && (
-                          <div className="flex items-center gap-0.5">
+                          <>
                             <button
                               type="button"
                               onClick={() => handleMoveImageUp(idx)}
                               disabled={idx === 0}
-                              className="p-1.5 text-slate-400 hover:text-slate-700 disabled:opacity-20 rounded"
-                              title="Move Up"
+                              className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-20 rounded"
+                              title="Move Left / Earlier"
                             >
-                              <ArrowUp size={13} />
+                              <ArrowUp size={13} className="-rotate-90" />
                             </button>
                             <button
                               type="button"
                               onClick={() => handleMoveImageDown(idx)}
                               disabled={idx === formData.images.length - 1}
-                              className="p-1.5 text-slate-400 hover:text-slate-700 disabled:opacity-20 rounded"
-                              title="Move Down"
+                              className="p-1 text-slate-400 hover:text-slate-700 disabled:opacity-20 rounded"
+                              title="Move Right / Later"
                             >
-                              <ArrowDown size={13} />
+                              <ArrowDown size={13} className="-rotate-90" />
                             </button>
-                          </div>
+                          </>
                         )}
 
-                        {/* Remove Image */}
+                        {/* Delete Image */}
                         <button
                           type="button"
                           onClick={() => handleRemoveImageSlot(idx)}
-                          className="p-1.5 text-red-500 hover:bg-red-50 rounded transition-colors"
-                          title="Remove Image"
+                          className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition"
+                          title="Remove image"
                         >
-                          <Trash2 size={14} />
+                          <Trash2 size={13} />
                         </button>
                       </div>
                     </div>
                   </div>
                 );
               })}
+
+              {/* Dashed "+ Add More Images" card at the end of the grid */}
+              <label
+                htmlFor={`${inputIdPrefix}-add-multi-file`}
+                className="flex flex-col items-center justify-center p-4 border-2 border-dashed border-indigo-200 hover:border-indigo-400 bg-indigo-50/20 hover:bg-indigo-50/60 rounded-xl cursor-pointer transition text-center min-h-[180px] group"
+              >
+                <div className="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center text-indigo-600 group-hover:scale-105 transition-transform mb-2">
+                  <Plus size={20} />
+                </div>
+                <p className="text-xs font-bold text-indigo-950">+ Add More Images</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Select one or multiple</p>
+              </label>
             </div>
           )}
         </div>
@@ -1689,7 +2274,7 @@ export function ProductTemplateManagement() {
                         <div className="flex flex-col gap-1">
                           <span className="text-xs font-bold text-slate-800">
                             {template.dimensionsLabel ||
-                              `${template.widthPx} x ${template.heightPx} px`}
+                              `${template.widthPx} x ${template.heightPx} in`}
                           </span>
                           <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">
                             {template.orientation}
@@ -1856,70 +2441,8 @@ export function ProductTemplateManagement() {
                 />
               </div>
 
-              {/* Row 3: Dimensions & Specification */}
-              <div className="p-4 bg-slate-50/70 border border-slate-200/80 rounded-xl space-y-3">
-                <p className="text-xs font-extrabold uppercase tracking-wider text-slate-600">
-                  Dimensions & Specification
-                </p>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="space-y-1">
-                    <Label className="text-[13px] font-bold text-slate-700">
-                      Width (px)
-                    </Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      value={formData.width_px}
-                      onWheel={(e) => e.currentTarget.blur()}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          width_px: Number(e.target.value),
-                        }))
-                      }
-                      className="h-9 text-xs"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <Label className="text-[13px] font-bold text-slate-700">
-                      Height (px)
-                    </Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      value={formData.height_px}
-                      onWheel={(e) => e.currentTarget.blur()}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          height_px: Number(e.target.value),
-                        }))
-                      }
-                      className="h-9 text-xs"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <Label className="text-[13px] font-bold text-slate-700">
-                      Orientation
-                    </Label>
-                    <select
-                      value={formData.orientation}
-                      onChange={(e) =>
-                        handleOrientationChange(
-                          e.target.value as "landscape" | "portrait",
-                        )
-                      }
-                      className="w-full h-9 px-2 bg-white border border-slate-200 rounded-lg text-xs font-medium"
-                    >
-                      <option value="landscape">Landscape</option>
-                      <option value="portrait">Portrait</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
+              {/* Row 3: Dimensions & Specification (Inches, Predefined sizes, Custom height, Auto-size) */}
+              {renderDimensionsSection("create")}
 
               {/* Row 4: Image Management & Upload Section */}
               {renderImageUploadSection("create")}
@@ -2065,68 +2588,8 @@ export function ProductTemplateManagement() {
                 />
               </div>
 
-              {/* Dimensions */}
-              <div className="p-4 bg-slate-50/70 border border-slate-200/80 rounded-xl space-y-3">
-                <p className="text-xs font-extrabold uppercase tracking-wider text-slate-600">
-                  Dimensions & Specification
-                </p>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="space-y-1">
-                    <Label className="text-[13px] font-bold text-slate-700">
-                      Width (px)
-                    </Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      value={formData.width_px}
-                      onWheel={(e) => e.currentTarget.blur()}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          width_px: Number(e.target.value),
-                        }))
-                      }
-                      className="h-9 text-xs"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-[13px] font-bold text-slate-700">
-                      Height (px)
-                    </Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      value={formData.height_px}
-                      onWheel={(e) => e.currentTarget.blur()}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          height_px: Number(e.target.value),
-                        }))
-                      }
-                      className="h-9 text-xs"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-[13px] font-bold text-slate-700">
-                      Orientation
-                    </Label>
-                    <select
-                      value={formData.orientation}
-                      onChange={(e) =>
-                        handleOrientationChange(
-                          e.target.value as "landscape" | "portrait",
-                        )
-                      }
-                      className="w-full h-9 px-2 bg-white border border-slate-200 rounded-lg text-xs font-medium"
-                    >
-                      <option value="landscape">Landscape</option>
-                      <option value="portrait">Portrait</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
+              {/* Dimensions (Inches, Predefined sizes, Custom height, Auto-size) */}
+              {renderDimensionsSection("edit")}
 
               {/* Image Upload & Edit Section */}
               {renderImageUploadSection("edit")}
@@ -2226,7 +2689,7 @@ export function ProductTemplateManagement() {
                     Dimensions
                   </span>
                   <span className="text-xs font-bold text-slate-800 mt-1 block">
-                    {viewingTemplate.widthPx} × {viewingTemplate.heightPx} px
+                    {viewingTemplate.widthPx} × {viewingTemplate.heightPx} in
                   </span>
                 </div>
 

@@ -539,7 +539,7 @@ export function ProductSubmissionsManagement() {
                                 </h4>
                                 <div className="flex items-center gap-1.5 mt-0.5 text-[10.5px] text-slate-500">
                                   <span className="font-mono font-medium">
-                                    {order.widthPx} × {order.heightPx} px
+                                    {order.widthPx} × {order.heightPx} in
                                   </span>
                                   <span className="text-slate-300">·</span>
                                   <span className="capitalize">
@@ -698,7 +698,7 @@ export function ProductSubmissionsManagement() {
                                 Dimensions:{" "}
                                 <span className="font-mono text-indigo-600 font-bold">
                                   {selectedSubmission.widthPx} ×{" "}
-                                  {selectedSubmission.heightPx} px
+                                  {selectedSubmission.heightPx} in
                                 </span>
                               </div>
                               <div>
@@ -773,7 +773,7 @@ export function ProductSubmissionsManagement() {
                             Dimensions:{" "}
                             <span className="font-mono text-indigo-600 font-bold">
                               {selectedSubmission.widthPx} ×{" "}
-                              {selectedSubmission.heightPx} px
+                              {selectedSubmission.heightPx} in
                             </span>
                           </div>
                           <div>
@@ -886,7 +886,7 @@ export function ProductSubmissionsManagement() {
                               {sub.templateName}
                             </div>
                             <div className="text-[13px] text-slate-400 font-normal">
-                              {sub.widthPx} × {sub.heightPx} px
+                              {sub.widthPx} × {sub.heightPx} in
                             </div>
                           </td>
 

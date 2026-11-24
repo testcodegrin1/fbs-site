@@ -56,6 +56,7 @@ export interface ProductTemplateModel {
   widthPx: number;
   heightPx: number;
   dimensionsLabel?: string;
+  availableSizes?: { label: string; width: number; height: number }[];
   orientation: "landscape" | "portrait";
   isActive: boolean;
   createdAt?: string;
@@ -74,6 +75,8 @@ export interface CreateProductTemplatePayload {
   heightPx?: number;
   dimensions_label?: string;
   dimensionsLabel?: string;
+  available_sizes?: { label: string; width: number; height: number }[];
+  availableSizes?: { label: string; width: number; height: number }[];
   is_active: boolean;
   isActive?: boolean;
   images: Array<{
@@ -215,6 +218,28 @@ function normalizeTemplate(raw: any): ProductTemplateModel {
       raw.dimensionsLabel ||
       raw.dimensions_label ||
       `${Number(raw.widthPx ?? raw.width_px ?? 1080)}x${Number(raw.heightPx ?? raw.height_px ?? 1080)}`,
+    availableSizes:
+      Array.isArray(raw.availableSizes)
+        ? raw.availableSizes
+        : Array.isArray(raw.available_sizes)
+          ? raw.available_sizes
+          : typeof raw.availableSizes === "string"
+            ? (() => {
+                try {
+                  return JSON.parse(raw.availableSizes);
+                } catch {
+                  return undefined;
+                }
+              })()
+            : typeof raw.available_sizes === "string"
+              ? (() => {
+                  try {
+                    return JSON.parse(raw.available_sizes);
+                  } catch {
+                    return undefined;
+                  }
+                })()
+              : undefined,
     orientation:
       raw.orientation === "portrait" ? "portrait" : "landscape",
     isActive,
@@ -413,6 +438,8 @@ export const productTemplateApi = {
       widthPx: payload.width_px,
       height_px: payload.height_px,
       heightPx: payload.height_px,
+      available_sizes: payload.available_sizes || payload.availableSizes,
+      availableSizes: payload.available_sizes || payload.availableSizes,
       is_active: payload.is_active,
       isActive: payload.is_active,
       images: payload.images.map((img, idx) => ({

@@ -1,8 +1,9 @@
 "use client";
 /* eslint-disable @next/next/no-img-element -- images are uploaded at runtime and served by the configured API host */
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, useMemo, type FormEvent } from "react";
 import Link from "next/link";
+import { Ruler, Lock, Unlock } from "lucide-react";
 import { buildApiUrl, getApiBaseUrl } from "@/app/lib/client/api-url";
 import { getStoredToken } from "@/app/lib/auth/token";
 import { productTemplateApi } from "@/app/lib/client/product-template-api";
@@ -25,6 +26,7 @@ type PrintingProduct = {
   widthPx: number;
   heightPx: number;
   orientation: string;
+  availableSizes?: { label: string; width: number; height: number }[];
   images: { id: number; imageUrl: string }[];
   fields: ProductField[];
 };
@@ -94,11 +96,106 @@ function LoadingSkeleton() {
   );
 }
 
+const DEFAULT_DPI = 96;
+
+function toInches(val: number): number {
+  if (!val || val <= 0) return 20;
+  return val >= 100 ? Math.round((val / DEFAULT_DPI) * 100) / 100 : val;
+}
+
 export default function PrintingProductDetail({ productId }: { productId: string }) {
   const [product, setProduct] = useState<PrintingProduct | null>(null);
   const [values, setValues] = useState<Record<string, string | boolean>>({});
   const [files, setFiles] = useState<Record<string, File>>({});
   const [quantity, setQuantity] = useState<number | "">(1);
+
+  // Size selection states in inches (predefined 3 sizes, custom height, auto-size aspect ratio)
+  const [selectedSizeIndex, setSelectedSizeIndex] = useState<number | "custom">(0);
+  const [customWidth, setCustomWidth] = useState<number | "">("");
+  const [customHeight, setCustomHeight] = useState<number | "">("");
+  const [lockAspect, setLockAspect] = useState<boolean>(true);
+
+  const baseWidth = useMemo(() => {
+    return product ? toInches(product.widthPx) : 20;
+  }, [product]);
+
+  const baseHeight = useMemo(() => {
+    return product ? toInches(product.heightPx) : 11.25;
+  }, [product]);
+
+  const availableSizesList = useMemo(() => {
+    if (
+      product?.availableSizes &&
+      Array.isArray(product.availableSizes) &&
+      product.availableSizes.length > 0
+    ) {
+      return product.availableSizes;
+    }
+    return [
+      { label: "Standard", width: baseWidth, height: baseHeight },
+      {
+        label: "Medium",
+        width: Math.round(baseWidth * 1.5 * 10) / 10,
+        height: Math.round(baseHeight * 1.5 * 10) / 10,
+      },
+      {
+        label: "Large",
+        width: Math.round(baseWidth * 2 * 10) / 10,
+        height: Math.round(baseHeight * 2 * 10) / 10,
+      },
+    ];
+  }, [product?.availableSizes, baseWidth, baseHeight]);
+
+  const activeDimensions = useMemo(() => {
+    if (selectedSizeIndex === "custom") {
+      const w =
+        typeof customWidth === "number" && customWidth > 0
+          ? customWidth
+          : baseWidth;
+      const h =
+        typeof customHeight === "number" && customHeight > 0
+          ? customHeight
+          : baseHeight;
+      return { width: w, height: h };
+    }
+    return (
+      availableSizesList[selectedSizeIndex] ||
+      availableSizesList[0] || { width: baseWidth, height: baseHeight }
+    );
+  }, [
+    selectedSizeIndex,
+    customWidth,
+    customHeight,
+    baseWidth,
+    baseHeight,
+    availableSizesList,
+  ]);
+
+  function handleCustomHeightChange(val: string) {
+    if (val === "") {
+      setCustomHeight("");
+      return;
+    }
+    const num = parseFloat(val);
+    setCustomHeight(isNaN(num) ? "" : num);
+    if (!isNaN(num) && lockAspect && baseHeight > 0) {
+      const ratio = baseWidth / baseHeight;
+      setCustomWidth(Number((num * ratio).toFixed(2)));
+    }
+  }
+
+  function handleCustomWidthChange(val: string) {
+    if (val === "") {
+      setCustomWidth("");
+      return;
+    }
+    const num = parseFloat(val);
+    setCustomWidth(isNaN(num) ? "" : num);
+    if (!isNaN(num) && lockAspect && baseWidth > 0) {
+      const ratio = baseWidth / baseHeight;
+      setCustomHeight(Number((num / ratio).toFixed(2)));
+    }
+  }
   const [activeImage, setActiveImage] = useState(0);
   const [imageError, setImageError] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -163,10 +260,22 @@ export default function PrintingProductDetail({ productId }: { productId: string
     try {
       const finalQuantity =
         typeof quantity === "number" && quantity >= 1 ? quantity : 1;
+      const selectedLabel =
+        selectedSizeIndex === "custom"
+          ? "Custom Dynamic Size"
+          : (availableSizesList[selectedSizeIndex]?.label || `${activeDimensions.width} × ${activeDimensions.height} in`);
+      const submissionValues = {
+        ...values,
+        "Selected Size": `${activeDimensions.width} × ${activeDimensions.height} in`,
+        selectedSize: `${activeDimensions.width} × ${activeDimensions.height} in`,
+        selectedSizeLabel: selectedLabel,
+        selectedWidth: activeDimensions.width,
+        selectedHeight: activeDimensions.height,
+      };
       const result = await productTemplateApi.submitProductCustomization({
         templateId: product.id,
         quantity: finalQuantity,
-        values,
+        values: submissionValues,
         files,
       });
       setSubmissionId(result.submissionId || result.submission?.id || null);
@@ -490,11 +599,11 @@ export default function PrintingProductDetail({ productId }: { productId: string
                   {product.description || "Contact our team for details about this printing product."}
                 </p>
                 <dl className="mt-5 grid grid-cols-2 gap-3 border-t border-slate-100 pt-5 text-sm">
-                  {product.widthPx > 0 && product.heightPx > 0 && (
+                  {activeDimensions.width > 0 && activeDimensions.height > 0 && (
                     <div className="rounded-xl bg-slate-50 px-4 py-3">
                       <dt className="text-slate-500">Size</dt>
                       <dd className="mt-0.5 font-semibold text-primary-dark">
-                        {product.widthPx} × {product.heightPx} px
+                        {activeDimensions.width} × {activeDimensions.height} in
                       </dd>
                     </div>
                   )}
@@ -592,6 +701,110 @@ export default function PrintingProductDetail({ productId }: { productId: string
                       No additional details needed for this product. Choose a quantity and submit.
                     </p>
                   )}
+
+                  {/* Size Selection (Predefined 3 Sizes + Custom Height in Inches) */}
+                  <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-3.5 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                        <Ruler className="h-3.5 w-3.5 text-primary" />
+                        <span>Select Size (Inches)</span>
+                      </div>
+                      <span className="text-[10.5px] font-medium text-slate-500">
+                        96 DPI Standard
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      {availableSizesList.map((size, idx) => {
+                        const isSelected = selectedSizeIndex === idx;
+                        return (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setSelectedSizeIndex(idx)}
+                            className={`flex flex-col items-center justify-center rounded-xl border p-2 text-center transition cursor-pointer ${
+                              isSelected
+                                ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
+                                : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+                            }`}
+                          >
+                            <span className="text-[11px] font-bold truncate max-w-full">
+                              {size.label}
+                            </span>
+                            <span className="text-[10px] font-mono text-slate-500">
+                              {size.width}×{size.height} in
+                            </span>
+                          </button>
+                        );
+                      })}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedSizeIndex("custom");
+                          if (!customHeight) setCustomHeight(baseHeight);
+                          if (!customWidth) setCustomWidth(baseWidth);
+                        }}
+                        className={`flex flex-col items-center justify-center rounded-xl border p-2 text-center transition cursor-pointer ${
+                          selectedSizeIndex === "custom"
+                            ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
+                            : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
+                        }`}
+                      >
+                        <span className="text-[11px]">Custom</span>
+                        <span className="text-[10px] text-slate-500">Custom Height</span>
+                      </button>
+                    </div>
+
+                    {selectedSizeIndex === "custom" && (
+                      <div className="pt-2 border-t border-slate-200/80 space-y-2">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[11px] font-semibold text-slate-700 block mb-0.5">
+                              Custom Height (in)
+                            </label>
+                            <input
+                              type="number"
+                              step="0.1"
+                              min="0.5"
+                              value={customHeight}
+                              onChange={(e) => handleCustomHeightChange(e.target.value)}
+                              placeholder={String(baseHeight)}
+                              className="h-8 w-full rounded-lg border border-slate-300 bg-white px-2 text-xs font-mono font-medium outline-none focus:border-primary"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[11px] font-semibold text-slate-700 block mb-0.5">
+                              Custom Width (in)
+                            </label>
+                            <input
+                              type="number"
+                              step="0.1"
+                              min="0.5"
+                              value={customWidth}
+                              onChange={(e) => handleCustomWidthChange(e.target.value)}
+                              placeholder={String(baseWidth)}
+                              className="h-8 w-full rounded-lg border border-slate-300 bg-white px-2 text-xs font-mono font-medium outline-none focus:border-primary"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between text-[11px] text-slate-500">
+                          <label className="inline-flex items-center gap-1 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={lockAspect}
+                              onChange={(e) => setLockAspect(e.target.checked)}
+                              className="rounded border-slate-300 text-primary focus:ring-primary h-3 w-3"
+                            />
+                            {lockAspect ? <Lock className="h-3 w-3 text-primary" /> : <Unlock className="h-3 w-3 text-slate-400" />}
+                            <span>Auto-size aspect ratio</span>
+                          </label>
+                          <span className="font-mono text-slate-600">
+                            {activeDimensions.width} × {activeDimensions.height} in
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
                   <div>
                     <label htmlFor="product-quantity" className={labelClass}>

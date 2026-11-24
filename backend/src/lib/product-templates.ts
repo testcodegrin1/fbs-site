@@ -27,14 +27,43 @@ function mapProductTemplateImage(row: any): ProductTemplateImageModel {
   };
 }
 
+export const DEFAULT_DPI = 96;
+
+export function pxToInches(px: number, dpi = DEFAULT_DPI): number {
+  return Math.round((px / dpi) * 100) / 100;
+}
+
+export function inchesToPx(inches: number, dpi = DEFAULT_DPI): number {
+  return Math.round(inches * dpi);
+}
+
 function mapTemplate(row: any): ProductTemplateModel {
+  const rawW = Number(row.width_px ?? 20);
+  const rawH = Number(row.height_px ?? 11.25);
+  const widthIn = rawW >= 100 ? pxToInches(rawW) : rawW;
+  const heightIn = rawH >= 100 ? pxToInches(rawH) : rawH;
+
+  let availableSizes: { label: string; width: number; height: number }[] | null = null;
+  if (row.available_sizes) {
+    if (typeof row.available_sizes === "string") {
+      try {
+        availableSizes = JSON.parse(row.available_sizes);
+      } catch {
+        availableSizes = null;
+      }
+    } else if (Array.isArray(row.available_sizes)) {
+      availableSizes = row.available_sizes;
+    }
+  }
+
   return {
     id: Number(row.id),
     name: row.name,
     description: row.description,
-    widthPx: Number(row.width_px),
-    heightPx: Number(row.height_px),
-    dimensionsLabel: `${row.width_px}x${row.height_px}`,
+    widthPx: widthIn,
+    heightPx: heightIn,
+    dimensionsLabel: `${widthIn} × ${heightIn} in`,
+    availableSizes,
     orientation: row.orientation,
     isActive: Boolean(row.is_active),
     createdAt: new Date(row.created_at).toISOString(),
@@ -370,6 +399,8 @@ export async function saveProductTemplate(data: {
   widthPx?: number;
   height_px?: number;
   heightPx?: number;
+  available_sizes?: { label: string; width: number; height: number }[] | null;
+  availableSizes?: { label: string; width: number; height: number }[] | null;
   dimensions_label?: string | null;
   dimensionsLabel?: string | null;
   orientation?: ProductOrientation;
@@ -406,22 +437,27 @@ export async function saveProductTemplate(data: {
           ? data.description || null
           : existing.description;
 
-      const widthPx =
+      const orientation =
+        data.orientation || existing.orientation || "landscape";
+      const defaultW = orientation === "portrait" ? 11.25 : 20;
+      const defaultH = orientation === "portrait" ? 20 : 11.25;
+
+      const rawWidth =
         data.widthPx != null
           ? Number(data.widthPx)
           : data.width_px != null
             ? Number(data.width_px)
-            : Number(existing.width_px);
+            : Number(existing.width_px || defaultW);
 
-      const heightPx =
+      const rawHeight =
         data.heightPx != null
           ? Number(data.heightPx)
           : data.height_px != null
             ? Number(data.height_px)
-            : Number(existing.height_px);
+            : Number(existing.height_px || defaultH);
 
-      const orientation =
-        data.orientation || existing.orientation || "landscape";
+      const widthPx = rawWidth >= 100 ? pxToInches(rawWidth) : rawWidth;
+      const heightPx = rawHeight >= 100 ? pxToInches(rawHeight) : rawHeight;
 
       const isActive =
         data.isActive !== undefined
@@ -436,10 +472,22 @@ export async function saveProductTemplate(data: {
               ? 1
               : 0;
 
+      let availableSizesJson: string | null = null;
+      const rawSizes = data.availableSizes ?? data.available_sizes;
+      if (rawSizes !== undefined) {
+        availableSizesJson = rawSizes ? JSON.stringify(rawSizes) : null;
+      } else if (existing.available_sizes) {
+        availableSizesJson =
+          typeof existing.available_sizes === "string"
+            ? existing.available_sizes
+            : JSON.stringify(existing.available_sizes);
+      }
+
       await conn.execute(
         `UPDATE product_templates SET 
           name = ?, description = ?, 
           width_px = ?, height_px = ?, 
+          available_sizes = ?,
           orientation = ?, is_active = ?
          WHERE id = ?`,
         [
@@ -447,6 +495,7 @@ export async function saveProductTemplate(data: {
           description,
           widthPx,
           heightPx,
+          availableSizesJson,
           orientation,
           isActive,
           currentId,
@@ -483,9 +532,13 @@ export async function saveProductTemplate(data: {
         throw new AuthError("Template name is required.", 400);
       }
 
-      const widthPx = Number(data.widthPx || data.width_px || 1080);
-      const heightPx = Number(data.heightPx || data.height_px || 1080);
       const orientation = data.orientation || "landscape";
+      const defaultW = orientation === "portrait" ? 11.25 : 20;
+      const defaultH = orientation === "portrait" ? 20 : 11.25;
+      const rawW = Number(data.widthPx || data.width_px || defaultW);
+      const rawH = Number(data.heightPx || data.height_px || defaultH);
+      const widthPx = rawW >= 100 ? pxToInches(rawW) : rawW;
+      const heightPx = rawH >= 100 ? pxToInches(rawH) : rawH;
       const description = data.description || null;
       const isActive =
         data.isActive !== undefined
@@ -498,16 +551,20 @@ export async function saveProductTemplate(data: {
               : 0
             : 1;
 
+      const rawSizes = data.availableSizes ?? data.available_sizes;
+      const availableSizesJson = rawSizes ? JSON.stringify(rawSizes) : null;
+
       const [insertRes] = await conn.execute<ResultSetHeader>(
         `INSERT INTO product_templates (
           name, description,
-          width_px, height_px, orientation, is_active
-        ) VALUES (?, ?, ?, ?, ?, ?)`,
+          width_px, height_px, available_sizes, orientation, is_active
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           name,
           description,
           widthPx,
           heightPx,
+          availableSizesJson,
           orientation,
           isActive,
         ],
@@ -913,12 +970,32 @@ export async function listProductSubmissions(filter?: {
         ? `${r.template_name} (#${Number(vals._selectedImageIndex) + 1})`
         : r.template_name || `Product #${tId}`);
 
+    const userSelectedW = Number(
+      vals.selectedWidth ||
+        vals.width ||
+        (typeof vals["Selected Size"] === "string"
+          ? vals["Selected Size"].split("×")[0]?.replace(/["\s]/g, "")
+          : null),
+    );
+    const userSelectedH = Number(
+      vals.selectedHeight ||
+        vals.height ||
+        (typeof vals["Selected Size"] === "string"
+          ? vals["Selected Size"].split("×")[1]?.replace(/["\s]/g, "").replace("in", "")
+          : null),
+    );
+
+    const rawW = Number(r.width_px || 20);
+    const rawH = Number(r.height_px || 11.25);
+    const widthIn = userSelectedW > 0 ? userSelectedW : (rawW >= 100 ? pxToInches(rawW) : rawW);
+    const heightIn = userSelectedH > 0 ? userSelectedH : (rawH >= 100 ? pxToInches(rawH) : rawH);
+
     return {
       id: Number(r.id),
       templateId: tId,
       templateName,
-      widthPx: Number(r.width_px || 1920),
-      heightPx: Number(r.height_px || 1080),
+      widthPx: widthIn,
+      heightPx: heightIn,
       orientation: r.orientation || "landscape",
       previewImageUrl,
       quantity: Number(
@@ -1066,13 +1143,33 @@ export async function getProductSubmissionById(
     }
   } catch {}
 
+  const userSelectedW = Number(
+    vals.selectedWidth ||
+      vals.width ||
+      (typeof vals["Selected Size"] === "string"
+        ? vals["Selected Size"].split("×")[0]?.replace(/["\s]/g, "")
+        : null),
+  );
+  const userSelectedH = Number(
+    vals.selectedHeight ||
+      vals.height ||
+      (typeof vals["Selected Size"] === "string"
+        ? vals["Selected Size"].split("×")[1]?.replace(/["\s]/g, "").replace("in", "")
+        : null),
+  );
+
+  const rawW = Number(r.width_px || 20);
+  const rawH = Number(r.height_px || 11.25);
+  const widthIn = userSelectedW > 0 ? userSelectedW : (rawW >= 100 ? pxToInches(rawW) : rawW);
+  const heightIn = userSelectedH > 0 ? userSelectedH : (rawH >= 100 ? pxToInches(rawH) : rawH);
+
   return {
     id: Number(r.id),
     templateId,
     templateName,
-    widthPx: Number(r.width_px || 1920),
-    heightPx: Number(r.height_px || 1080),
-    dimensionsLabel: `${r.width_px || 1920} × ${r.height_px || 1080} px`,
+    widthPx: widthIn,
+    heightPx: heightIn,
+    dimensionsLabel: `${widthIn} × ${heightIn} in`,
     previewImageUrl,
     images,
     quantity: Number(
