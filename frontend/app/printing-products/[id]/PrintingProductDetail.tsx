@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useMemo, type FormEvent } from "react";
 import Link from "next/link";
-import { Ruler } from "lucide-react";
+import { Ruler, X } from "lucide-react";
 import { buildApiUrl, getApiBaseUrl } from "@/app/lib/client/api-url";
 import { getStoredToken } from "@/app/lib/auth/token";
 import { productTemplateApi } from "@/app/lib/client/product-template-api";
@@ -134,10 +134,20 @@ export default function PrintingProductDetail({ productId }: { productId: string
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [submissionId, setSubmissionId] = useState<number | null>(null);
+  const [submittedSuccessId, setSubmittedSuccessId] = useState<number | null>(null);
   const signedIn = Boolean(getStoredToken("user"));
   const productSlug = product?.slug || (product ? slugify(product.name) : productId);
   const returnTo = `/printing-products/${productSlug}`;
+
+  function handleCloseSuccessModal() {
+    setSubmittedSuccessId(null);
+    setValues({});
+    setFiles({});
+    setQuantity(1);
+    setSelectedSizeIndex(null);
+    setCustomHeight("");
+    setError("");
+  }
 
   useEffect(() => {
     const controller = new AbortController();
@@ -205,12 +215,12 @@ export default function PrintingProductDetail({ productId }: { productId: string
       const finalQuantity =
         typeof quantity === "number" && quantity >= 1 ? quantity : 1;
       const selectedLabel = `${activeDimensions.width} × ${activeDimensions.height} in`;
+      const isCustom = selectedSizeIndex === "custom";
+      const sizeKey = isCustom ? "Custom Size" : "Selected Size";
       const submissionValues = {
         ...values,
-        sizeType: selectedSizeIndex === "custom" ? "custom" : "preset",
-        "Selected Size": `${activeDimensions.width} × ${activeDimensions.height} in`,
-        selectedSize: `${activeDimensions.width} × ${activeDimensions.height} in`,
-        selectedSizeLabel: selectedLabel,
+        sizeType: isCustom ? "custom" : "preset",
+        [sizeKey]: selectedLabel,
         selectedWidth: activeDimensions.width,
         selectedHeight: activeDimensions.height,
       };
@@ -220,7 +230,10 @@ export default function PrintingProductDetail({ productId }: { productId: string
         values: submissionValues,
         files,
       });
-      setSubmissionId(result.submissionId || result.submission?.id || null);
+      const newSubId = result.submissionId || result.submission?.id || null;
+      if (newSubId) {
+        setSubmittedSuccessId(newSubId);
+      }
     } catch (submitError) {
       setError(
         submitError instanceof Error
@@ -551,35 +564,7 @@ export default function PrintingProductDetail({ productId }: { productId: string
                 Fill in the details below to request this product.
               </p>
 
-              {submissionId ? (
-                <div
-                  role="status"
-                  className="mt-6 rounded-xl border border-green-200 bg-green-50 p-6 text-center text-green-900"
-                >
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
-                    <svg
-                      aria-hidden="true"
-                      viewBox="0 0 20 20"
-                      className="h-6 w-6"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M5 10.5l3.5 3.5L15 7" />
-                    </svg>
-                  </div>
-                  <p className="mt-4 font-semibold">Request #{submissionId} submitted</p>
-                  <p className="mt-1 text-sm text-green-800/80">We&apos;ll review it and get back to you.</p>
-                  <Link
-                    href="/order-history"
-                    className="mt-5 inline-block rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
-                  >
-                    View order history
-                  </Link>
-                </div>
-              ) : !signedIn ? (
+              {!signedIn ? (
                 <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50/70 p-6 text-center">
                   <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
                     <svg
@@ -796,6 +781,59 @@ export default function PrintingProductDetail({ productId }: { productId: string
           </div>
         )}
       </div>
+      {submittedSuccessId && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={handleCloseSuccessModal}
+        >
+          <div
+            className="relative w-full max-w-lg rounded-2xl bg-white p-5 sm:p-7 text-center shadow-2xl animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Top Close Button */}
+            <button
+              type="button"
+              onClick={handleCloseSuccessModal}
+              aria-label="Close"
+              className="absolute top-3.5 right-3.5 h-8 w-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+
+            {/* Success Box Matching User's Image 2 */}
+            <div className="rounded-2xl border border-green-200 bg-green-50/90 p-6 sm:p-8 text-center text-green-900">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-green-600">
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 20 20"
+                  className="h-7 w-7"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M5 10.5l3.5 3.5L15 7" />
+                </svg>
+              </div>
+              <p className="mt-4 text-lg font-bold text-green-950">
+                Request #{submittedSuccessId} submitted
+              </p>
+              <p className="mt-1 text-sm text-green-800/80">
+                We&apos;ll review it and get back to you.
+              </p>
+              <Link
+                href="/order-history"
+                className="mt-6 inline-block rounded-full bg-primary px-8 py-3 text-sm font-semibold text-white shadow-md transition hover:opacity-90"
+              >
+                View order history
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

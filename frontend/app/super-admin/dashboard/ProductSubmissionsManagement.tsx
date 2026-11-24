@@ -10,6 +10,7 @@ import {
   type ProductSubmissionStatus,
   type ProductSubmissionFile,
 } from "@/app/lib/client/product-template-api";
+import { ProductSubmissionThreadModal } from "@/app/user/dashboard/ProductSubmissionThreadModal";
 import { Card, CardHeader, Button, Input, Badge } from "@/app/Components/ui";
 import {
   Search,
@@ -137,6 +138,9 @@ export function ProductSubmissionsManagement() {
   const [selectedSubmissionFiles, setSelectedSubmissionFiles] = useState<
     ProductSubmissionFile[]
   >([]);
+  const [threadSubmissionId, setThreadSubmissionId] = useState<number | null>(
+    null,
+  );
   const [detailData, setDetailData] = useState<ProductSubmissionDetail | null>(
     null,
   );
@@ -690,29 +694,58 @@ export function ProductSubmissionsManagement() {
                             className="p-3.5 space-y-3 transition hover:shadow-md hover:border-slate-300 rounded-2xl bg-white border-slate-200 group"
                           >
                             {/* Banner Preview Container */}
-                            <div className="aspect-[4/3] bg-slate-50 rounded-xl overflow-hidden relative group border border-slate-100 flex items-center justify-center">
+                            <div
+                              className="aspect-[4/3] bg-slate-50 rounded-xl overflow-hidden relative group border border-slate-100 flex items-center justify-center cursor-pointer"
+                              onClick={() => setThreadSubmissionId(selectedSubmission.id)}
+                              title="Click to view/edit product"
+                            >
                               <img
                                 src={thumb}
                                 alt={file.fileName || `Photo #${idx + 1}`}
-                                className="w-full h-full object-contain bg-white"
+                                className="w-full h-full object-contain bg-white transition group-hover:scale-105 duration-200"
                               />
 
-
-
+                              {/* Zoom Fullscreen Button on Hover */}
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setFullscreenImage({
+                                    url: thumb,
+                                    name: file.fileName || `Photo #${idx + 1}`,
+                                  });
+                                }}
+                                className="absolute bottom-2 right-2 p-1.5 bg-slate-900/75 hover:bg-slate-900 text-white rounded-lg opacity-0 group-hover:opacity-100 transition shadow-xs cursor-pointer"
+                                title="View Fullscreen"
+                              >
+                                <Maximize2 size={13} />
+                              </button>
                             </div>
 
                             {/* Tile Title & Status */}
                             <div className="flex items-center justify-between pt-1">
                               <span
-                                className="font-extrabold text-slate-900 text-[14px] truncate"
+                                className="font-extrabold text-slate-900 text-[14px] truncate cursor-pointer hover:text-indigo-600"
                                 title={file.fileName || `Photo #${idx + 1}`}
+                                onClick={() => setThreadSubmissionId(selectedSubmission.id)}
                               >
                                 {file.fileName || `Photo #${idx + 1}`}
                               </span>
                               {detailData && getStatusBadge(detailData.status)}
                             </div>
 
-
+                            {/* Bottom Actions - Button */}
+                            <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                              <Button
+                                size="sm"
+                                className="h-8 gap-1.5 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-2xs cursor-pointer"
+                                onClick={() =>
+                                  setThreadSubmissionId(selectedSubmission.id)
+                                }
+                              >
+                                <Edit3 size={13} /> View / Edit Product
+                              </Button>
+                            </div>
                           </Card>
                         );
                       })}
@@ -721,23 +754,60 @@ export function ProductSubmissionsManagement() {
                     /* Main Product proof Canvas */
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <Card className="p-3.5 space-y-3 rounded-2xl bg-white border-slate-200 transition hover:shadow-md hover:border-slate-300 group">
-                        <div className="aspect-[4/3] bg-slate-50 rounded-xl overflow-hidden relative group border border-slate-100 flex items-center justify-center">
+                        <div
+                          className="aspect-[4/3] bg-slate-50 rounded-xl overflow-hidden relative group border border-slate-100 flex items-center justify-center cursor-pointer"
+                          onClick={() => setThreadSubmissionId(selectedSubmission.id)}
+                          title="Click to view/edit product"
+                        >
                           <img
                             src={resolveImageUrl(
                               selectedSubmission.previewImageUrl,
                             )}
                             alt={selectedSubmission.templateName}
-                            className="w-full h-full object-contain bg-white"
+                            className="w-full h-full object-contain bg-white transition group-hover:scale-105 duration-200"
                           />
+
+                          {/* Zoom Fullscreen Button on Hover */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setFullscreenImage({
+                                url: resolveImageUrl(
+                                  selectedSubmission.previewImageUrl,
+                                ),
+                                name: selectedSubmission.templateName,
+                              });
+                            }}
+                            className="absolute bottom-2 right-2 p-1.5 bg-slate-900/75 hover:bg-slate-900 text-white rounded-lg opacity-0 group-hover:opacity-100 transition shadow-xs cursor-pointer"
+                            title="View Fullscreen"
+                          >
+                            <Maximize2 size={13} />
+                          </button>
                         </div>
 
                         <div className="flex items-center justify-between pt-1">
-                          <span className="font-extrabold text-slate-900 text-xs truncate">
+                          <span
+                            className="font-extrabold text-slate-900 text-xs truncate cursor-pointer hover:text-indigo-600"
+                            onClick={() => setThreadSubmissionId(selectedSubmission.id)}
+                          >
                             {selectedSubmission.templateName}
                           </span>
                           {detailData && getStatusBadge(detailData.status)}
                         </div>
 
+                        {/* Bottom Actions - Button */}
+                        <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                          <Button
+                            size="sm"
+                            className="h-8 gap-1.5 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-2xs cursor-pointer"
+                            onClick={() =>
+                              setThreadSubmissionId(selectedSubmission.id)
+                            }
+                          >
+                            <Edit3 size={13} /> View / Edit Product
+                          </Button>
+                        </div>
                       </Card>
                     </div>
                   ) : (
@@ -868,7 +938,16 @@ export function ProductSubmissionsManagement() {
                                 <Eye size={15} aria-hidden="true" />
                               </Button>
 
-
+                              <Button
+                                variant="outline"
+                                size="icon-sm"
+                                onClick={() => setThreadSubmissionId(sub.id)}
+                                className="portal-action"
+                                title="Revisions"
+                                aria-label="Revisions"
+                              >
+                                <Edit3 size={15} aria-hidden="true" />
+                              </Button>
 
                               <Button
                                 variant="outline"
@@ -947,6 +1026,24 @@ export function ProductSubmissionsManagement() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* PRODUCT SUBMISSION THREAD MODAL (EDIT CANVAS / REVISIONS)                 */}
+      {/* ========================================================================= */}
+      {threadSubmissionId !== null && (
+        <ProductSubmissionThreadModal
+          submissionId={threadSubmissionId}
+          isOpen={true}
+          onClose={() => {
+            setThreadSubmissionId(null);
+            if (selectedSubmissionId) {
+              openSubmissionDetail(selectedSubmissionId);
+            }
+            loadData(true);
+          }}
+          role="admin"
+        />
       )}
 
       {/* ========================================================================= */}

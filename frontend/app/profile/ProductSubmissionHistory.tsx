@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 /* eslint-disable @next/next/no-img-element -- submission images are uploaded at runtime to the configured API host */
 
 import { useEffect, useMemo, useState } from "react";
@@ -265,9 +265,12 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
                     </h2>
                     <Status value={item.status} />
                   </div>
-                  <p className="text-xs text-slate-500">
-                    #{item.id} Â· Qty {item.quantity || 1} Â·{" "}
-                    {new Date(item.createdAt).toLocaleDateString()}
+                  <p className="text-xs text-slate-500 flex items-center gap-1.5 flex-wrap">
+                    <span>#{item.id}</span>
+                    <span className="text-slate-300">·</span>
+                    <span>Qty {item.quantity || 1}</span>
+                    <span className="text-slate-300">·</span>
+                    <span>{new Date(item.createdAt).toLocaleDateString()}</span>
                   </p>
                   <span className="mt-auto inline-flex items-center gap-1.5 pt-1 text-sm font-semibold text-primary">
                     <Eye size={14} />
@@ -302,7 +305,7 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
             }
           }}
         >
-          <div className="my-auto w-full max-w-5xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+          <div className="my-auto w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl">
             <header className="flex items-start justify-between gap-4 border-b border-slate-200 p-5">
               <div>
                 <div className="flex flex-wrap items-center gap-3">
@@ -414,7 +417,7 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
                                 View uploaded file
                               </a>
                             ) : (
-                              String(field.value ?? "-")
+                              String(field.value ?? "-").replace(/\s*\?\s*/g, " × ")
                             )}
                           </dd>
                         </div>

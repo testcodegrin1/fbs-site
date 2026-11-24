@@ -721,12 +721,11 @@ export async function saveProductCustomization(
       throw new AuthError(error instanceof Error ? error.message : "Invalid dimensions.", 400);
     }
     const { width, height } = dimensions;
-    const label = `${width} ? ${height} in`;
+    const label = `${width} × ${height} in`;
     customizationValues.selectedWidth = width;
     customizationValues.selectedHeight = height;
-    customizationValues.selectedSize = label;
-    customizationValues.selectedSizeLabel = label;
-    customizationValues["Selected Size"] = label;
+    delete customizationValues["Selected Size"];
+    customizationValues["Custom Size"] = label;
   }
 
   // Validate required fields
@@ -908,6 +907,7 @@ export async function listProductSubmissions(filter?: {
       pt.width_px,
       pt.height_px,
       pt.orientation,
+      pt.available_sizes,
       u.name AS user_name,
       u.email AS user_email
     FROM product_customizations pc
@@ -1026,14 +1026,14 @@ export async function listProductSubmissions(filter?: {
       vals.selectedWidth ||
         vals.width ||
         (typeof vals["Selected Size"] === "string"
-          ? vals["Selected Size"].split("×")[0]?.replace(/["\s]/g, "")
+          ? vals["Selected Size"].replace(/\?/g, "×").split("×")[0]?.replace(/["\s]/g, "")
           : null),
     );
     const userSelectedH = Number(
       vals.selectedHeight ||
         vals.height ||
         (typeof vals["Selected Size"] === "string"
-          ? vals["Selected Size"].split("×")[1]?.replace(/["\s]/g, "").replace("in", "")
+          ? vals["Selected Size"].replace(/\?/g, "×").split("×")[1]?.replace(/["\s]/g, "").replace("in", "")
           : null),
     );
 
@@ -1079,6 +1079,7 @@ export async function getProductSubmissionById(
       pt.width_px,
       pt.height_px,
       pt.orientation,
+      pt.available_sizes,
       u.name AS user_name,
       u.email AS user_email
     FROM product_customizations pc
@@ -1155,11 +1156,66 @@ export async function getProductSubmissionById(
     });
   }
 
+  const userSelectedW = Number(
+    vals.selectedWidth ||
+      vals.width ||
+      (typeof vals["Custom Size"] === "string"
+        ? vals["Custom Size"].replace(/\?/g, "×").split("×")[0]?.replace(/["\s]/g, "")
+        : typeof vals["Selected Size"] === "string"
+        ? vals["Selected Size"].replace(/\?/g, "×").split("×")[0]?.replace(/["\s]/g, "")
+        : null),
+  );
+  const userSelectedH = Number(
+    vals.selectedHeight ||
+      vals.height ||
+      (typeof vals["Custom Size"] === "string"
+        ? vals["Custom Size"].replace(/\?/g, "×").split("×")[1]?.replace(/["\s]/g, "").replace("in", "")
+        : typeof vals["Selected Size"] === "string"
+        ? vals["Selected Size"].replace(/\?/g, "×").split("×")[1]?.replace(/["\s]/g, "").replace("in", "")
+        : null),
+  );
+
+  const rawW = Number(r.width_px || 20);
+  const rawH = Number(r.height_px || 11.25);
+  const widthIn = userSelectedW > 0 ? userSelectedW : rawW;
+  const heightIn = userSelectedH > 0 ? userSelectedH : rawH;
+
+  const isExplicitCustom =
+    String(vals.sizeType || vals.sizetype || "").toLowerCase() === "custom" ||
+    Boolean(vals["Custom Size"] || vals.customSize);
+
+  let isCustom = isExplicitCustom;
+  if (!isExplicitCustom && String(vals.sizeType || vals.sizetype || "").toLowerCase() !== "preset") {
+    let avail: any[] = [];
+    try {
+      avail = typeof r.available_sizes === "string" ? JSON.parse(r.available_sizes) : (r.available_sizes || []);
+    } catch {}
+    if (avail.length > 0 && widthIn > 0 && heightIn > 0) {
+      const match = avail.some((s: any) =>
+        Math.abs(Number(s.width) - widthIn) < 0.05 &&
+        Math.abs(Number(s.height) - heightIn) < 0.05
+      );
+      if (!match) {
+        isCustom = true;
+      }
+    } else if (widthIn > 0 && heightIn > 0) {
+      if (Math.round(widthIn) !== widthIn || Math.round(heightIn) !== heightIn) {
+        isCustom = true;
+      }
+    }
+  }
+
   for (const [key, val] of Object.entries(vals)) {
     if (!matchedKeys.has(key) && key !== "templateId" && !key.startsWith("_")) {
+      let fieldLabel = key;
+      if (isCustom && (key === "Selected Size" || key === "selectedSize" || key === "selectedSizeLabel")) {
+        fieldLabel = "Custom Size";
+      } else if (!isCustom && (key === "Custom Size" || key === "customSize")) {
+        fieldLabel = "Selected Size";
+      }
       submittedFields.push({
         id: key,
-        label: key,
+        label: fieldLabel,
         fieldType: typeof val === "boolean" ? "checkbox" : "text",
         value: val,
       });
@@ -1195,26 +1251,6 @@ export async function getProductSubmissionById(
     }
   } catch {}
 
-  const userSelectedW = Number(
-    vals.selectedWidth ||
-      vals.width ||
-      (typeof vals["Selected Size"] === "string"
-        ? vals["Selected Size"].split("×")[0]?.replace(/["\s]/g, "")
-        : null),
-  );
-  const userSelectedH = Number(
-    vals.selectedHeight ||
-      vals.height ||
-      (typeof vals["Selected Size"] === "string"
-        ? vals["Selected Size"].split("×")[1]?.replace(/["\s]/g, "").replace("in", "")
-        : null),
-  );
-
-  const rawW = Number(r.width_px || 20);
-  const rawH = Number(r.height_px || 11.25);
-  const widthIn = userSelectedW > 0 ? userSelectedW : rawW;
-  const heightIn = userSelectedH > 0 ? userSelectedH : rawH;
-
   return {
     id: Number(r.id),
     templateId,
@@ -1222,6 +1258,8 @@ export async function getProductSubmissionById(
     widthPx: widthIn,
     heightPx: heightIn,
     dimensionsLabel: `${widthIn} × ${heightIn} in`,
+    sizeType: isCustom ? "custom" : "preset",
+    isCustomSize: isCustom,
     previewImageUrl,
     images,
     quantity: Number(

@@ -144,6 +144,8 @@ export type ProductSubmissionDetailModel = {
   widthPx: number;
   heightPx: number;
   dimensionsLabel?: string;
+  sizeType?: string;
+  isCustomSize?: boolean;
   previewImageUrl?: string | null;
   images?: ProductTemplateImageModel[];
   quantity?: number;

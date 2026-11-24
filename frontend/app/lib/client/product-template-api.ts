@@ -795,6 +795,8 @@ export interface ProductSubmissionDetail {
   widthPx: number;
   heightPx: number;
   dimensionsLabel?: string;
+  sizeType?: string;
+  isCustomSize?: boolean;
   previewImageUrl?: string | null;
   images?: ProductTemplateImage[];
   quantity?: number;

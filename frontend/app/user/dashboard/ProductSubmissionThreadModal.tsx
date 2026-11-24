@@ -394,7 +394,7 @@ export function ProductSubmissionThreadModal({
       className={`bg-white rounded-2xl w-full border border-slate-200 flex flex-col overflow-hidden ${
         embedded
           ? "shadow-xs"
-          : "rounded-[1.5rem] max-w-4xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[92vh]"
+          : "rounded-[1.5rem] max-w-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[88vh]"
       }`}
     >
       {/* Modal / Card Header */}
@@ -471,7 +471,6 @@ export function ProductSubmissionThreadModal({
 
             {/* PHOTO TILES SECTION */}
             <div className="space-y-4">
-
               {files.length === 0 ? (
                 <div className="p-8 rounded-2xl bg-slate-50 border border-dashed border-slate-200 text-center space-y-2">
                   <FileImage size={28} className="mx-auto text-slate-400" />
@@ -487,17 +486,20 @@ export function ProductSubmissionThreadModal({
                       const tileImgUrl = resolveImageUrl(file.fileUrl);
                       const isUpdating = replacingFileId === file.id;
                       const tileFileIds = new Set<number>([file.id]);
-                      if (file.replacedFileId) tileFileIds.add(Number(file.replacedFileId));
+                      if (file.replacedFileId)
+                        tileFileIds.add(Number(file.replacedFileId));
                       if (file.history) {
                         file.history.forEach((h) => {
                           tileFileIds.add(Number(h.id));
-                          if (h.replacedFileId) tileFileIds.add(Number(h.replacedFileId));
+                          if (h.replacedFileId)
+                            tileFileIds.add(Number(h.replacedFileId));
                         });
                       }
 
                       const tileMessages = messages.filter((m) => {
                         if (files.length <= 1) return true;
-                        if (m.imageId && tileFileIds.has(Number(m.imageId))) return true;
+                        if (m.imageId && tileFileIds.has(Number(m.imageId)))
+                          return true;
                         if (!m.imageId && idx === 0) return true;
                         const isClaimedByAny = files.some(
                           (f) =>
@@ -784,19 +786,198 @@ export function ProductSubmissionThreadModal({
                   </div>
 
                   {/* Right Column: Submitted Form Fields / Changes */}
-                  {submission.submittedFields &&
-                    submission.submittedFields.length > 0 && (
+                  {(() => {
+                    const rawFields = submission.submittedFields || [];
+
+                    // Technical / internal keys that should never be shown as form fields
+                    const ignoredTechnicalKeys = new Set([
+                      "sizetype",
+                      "selectedwidth",
+                      "selectedheight",
+                      "templateid",
+                    ]);
+
+                    // Size keys that represent the selected dimensions
+                    const sizeKeyVariants = new Set([
+                      "selectedsize",
+                      "selected size",
+                      "selectedsizelabel",
+                      "customsize",
+                      "custom size",
+                    ]);
+
+                    // Determine whether this submission was Custom size or Selected (preset) size
+                    let isCustomSize = false;
+                    for (const f of rawFields) {
+                      const lower = f.label
+                        .toLowerCase()
+                        .replace(/[\s_-]/g, "");
+                      if (
+                        lower === "sizetype" &&
+                        String(f.value).toLowerCase() === "custom"
+                      ) {
+                        isCustomSize = true;
+                      }
+                      if (lower === "customsize") {
+                        isCustomSize = true;
+                      }
+                    }
+
+                    const customVals =
+                      (submission as any)?.customizationValues ||
+                      (submission as any)?.customFieldValues ||
+                      {};
+                    if (
+                      String(
+                        customVals.sizeType || customVals.sizetype || "",
+                      ).toLowerCase() === "custom" ||
+                      Boolean(
+                        customVals["Custom Size"] || customVals.customSize,
+                      ) ||
+                      (submission as any)?.sizeType === "custom" ||
+                      (submission as any)?.isCustomSize === true
+                    ) {
+                      isCustomSize = true;
+                    }
+
+                    // Fallback heuristic: check if dimensions have fractional decimals (like 56.31)
+                    if (
+                      !isCustomSize &&
+                      String(
+                        customVals.sizeType || customVals.sizetype || "",
+                      ).toLowerCase() !== "preset"
+                    ) {
+                      const w = Number(
+                        (submission as any)?.widthPx ||
+                          customVals.selectedWidth ||
+                          0,
+                      );
+                      const h = Number(
+                        (submission as any)?.heightPx ||
+                          customVals.selectedHeight ||
+                          0,
+                      );
+                      if (
+                        (w > 0 && Math.round(w) !== w) ||
+                        (h > 0 && Math.round(h) !== h)
+                      ) {
+                        isCustomSize = true;
+                      }
+                    }
+
+                    const sizeFieldLabel = isCustomSize
+                      ? "Custom Size"
+                      : "Selected Size";
+
+                    // Find the best dimension string (e.g. "60 × 65.69 in")
+                    let resolvedSizeValue = "";
+                    for (const f of rawFields) {
+                      const lower = f.label
+                        .toLowerCase()
+                        .replace(/[\s_-]/g, "");
+                      if (sizeKeyVariants.has(lower)) {
+                        const val = String(f.value ?? "").trim();
+                        if (
+                          val &&
+                          val !== "preset" &&
+                          val !== "custom" &&
+                          val !== "-"
+                        ) {
+                          resolvedSizeValue = val;
+                          break;
+                        }
+                      }
+                    }
+
+                    if (
+                      !resolvedSizeValue &&
+                      (submission as any)?.dimensionsLabel
+                    ) {
+                      resolvedSizeValue = (submission as any).dimensionsLabel;
+                    }
+                    if (
+                      !resolvedSizeValue &&
+                      submission.widthPx &&
+                      submission.heightPx
+                    ) {
+                      resolvedSizeValue = `${submission.widthPx} × ${submission.heightPx} in`;
+                    }
+                    if (resolvedSizeValue) {
+                      resolvedSizeValue = resolvedSizeValue.replace(
+                        /\s*\?\s*/g,
+                        " × ",
+                      );
+                    }
+
+                    const cleanFields: Array<{
+                      id: number | string;
+                      label: string;
+                      fieldType: string;
+                      value: any;
+                    }> = [];
+
+                    const seenLabels = new Set<string>();
+
+                    for (let i = 0; i < rawFields.length; i++) {
+                      const f = rawFields[i];
+                      const lower = f.label
+                        .toLowerCase()
+                        .replace(/[\s_-]/g, "");
+
+                      // Skip internal technical fields
+                      if (ignoredTechnicalKeys.has(lower)) continue;
+
+                      // Handle size variants: only add ONE size field with the appropriate label ("Custom Size" or "Selected Size")
+                      if (sizeKeyVariants.has(lower)) {
+                        if (!seenLabels.has("resolved_size")) {
+                          seenLabels.add("resolved_size");
+                          if (resolvedSizeValue) {
+                            cleanFields.push({
+                              id: "resolved_size",
+                              label: sizeFieldLabel,
+                              fieldType: "text",
+                              value: resolvedSizeValue,
+                            });
+                          }
+                        }
+                        continue;
+                      }
+
+                      // Deduplicate regular custom fields by lowercased label
+                      if (seenLabels.has(lower)) continue;
+                      seenLabels.add(lower);
+
+                      cleanFields.push({
+                        id: f.id || `field_${i}`,
+                        label: f.label,
+                        fieldType: f.fieldType || "text",
+                        value: f.value,
+                      });
+                    }
+
+                    // If size was not in rawFields but we have dimensions, add it
+                    if (!seenLabels.has("resolved_size") && resolvedSizeValue) {
+                      cleanFields.push({
+                        id: "resolved_size",
+                        label: sizeFieldLabel,
+                        fieldType: "text",
+                        value: resolvedSizeValue,
+                      });
+                    }
+
+                    if (cleanFields.length === 0) return null;
+
+                    return (
                       <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3 shadow-xs">
                         <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                           <span className="text-xs font-extrabold uppercase tracking-wide text-slate-800 flex items-center gap-1.5">
                             <FileText size={14} className="text-indigo-600" />
-                            Submitted Form Fields (
-                            {submission.submittedFields.length})
+                            Submitted Form Fields ({cleanFields.length})
                           </span>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                          {submission.submittedFields.map((f, fIdx) => (
+                          {cleanFields.map((f, fIdx) => (
                             <div
                               key={f.id || fIdx}
                               className={`p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs space-y-1 ${
@@ -809,13 +990,17 @@ export function ProductSubmissionThreadModal({
                                 {f.label}
                               </label>
                               <p className="font-semibold text-slate-800 break-words text-xs">
-                                {String(f.value ?? "-")}
+                                {String(f.value ?? "-").replace(
+                                  /\s*\?\s*/g,
+                                  " × ",
+                                )}
                               </p>
                             </div>
                           ))}
                         </div>
                       </div>
-                    )}
+                    );
+                  })()}
                 </div>
               )}
 
@@ -1478,37 +1663,114 @@ export function ProductSubmissionThreadModal({
                 (submission as any).customizationValues ||
                 (submission as any).customFieldValues ||
                 {};
-              const fieldKeys = Object.keys(customVals).filter(
-                (k) => !k.startsWith("_"),
-              );
-              if (fieldKeys.length === 0) return null;
+
+              // Normalize and deduplicate keys
+              const displayMap = new Map<string, string>();
+
+              let isCustomSize =
+                String(
+                  customVals.sizeType || customVals.sizetype || "",
+                ).toLowerCase() === "custom" ||
+                Boolean(customVals["Custom Size"] || customVals.customSize) ||
+                (submission as any)?.sizeType === "custom" ||
+                (submission as any)?.isCustomSize === true;
+
+              if (
+                !isCustomSize &&
+                String(
+                  customVals.sizeType || customVals.sizetype || "",
+                ).toLowerCase() !== "preset"
+              ) {
+                const w = Number(
+                  (submission as any)?.widthPx || customVals.selectedWidth || 0,
+                );
+                const h = Number(
+                  (submission as any)?.heightPx ||
+                    customVals.selectedHeight ||
+                    0,
+                );
+                if (
+                  (w > 0 && Math.round(w) !== w) ||
+                  (h > 0 && Math.round(h) !== h)
+                ) {
+                  isCustomSize = true;
+                }
+              }
+
+              const sizeFieldLabel = isCustomSize
+                ? "Custom Size"
+                : "Selected Size";
+
+              // Handle Selected / Custom Size cleanly as a single entry
+              let sizeVal =
+                customVals["Custom Size"] ||
+                customVals.customSize ||
+                customVals["Selected Size"] ||
+                customVals.selectedSize ||
+                customVals.selectedSizeLabel;
+              if (
+                (!sizeVal ||
+                  sizeVal === "preset" ||
+                  sizeVal === "custom" ||
+                  sizeVal === "-") &&
+                (submission as any)?.widthPx &&
+                (submission as any)?.heightPx
+              ) {
+                sizeVal = `${(submission as any).widthPx} × ${(submission as any).heightPx} in`;
+              }
+              if (sizeVal && sizeVal !== "preset" && sizeVal !== "custom") {
+                displayMap.set(sizeFieldLabel, String(sizeVal));
+              }
+
+              // Internal / duplicate keys to ignore so they don't pollute the form fields
+              const ignoredKeys = new Set([
+                "selectedsize",
+                "selected size",
+                "selectedsizelabel",
+                "customsize",
+                "custom size",
+                "selectedwidth",
+                "selectedheight",
+                "sizetype",
+                "templateid",
+              ]);
+
+              for (const [rawKey, rawVal] of Object.entries(customVals)) {
+                if (rawKey.startsWith("_")) continue;
+                const lowerKey = rawKey.toLowerCase().replace(/[\s_-]/g, "");
+                if (ignoredKeys.has(lowerKey)) continue;
+
+                displayMap.set(rawKey, String(rawVal ?? ""));
+              }
+
+              const entries = Array.from(displayMap.entries());
+              if (entries.length === 0) return null;
 
               return (
                 <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3 shadow-sm">
                   <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                     <span className="text-xs font-extrabold uppercase tracking-wide text-slate-800 flex items-center gap-1.5">
                       <FileText size={14} className="text-indigo-600" />
-                      Submitted Form Fields ({fieldKeys.length})
+                      Submitted Form Fields ({entries.length})
                     </span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                    {fieldKeys.map((k) => {
-                      const valStr = String(customVals[k] ?? "");
+                    {entries.map(([label, valStr]) => {
                       const isLong =
                         valStr.length > 50 || valStr.includes("\n");
                       return (
                         <div
-                          key={k}
+                          key={label}
                           className={`p-2.5 rounded-xl bg-slate-50 border border-slate-100 ${
                             isLong ? "sm:col-span-2" : "col-span-1"
                           }`}
                         >
                           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">
-                            {k}
+                            {label}
                           </span>
                           <span className="font-semibold text-slate-800 mt-0.5 block break-words">
-                            {valStr || "-"}
+                            {valStr.replace(/\s*\?\s*/g, " × ") || "-"}
                           </span>
                         </div>
                       );
