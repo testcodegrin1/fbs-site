@@ -2,9 +2,39 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import Link from "next/link";
 import ServiceAreasClient from "./ServiceAreasClient";
+import ServiceAreaComparisonTable from "./ServiceAreaComparisonTable";
+import FaqAccordion from "@/app/Components/FaqAccordion";
 import { serviceAreas } from "@/app/data/service-areas-data";
 import { getRequestBaseUrl } from "@/app/lib/request-url";
 import { absoluteUrl, siteConfig } from "@/app/lib/seo";
+
+
+const serviceAreasFaqs = [
+  {
+    question: "Which Illinois counties and cities does FBS Signs provide physical sign installation in?",
+    answer: "We fabricate and install commercial signage, LED channel letters, storefront lightboxes, and architectural monument signs across 25 key Illinois cities spanning DuPage, Cook, Will, Kane, Kendall, Winnebago, and Lake Counties. Our physical installation radius includes Naperville, Schaumburg, Aurora, Joliet, Bolingbrook, Des Plaines, Downers Grove, Rockford, and surrounding municipalities."
+  },
+  {
+    question: "Do I need a municipal sign permit in Illinois, and does FBS Signs handle the permit process?",
+    answer: "Yes, virtually all commercial exterior signs, channel letters, monument signs, and illuminated blade signs require zoning approval and electrical permits from your local Illinois municipal building department. FBS Signs conducts on-site surveys, creates scaled architectural elevations, and manages all municipal zoning applications and inspections from start to finish."
+  },
+  {
+    question: "What is the difference between front-lit channel letters and reverse halo-lit channel letters?",
+    answer: "Front-lit channel letters feature translucent acrylic faces with internal LEDs that illuminate directly forward, offering maximum daytime and nighttime visibility for busy shopping centers. Reverse halo-lit channel letters have solid aluminum faces with LEDs projecting backward against the building wall, creating an elegant architectural halo glow ideal for corporate headquarters, upscale boutiques, and medical practices."
+  },
+  {
+    question: "How does Every Door Direct Mail (EDDM) work for local Illinois businesses?",
+    answer: "USPS Every Door Direct Mail (EDDM) allows businesses to target specific postal carrier routes in selected neighborhoods or zip codes without needing a costly mailing list. FBS Signs designs compliant postcards, handles bulk commercial printing, bundles pieces according to USPS postal specifications, and coordinates delivery directly to local mailboxes."
+  },
+  {
+    question: "What turnaround time should I expect for commercial printing versus custom signage?",
+    answer: "Standard commercial printing products (business cards, menus, brochures, and vinyl banners) typically ship or are ready for local pickup within 2 to 4 business days. Custom exterior signs and LED channel letters generally require 2 to 4 weeks depending on city permit approvals, material fabrication, and scheduling site installation."
+  },
+  {
+    question: "Can FBS Signs service clients outside the 25 listed Illinois cities?",
+    answer: "Yes. While our physical on-site sign installation teams focus on northeastern Illinois, we provide nationwide shipping for commercial printing products, vinyl banners, trade show displays, and vehicle graphic kits, and deliver digital web design and local SEO services nationwide."
+  }
+];
 
 export async function generateMetadata(): Promise<Metadata> {
   const baseUrl = await getRequestBaseUrl();
@@ -76,6 +106,21 @@ export default async function ServiceAreasListingPage() {
         item: canonical,
       },
     ],
+  };
+
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": `${canonical}#faq`,
+    mainEntity: serviceAreasFaqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
   };
 
   const webpageSchema = {
@@ -156,6 +201,30 @@ export default async function ServiceAreasListingPage() {
               </Link>
             ))}
           </div>
+        </section>
+
+
+        {/* Signage & Marketing Solutions Comparison Table */}
+        <ServiceAreaComparisonTable />
+
+        {/* Regional FAQ Section for AI Search & AEO */}
+        <section className="container py-16 px-4 max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <span className="text-primary font-bold text-xs uppercase tracking-widest block mb-2">
+              Frequently Asked Questions
+            </span>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-primary-dark leading-tight">
+              Illinois Signage, Print &amp; Marketing Answers
+            </h2>
+            <p className="text-primary-dark/70 mt-3 text-base sm:text-lg">
+              Direct answers to common questions regarding sign permits, turnaround schedules, direct mail carrier routes, and regional service coverage.
+            </p>
+          </div>
+
+          <FaqAccordion
+            items={serviceAreasFaqs}
+            name="service-areas-regional-faq"
+          />
         </section>
 
         {/* Local Commitment Section */}

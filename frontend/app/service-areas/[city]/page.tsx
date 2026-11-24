@@ -500,9 +500,6 @@ export default async function CityServiceAreaPage({ params }: PageProps) {
         <section className="container py-16 px-4">
           <div className="bg-white rounded-3xl p-8 md:p-12 border border-primary-light shadow-xl max-w-5xl mx-auto grid md:grid-cols-2 gap-10 items-center">
             <div>
-              <span className="text-primary font-bold text-xs uppercase tracking-widest block mb-2">
-                GEO &amp; Local Focus
-              </span>
               <h2 className="text-3xl font-extrabold text-primary-dark mb-4 leading-tight">
                 Serving the {area.name} Community
               </h2>
