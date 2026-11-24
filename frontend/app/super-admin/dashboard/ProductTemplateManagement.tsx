@@ -766,20 +766,23 @@ export function ProductTemplateManagement() {
     const currentH = Number(formData.height_px) || 0;
 
     return (
-      <div className="p-4 bg-slate-50/70 border border-slate-200/80 rounded-xl space-y-3.5">
+      <div className="p-5 bg-slate-50/80 border border-slate-200/90 rounded-2xl space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
-            <Ruler size={15} className="text-indigo-600" />
-            <p className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
+            <Ruler size={16} className="text-indigo-600" />
+            <p className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-slate-700">
               Dimensions & Specification
             </p>
           </div>
+          <span className="text-[11px] font-mono text-slate-500 font-semibold px-2.5 py-1 bg-white border border-slate-200 rounded-md shadow-2xs">
+            96 DPI Standard (Inches)
+          </span>
         </div>
 
         {/* Available Sizes List + Add Dimension (+) */}
         <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="text-[11.5px] font-bold text-slate-700">
+          <div className="flex items-center justify-between mb-2">
+            <label className="text-xs font-bold text-slate-700">
               Available Product Dimensions ({currentSizes.length})
             </label>
             <button
@@ -794,14 +797,14 @@ export function ProductTemplateManagement() {
                   setNewDimHeight(o === "portrait" ? 20 : 11.25);
                 }
               }}
-              className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2 py-0.5 rounded-md transition cursor-pointer shadow-2xs"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-3 py-1 rounded-lg transition cursor-pointer shadow-2xs"
             >
-              <Plus size={12} /> Add Dimension
+              <Plus size={13} /> Add Dimension
             </button>
           </div>
 
           {/* Cards Grid: Only size cards shown, dashed '+ Add Size' removed */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
             {currentSizes.map((preset, idx) => {
               const active =
                 !showAddDimForm &&
@@ -810,7 +813,7 @@ export function ProductTemplateManagement() {
               return (
                 <div
                   key={idx}
-                  className={`group relative flex flex-col justify-between p-2.5 rounded-lg border text-xs font-medium transition cursor-pointer ${
+                  className={`group relative flex flex-col justify-between p-3 rounded-xl border text-xs font-medium transition cursor-pointer ${
                     active
                       ? "bg-slate-900 text-white border-slate-900 shadow-xs ring-2 ring-indigo-300"
                       : "bg-white text-slate-700 border-slate-200 hover:border-indigo-300 hover:bg-slate-50"
@@ -822,7 +825,7 @@ export function ProductTemplateManagement() {
                 >
                   <div className="flex items-start justify-between gap-1">
                     <span
-                      className={`font-bold text-[11px] truncate ${
+                      className={`font-bold text-xs truncate ${
                         active ? "text-white" : "text-slate-800"
                       }`}
                     >
@@ -840,12 +843,12 @@ export function ProductTemplateManagement() {
                           active ? "text-white" : "text-slate-400 hover:text-red-600"
                         }`}
                       >
-                        <X size={11} />
+                        <X size={12} />
                       </button>
                     )}
                   </div>
                   <span
-                    className={`text-[10.5px] font-mono mt-1 ${
+                    className={`text-xs font-mono mt-1 ${
                       active ? "text-slate-300" : "text-slate-500"
                     }`}
                   >
@@ -874,9 +877,9 @@ export function ProductTemplateManagement() {
             </div>
 
             {/* The 3 inputs from Image 2 */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              <div className="space-y-1">
-                <Label className="text-[12.5px] font-bold text-slate-700">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-700">
                   Width (in)
                 </Label>
                 <Input
@@ -890,12 +893,12 @@ export function ProductTemplateManagement() {
                       e.target.value === "" ? "" : Number(e.target.value),
                     )
                   }
-                  className="h-9 text-xs font-mono font-medium bg-white"
+                  className="h-10 text-sm font-mono font-medium bg-white"
                 />
               </div>
 
-              <div className="space-y-1">
-                <Label className="text-[12.5px] font-bold text-slate-700">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-700">
                   Height (in)
                 </Label>
                 <Input
@@ -909,12 +912,12 @@ export function ProductTemplateManagement() {
                       e.target.value === "" ? "" : Number(e.target.value),
                     )
                   }
-                  className="h-9 text-xs font-mono font-medium bg-white"
+                  className="h-10 text-sm font-mono font-medium bg-white"
                 />
               </div>
 
-              <div className="space-y-1">
-                <Label className="text-[12.5px] font-bold text-slate-700">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-700">
                   Orientation
                 </Label>
                 <select
@@ -924,7 +927,7 @@ export function ProductTemplateManagement() {
                       e.target.value as "landscape" | "portrait",
                     )
                   }
-                  className="w-full h-9 px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="landscape">Landscape</option>
                   <option value="portrait">Portrait</option>
@@ -975,9 +978,9 @@ export function ProductTemplateManagement() {
         ) : (
           <>
             {/* The 3 inputs from Image 2 for active card */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-              <div className="space-y-1">
-                <Label className="text-[12.5px] font-bold text-slate-700">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-1">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-700">
                   Width (in)
                 </Label>
                 <Input
@@ -987,12 +990,12 @@ export function ProductTemplateManagement() {
                   value={formData.width_px}
                   onWheel={(e) => e.currentTarget.blur()}
                   onChange={(e) => handleWidthChange(Number(e.target.value))}
-                  className="h-9 text-xs font-mono font-medium bg-white"
+                  className="h-10 text-sm font-mono font-medium bg-white"
                 />
               </div>
 
-              <div className="space-y-1">
-                <Label className="text-[12.5px] font-bold text-slate-700">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-700">
                   Height (in)
                 </Label>
                 <Input
@@ -1003,12 +1006,12 @@ export function ProductTemplateManagement() {
                   value={formData.height_px}
                   onWheel={(e) => e.currentTarget.blur()}
                   onChange={(e) => handleHeightChange(Number(e.target.value))}
-                  className="h-9 text-xs font-mono font-medium bg-white"
+                  className="h-10 text-sm font-mono font-medium bg-white"
                 />
               </div>
 
-              <div className="space-y-1">
-                <Label className="text-[12.5px] font-bold text-slate-700">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-slate-700">
                   Orientation
                 </Label>
                 <select
@@ -1018,7 +1021,7 @@ export function ProductTemplateManagement() {
                       e.target.value as "landscape" | "portrait",
                     )
                   }
-                  className="w-full h-9 px-2.5 bg-white border border-slate-200 rounded-lg text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="landscape">Landscape</option>
                   <option value="portrait">Portrait</option>
@@ -1437,7 +1440,7 @@ export function ProductTemplateManagement() {
               </p>
             </label>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {formData.images.map((img, idx) => {
                 const effectiveSlotSrc =
                   img.previewUrl ||
@@ -1459,7 +1462,7 @@ export function ProductTemplateManagement() {
                     }`}
                   >
                     {/* Image Preview & Badge */}
-                    <div className="relative w-full h-44 bg-slate-900/5 flex items-center justify-center p-2 group">
+                    <div className="relative w-full h-48 bg-slate-900/5 flex items-center justify-center p-2 group">
                       <ImagePreviewWithFallback
                         src={effectiveSlotSrc}
                         rawPath={img.imageUrl}
@@ -2351,19 +2354,19 @@ export function ProductTemplateManagement() {
       {/* MODAL 1: ADD PRODUCT TEMPLATE                         */}
       {/* ==================================================== */}
       {showAddModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl animate-in fade-in zoom-in duration-150 my-auto flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-4xl xl:max-w-5xl w-full p-6 sm:p-8 shadow-2xl animate-in fade-in zoom-in duration-150 my-auto flex flex-col max-h-[92vh]">
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b pb-4 flex-shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center border border-violet-100">
-                  <FileImage size={18} />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center border border-violet-100 shadow-2xs">
+                  <FileImage size={20} />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-base text-slate-900">
+                  <h3 className="font-extrabold text-lg sm:text-xl text-slate-900">
                     Add Product Template
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs sm:text-sm text-slate-500">
                     Define specifications, dimensions, and upload template
                     images.
                   </p>
@@ -2371,9 +2374,9 @@ export function ProductTemplateManagement() {
               </div>
               <button
                 onClick={() => !isSubmitting && setShowAddModal(false)}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100"
+                className="text-slate-400 hover:text-slate-600 p-2 rounded-xl hover:bg-slate-100 transition-colors"
               >
-                <X size={18} />
+                <X size={20} />
               </button>
             </div>
 
@@ -2505,19 +2508,19 @@ export function ProductTemplateManagement() {
       {/* MODAL 2: EDIT PRODUCT TEMPLATE                        */}
       {/* ==================================================== */}
       {showEditModal && editingTemplate && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl animate-in fade-in zoom-in duration-150 my-auto flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-4xl xl:max-w-5xl w-full p-6 sm:p-8 shadow-2xl animate-in fade-in zoom-in duration-150 my-auto flex flex-col max-h-[92vh]">
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b pb-4 flex-shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
-                  <Edit size={18} />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shadow-2xs">
+                  <Edit size={20} />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-base text-slate-900">
+                  <h3 className="font-extrabold text-lg sm:text-xl text-slate-900">
                     Edit Product Template #{editingTemplate.id}
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs sm:text-sm text-slate-500">
                     Update template specifications, replace images, and
                     configure attachments.
                   </p>
@@ -2525,9 +2528,9 @@ export function ProductTemplateManagement() {
               </div>
               <button
                 onClick={() => !isSubmitting && setShowEditModal(false)}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100"
+                className="text-slate-400 hover:text-slate-600 p-2 rounded-xl hover:bg-slate-100 transition-colors"
               >
-                <X size={18} />
+                <X size={20} />
               </button>
             </div>
 
@@ -2652,28 +2655,28 @@ export function ProductTemplateManagement() {
       {/* MODAL 3: VIEW PRODUCT TEMPLATE DETAILS                */}
       {/* ==================================================== */}
       {viewingTemplate && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl animate-in fade-in zoom-in duration-150 my-auto flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-4xl xl:max-w-5xl w-full p-6 sm:p-8 shadow-2xl animate-in fade-in zoom-in duration-150 my-auto flex flex-col max-h-[92vh]">
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b pb-4 flex-shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
-                  <Eye size={18} />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shadow-2xs">
+                  <Eye size={20} />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-base text-slate-900">
+                  <h3 className="font-extrabold text-lg sm:text-xl text-slate-900">
                     {viewingTemplate.name}
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs sm:text-sm text-slate-500">
                     Template #{viewingTemplate.id}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setViewingTemplate(null)}
-                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100"
+                className="text-slate-400 hover:text-slate-600 p-2 rounded-xl hover:bg-slate-100 transition-colors"
               >
-                <X size={18} />
+                <X size={20} />
               </button>
             </div>
 
