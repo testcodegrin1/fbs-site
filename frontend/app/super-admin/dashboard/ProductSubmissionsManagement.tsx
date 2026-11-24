@@ -687,7 +687,6 @@ export function ProductSubmissionsManagement() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       {selectedSubmissionFiles.map((file, idx) => {
                         const thumb = resolveImageUrl(file.fileUrl);
-                        const versionNum = file.version || 1;
 
                         return (
                           <Card
@@ -703,10 +702,7 @@ export function ProductSubmissionsManagement() {
                               />
 
 
-                              {/* Version Badge (Matching Screenshot) */}
-                              <span className="absolute top-2 right-2 bg-slate-900/85 text-white text-[12px] font-mono font-bold px-2 py-0.5 rounded-md backdrop-blur-sm shadow">
-                                v{versionNum}
-                              </span>
+
                             </div>
 
                             {/* Tile Title & Status */}
@@ -737,9 +733,6 @@ export function ProductSubmissionsManagement() {
                             alt={selectedSubmission.templateName}
                             className="w-full h-full object-contain bg-white"
                           />
-                          <span className="absolute top-2 right-2 bg-slate-900/85 text-white text-[10px] font-mono font-bold px-2 py-0.5 rounded-md backdrop-blur-sm shadow">
-                            v1
-                          </span>
                         </div>
 
                         <div className="flex items-center justify-between pt-1">
