@@ -115,7 +115,8 @@ export default function Navbar() {
       : "block px-4 py-2 rounded-lg text-primary-dark/60 transition hover:text-primary-dark/80";
 
   const servicesLinks = [
-    ["Products", "/printing-products"],
+    ["Printing Products", "/services/printing-products"],
+    ["Wingsnob Print Files", "/printing-products"],
     ["Signage", "/services/signage"],
     ["Direct Mailing", "/services/direct-mailing"],
     ["Web Design", "/services/web-design"],
@@ -187,7 +188,7 @@ export default function Navbar() {
                 </span>
               </button>
               <ul
-                className={`absolute top-12 left-0 w-52 bg-white shadow-xl rounded-xl py-3 transition-all duration-300 z-50
+                className={`absolute top-12 left-0 w-60 bg-white shadow-xl rounded-xl py-3 transition-all duration-300 z-50
                 ${
                   desktopServiceOpen
                     ? "opacity-100 visible translate-y-0"
