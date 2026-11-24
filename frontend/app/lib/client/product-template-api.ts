@@ -623,6 +623,10 @@ export const productTemplateApi = {
     return data?.submission ?? null;
   },
 
+  async deleteProductSubmission(id: number): Promise<void> {
+    await request(`/api/productSubmissions/${id}`, { method: "DELETE" });
+  },
+
   /**
    * Update submission status
    */

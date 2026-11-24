@@ -10,7 +10,6 @@ import {
   type ProductSubmissionStatus,
   type ProductSubmissionFile,
 } from "@/app/lib/client/product-template-api";
-import { ProductSubmissionThreadModal } from "@/app/user/dashboard/ProductSubmissionThreadModal";
 import { Card, CardHeader, Button, Input, Badge } from "@/app/Components/ui";
 import {
   Search,
@@ -41,12 +40,11 @@ import {
   Share2,
   ChevronDown,
   ChevronUp,
+  Trash2,
 } from "lucide-react";
 
 const STATUS_OPTIONS: ProductSubmissionStatus[] = [
   "Pending",
-  "In Review",
-  "Changes Requested",
   "Approved",
   "Rejected",
   "Completed",
@@ -113,6 +111,9 @@ export function ProductSubmissionsManagement() {
   const [submissions, setSubmissions] = useState<ProductSubmissionListItem[]>(
     [],
   );
+  const [deleteTarget, setDeleteTarget] = useState<ProductSubmissionListItem | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState("");
@@ -136,9 +137,6 @@ export function ProductSubmissionsManagement() {
   const [selectedSubmissionFiles, setSelectedSubmissionFiles] = useState<
     ProductSubmissionFile[]
   >([]);
-  const [threadSubmissionId, setThreadSubmissionId] = useState<number | null>(
-    null,
-  );
   const [detailData, setDetailData] = useState<ProductSubmissionDetail | null>(
     null,
   );
@@ -216,6 +214,32 @@ export function ProductSubmissionsManagement() {
       setSelectedSubmissionFiles([]);
     } finally {
       setLoadingDetail(false);
+    }
+  }
+
+  function handleDeleteSubmission(submission: ProductSubmissionListItem) {
+    setDeleteError("");
+    setDeleteTarget(submission);
+  }
+
+  async function confirmDeleteSubmission() {
+    if (!deleteTarget || isDeleting) return;
+    const submission = deleteTarget;
+    setIsDeleting(true);
+    setDeleteError("");
+    try {
+      await productTemplateApi.deleteProductSubmission(submission.id);
+      setSubmissions((previous) => previous.filter((item) => item.id !== submission.id));
+      if (selectedSubmissionId === submission.id) {
+        setSelectedSubmissionId(null);
+        setDetailData(null);
+        setSelectedSubmissionFiles([]);
+      }
+      setDeleteTarget(null);
+    } catch (error) {
+      setDeleteError(error instanceof Error ? error.message : "Failed to delete submission.");
+    } finally {
+      setIsDeleting(false);
     }
   }
 
@@ -564,8 +588,20 @@ export function ProductSubmissionsManagement() {
                                 </span>
                               </div>
 
-                              {order.previewImageUrl && (
-                                <div className="flex items-center gap-1">
+                              <div className="flex items-center gap-1">
+                                <button
+                                  type="button"
+                                  onClick={(event) => {
+                                    event.stopPropagation();
+                                    void handleDeleteSubmission(order);
+                                  }}
+                                  title="Delete submission"
+                                  aria-label={`Delete submission ${order.id}`}
+                                  className="p-1 rounded-md text-red-600 hover:bg-red-50 transition cursor-pointer"
+                                >
+                                  <Trash2 size={14} />
+                                </button>
+                                {order.previewImageUrl && (
                                   <button
                                     type="button"
                                     onClick={(e) => {
@@ -580,8 +616,8 @@ export function ProductSubmissionsManagement() {
                                   >
                                     <Download size={12} />
                                   </button>
-                                </div>
-                              )}
+                                )}
+                              </div>
                             </div>
                           </div>
                         );
@@ -606,8 +642,15 @@ export function ProductSubmissionsManagement() {
                           selectedSubmission.templateName}
                       </h2>
                       {detailData && getStatusBadge(detailData.status)}
+                      <Button type="button" size="sm" className="ml-auto bg-emerald-600 text-white hover:bg-emerald-700" disabled={updatingStatus || selectedSubmission.status.toLowerCase() === "approved"} onClick={() => void handleStatusChange("Approved")}>
+                        <CheckCircle size={15} /> {selectedSubmission.status.toLowerCase() === "approved" ? "Approved" : updatingStatus ? "Approving..." : "Approve Project"}
+                      </Button>
+                      <Button type="button" variant="outline" size="sm" className="text-red-600" onClick={() => void handleDeleteSubmission(selectedSubmission)}>
+                        <Trash2 size={15} /> Delete
+                      </Button>
                     </div>
                   </CardHeader>
+                  {statusMessage && <p role="status" className={`px-5 pb-4 text-sm ${statusMessage.type === "error" ? "text-red-600" : "text-emerald-700"}`}>{statusMessage.text}</p>}
                 </Card>
 
                 {/* Banners / Photo Tiles Card */}
@@ -677,53 +720,7 @@ export function ProductSubmissionsManagement() {
                               {detailData && getStatusBadge(detailData.status)}
                             </div>
 
-                            <div className="space-y-1 text-[14px] text-slate-500 pt-1">
-                              <div>
-                                Client:{" "}
-                                <strong className="text-slate-800">
-                                  {detailData?.userName ||
-                                    selectedSubmission.userName}
-                                </strong>
-                                {(detailData?.userEmail ||
-                                  selectedSubmission.userEmail) && (
-                                  <span className="text-slate-400 ml-1">
-                                    (
-                                    {detailData?.userEmail ||
-                                      selectedSubmission.userEmail}
-                                    )
-                                  </span>
-                                )}
-                              </div>
-                              <div>
-                                Dimensions:{" "}
-                                <span className="font-mono text-indigo-600 font-bold">
-                                  {selectedSubmission.widthPx} ×{" "}
-                                  {selectedSubmission.heightPx} in
-                                </span>
-                              </div>
-                              <div>
-                                Quantity:{" "}
-                                <strong className="text-slate-800">
-                                  {selectedSubmission.quantity || 1}{" "}
-                                  {Number(selectedSubmission.quantity || 1) > 1
-                                    ? "Products"
-                                    : "Product"}
-                                </strong>
-                              </div>
-                            </div>
 
-                            {/* Bottom Actions - Button */}
-                            <div className="pt-2 border-t border-slate-100">
-                              <Button
-                                size="sm"
-                                className="h-8 gap-1.5 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-2xs cursor-pointer"
-                                onClick={() =>
-                                  setThreadSubmissionId(selectedSubmission.id)
-                                }
-                              >
-                                <Edit3 size={13} /> View / Edit Product
-                              </Button>
-                            </div>
                           </Card>
                         );
                       })}
@@ -752,53 +749,7 @@ export function ProductSubmissionsManagement() {
                           {detailData && getStatusBadge(detailData.status)}
                         </div>
 
-                        <div className="space-y-1 text-[13px] text-slate-500 pt-1">
-                          <div>
-                            Client:{" "}
-                            <strong className="text-slate-800">
-                              {detailData?.userName ||
-                                selectedSubmission.userName}
-                            </strong>
-                            {(detailData?.userEmail ||
-                              selectedSubmission.userEmail) && (
-                              <span className="text-slate-400 ml-1">
-                                (
-                                {detailData?.userEmail ||
-                                  selectedSubmission.userEmail}
-                                )
-                              </span>
-                            )}
-                          </div>
-                          <div>
-                            Dimensions:{" "}
-                            <span className="font-mono text-indigo-600 font-bold">
-                              {selectedSubmission.widthPx} ×{" "}
-                              {selectedSubmission.heightPx} in
-                            </span>
-                          </div>
-                          <div>
-                            Quantity:{" "}
-                            <strong className="text-slate-800">
-                              {selectedSubmission.quantity || 1}{" "}
-                              {Number(selectedSubmission.quantity || 1) > 1
-                                ? "Products"
-                                : "Product"}
-                            </strong>
-                          </div>
-                        </div>
 
-                        {/* Bottom Actions - Button */}
-                        <div className="pt-2 border-t border-slate-100">
-                          <Button
-                            size="sm"
-                            className="h-8 gap-1.5 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-2xs cursor-pointer"
-                            onClick={() =>
-                              setThreadSubmissionId(selectedSubmission.id)
-                            }
-                          >
-                            <Edit3 size={13} /> View / Edit Product
-                          </Button>
-                        </div>
                       </Card>
                     </div>
                   ) : (
@@ -929,15 +880,17 @@ export function ProductSubmissionsManagement() {
                                 <Eye size={15} aria-hidden="true" />
                               </Button>
 
+
+
                               <Button
                                 variant="outline"
                                 size="icon-sm"
-                                onClick={() => setThreadSubmissionId(sub.id)}
-                                className="portal-action"
-                                title="Revisions"
-                                aria-label="Revisions"
+                                onClick={(event) => { event.stopPropagation(); void handleDeleteSubmission(sub); }}
+                                className="text-red-600"
+                                title="Delete submission"
+                                aria-label={`Delete submission ${sub.id}`}
                               >
-                                <Edit3 size={15} aria-hidden="true" />
+                                <Trash2 size={15} aria-hidden="true" />
                               </Button>
 
                               {sub.previewImageUrl && (
@@ -969,22 +922,43 @@ export function ProductSubmissionsManagement() {
         </Card>
       )}
 
-      {/* ========================================================================= */}
-      {/* BANNER SUBMISSION THREAD MODAL (EDIT CANVAS / REVISIONS)                  */}
-      {/* ========================================================================= */}
-      {threadSubmissionId !== null && (
-        <ProductSubmissionThreadModal
-          submissionId={threadSubmissionId}
-          isOpen={true}
-          onClose={() => {
-            setThreadSubmissionId(null);
-            if (selectedSubmissionId) {
-              openSubmissionDetail(selectedSubmissionId);
-            }
-            loadData(true);
+      {deleteTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 p-4 backdrop-blur-sm"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="delete-submission-title"
+          onClick={(event) => {
+            if (event.target === event.currentTarget && !isDeleting) setDeleteTarget(null);
           }}
-          role="admin"
-        />
+        >
+          <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-5 text-slate-900 shadow-2xl">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-3">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-red-200 bg-red-50 text-red-600">
+                  <Trash2 size={20} />
+                </div>
+                <div>
+                  <h3 id="delete-submission-title" className="text-base font-extrabold text-slate-900">Delete submission?</h3>
+                  <p className="mt-1 text-sm text-slate-500">This action needs your confirmation.</p>
+                </div>
+              </div>
+              <Button type="button" variant="ghost" size="icon-sm" disabled={isDeleting} onClick={() => setDeleteTarget(null)} aria-label="Close delete confirmation">
+                <X size={18} />
+              </Button>
+            </div>
+            <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+              Delete submission <strong>#{deleteTarget.id}</strong> for <strong>{deleteTarget.templateName}</strong> from <strong>{deleteTarget.userName}</strong>? Its messages and file history will also be removed. This cannot be undone.
+            </div>
+            {deleteError && <p role="alert" className="mt-3 text-sm text-red-600">{deleteError}</p>}
+            <div className="mt-5 flex items-center justify-end gap-2">
+              <Button type="button" variant="outline" disabled={isDeleting} onClick={() => setDeleteTarget(null)}>Cancel</Button>
+              <Button type="button" disabled={isDeleting} onClick={() => void confirmDeleteSubmission()} className="bg-red-600 text-white hover:bg-red-700">
+                <Trash2 size={16} /> {isDeleting ? "Deleting..." : "Yes, delete"}
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ========================================================================= */}

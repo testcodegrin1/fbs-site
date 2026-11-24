@@ -49,8 +49,6 @@ import {
   Image as ImageIcon,
   RotateCcw,
   Sparkles,
-  Lock,
-  Unlock,
   Ruler,
   Star,
 } from "lucide-react";
@@ -73,19 +71,6 @@ export function inchesToPx(inches: number, dpi = DEFAULT_DPI): number {
   return Math.round(inches * dpi);
 }
 
-export const PREDEFINED_SIZES = {
-  landscape: [
-    { label: "Standard 16:9", width: 20, height: 11.25, badge: '20" × 11.25"' },
-    { label: "Medium Sign", width: 24, height: 18, badge: '24" × 18"' },
-    { label: "Large Banner", width: 36, height: 24, badge: '36" × 24"' },
-  ],
-  portrait: [
-    { label: "Standard 9:16", width: 11.25, height: 20, badge: '11.25" × 20"' },
-    { label: "Medium Sign", width: 18, height: 24, badge: '18" × 24"' },
-    { label: "Large Banner", width: 24, height: 36, badge: '24" × 36"' },
-  ],
-};
-
 interface TemplateFormData {
   name: string;
   description: string;
@@ -102,13 +87,9 @@ const defaultFormData: TemplateFormData = {
   name: "",
   description: "",
   orientation: "landscape",
-  width_px: 20,
-  height_px: 11.25,
-  available_sizes: [
-    { label: "Standard 16:9", width: 20, height: 11.25 },
-    { label: "Medium Sign", width: 24, height: 18 },
-    { label: "Large Banner", width: 36, height: 24 },
-  ],
+  width_px: 0,
+  height_px: 0,
+  available_sizes: [],
   is_active: true,
   images: [],
   fields: [],
@@ -336,7 +317,6 @@ export function ProductTemplateManagement() {
   const [previewImagePreview, setPreviewImagePreview] = useState<string | null>(
     null,
   );
-  const [lockAspectRatio, setLockAspectRatio] = useState(true);
 
   // Multiple Dimensions (+) state
   const [showAddDimForm, setShowAddDimForm] = useState(false);
@@ -447,8 +427,8 @@ export function ProductTemplateManagement() {
 
     const rawW = Number(template.widthPx || 20);
     const rawH = Number(template.heightPx || 11.25);
-    const w = rawW >= 100 ? pxToInches(rawW) : rawW;
-    const h = rawH >= 100 ? pxToInches(rawH) : rawH;
+    const w = rawW;
+    const h = rawH;
 
     setFormData({
       name: template.name,
@@ -571,9 +551,9 @@ export function ProductTemplateManagement() {
   function handleOrientationChange(newOrientation: "landscape" | "portrait") {
     setFormData((prev) => {
       let w =
-        Number(prev.width_px) || (newOrientation === "portrait" ? 11.25 : 20);
+        Number(prev.width_px);
       let h =
-        Number(prev.height_px) || (newOrientation === "portrait" ? 20 : 11.25);
+        Number(prev.height_px);
 
       if (prev.orientation !== newOrientation) {
         if (newOrientation === "portrait" && w > h) {
@@ -591,41 +571,29 @@ export function ProductTemplateManagement() {
         }
       }
 
-      return {
-        ...prev,
-        orientation: newOrientation,
-        width_px: w,
-        height_px: h,
-      };
+      return { ...updateActiveDimensions(w, h, prev), orientation: newOrientation };
     });
+  }
+
+  function updateActiveDimensions(width: number, height: number, prev: TemplateFormData) {
+    const index = prev.available_sizes.findIndex(
+      (size) => Number(size.width) === Number(prev.width_px) && Number(size.height) === Number(prev.height_px),
+    );
+    const sizes = [...prev.available_sizes];
+    if (index >= 0) {
+      sizes[index] = { label: "Custom", width, height };
+    } else {
+      sizes.unshift({ label: "Custom", width, height });
+    }
+    return { ...prev, width_px: width, height_px: height, available_sizes: sizes };
   }
 
   function handleWidthChange(newVal: number) {
-    setFormData((prev) => {
-      const currentW = Number(prev.width_px) || 20;
-      const currentH = Number(prev.height_px) || 11.25;
-      const ratio = currentW / currentH || (prev.orientation === "portrait" ? 11.25 / 20 : 20 / 11.25);
-      const updatedH = lockAspectRatio && newVal > 0 ? Number((newVal / ratio).toFixed(2)) : currentH;
-      return {
-        ...prev,
-        width_px: newVal,
-        height_px: updatedH,
-      };
-    });
+    setFormData((prev) => updateActiveDimensions(newVal, Number(prev.height_px), prev));
   }
 
   function handleHeightChange(newVal: number) {
-    setFormData((prev) => {
-      const currentW = Number(prev.width_px) || 20;
-      const currentH = Number(prev.height_px) || 11.25;
-      const ratio = currentW / currentH || (prev.orientation === "portrait" ? 11.25 / 20 : 20 / 11.25);
-      const updatedW = lockAspectRatio && newVal > 0 ? Number((newVal * ratio).toFixed(2)) : currentW;
-      return {
-        ...prev,
-        width_px: updatedW,
-        height_px: newVal,
-      };
-    });
+    setFormData((prev) => updateActiveDimensions(Number(prev.width_px), newVal, prev));
   }
 
   function handleApplyPredefinedSize(width: number, height: number) {
@@ -638,20 +606,10 @@ export function ProductTemplateManagement() {
 
   function handleNewDimWidthChange(val: number | "") {
     setNewDimWidth(val);
-    if (lockAspectRatio && typeof val === "number" && val > 0) {
-      const ratio =
-        newDimOrientation === "portrait" ? 11.25 / 20 : 20 / 11.25;
-      setNewDimHeight(Number((val / ratio).toFixed(2)));
-    }
   }
 
   function handleNewDimHeightChange(val: number | "") {
     setNewDimHeight(val);
-    if (lockAspectRatio && typeof val === "number" && val > 0) {
-      const ratio =
-        newDimOrientation === "portrait" ? 11.25 / 20 : 20 / 11.25;
-      setNewDimWidth(Number((val * ratio).toFixed(2)));
-    }
   }
 
   function handleNewDimOrientationChange(
@@ -669,13 +627,8 @@ export function ProductTemplateManagement() {
         setNewDimHeight(w);
       }
     } else {
-      if (newOrient === "portrait") {
-        setNewDimWidth(11.25);
-        setNewDimHeight(20);
-      } else {
-        setNewDimWidth(20);
-        setNewDimHeight(11.25);
-      }
+      setNewDimWidth("");
+      setNewDimHeight("");
     }
   }
 
@@ -756,11 +709,7 @@ export function ProductTemplateManagement() {
   }
 
   function renderDimensionsSection(mode: "create" | "edit") {
-    const orient = formData.orientation || "landscape";
-    const currentSizes =
-      formData.available_sizes && formData.available_sizes.length > 0
-        ? formData.available_sizes
-        : PREDEFINED_SIZES[orient] || PREDEFINED_SIZES.landscape;
+    const currentSizes = formData.available_sizes.filter((size) => size.width > 0 && size.height > 0);
 
     const currentW = Number(formData.width_px) || 0;
     const currentH = Number(formData.height_px) || 0;
@@ -793,8 +742,8 @@ export function ProductTemplateManagement() {
                 if (nextState) {
                   const o = formData.orientation || "landscape";
                   setNewDimOrientation(o);
-                  setNewDimWidth(o === "portrait" ? 11.25 : 20);
-                  setNewDimHeight(o === "portrait" ? 20 : 11.25);
+                  setNewDimWidth("");
+                  setNewDimHeight("");
                 }
               }}
               className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-3 py-1 rounded-lg transition cursor-pointer shadow-2xs"
@@ -935,25 +884,8 @@ export function ProductTemplateManagement() {
               </div>
             </div>
 
-            {/* Lock Aspect Ratio + Actions */}
+            {/* Actions */}
             <div className="flex items-center justify-between flex-wrap gap-2 pt-1 border-t border-indigo-200/60">
-              <label className="inline-flex items-center gap-1.5 cursor-pointer text-slate-600 select-none text-xs">
-                <input
-                  type="checkbox"
-                  checked={lockAspectRatio}
-                  onChange={(e) => setLockAspectRatio(e.target.checked)}
-                  className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5"
-                />
-                {lockAspectRatio ? (
-                  <Lock size={12} className="text-indigo-600" />
-                ) : (
-                  <Unlock size={12} className="text-slate-400" />
-                )}
-                <span className="font-medium text-[11.5px]">
-                  Lock Aspect Ratio (Auto-Size)
-                </span>
-              </label>
-
               <div className="flex items-center gap-2">
                 <Button
                   type="button"
@@ -1029,25 +961,6 @@ export function ProductTemplateManagement() {
               </div>
             </div>
 
-            {/* Auto-Size Controls */}
-            <div className="flex items-center justify-between flex-wrap gap-2 pt-1 border-t border-slate-200/70 text-xs">
-              <label className="inline-flex items-center gap-1.5 cursor-pointer text-slate-600 select-none">
-                <input
-                  type="checkbox"
-                  checked={lockAspectRatio}
-                  onChange={(e) => setLockAspectRatio(e.target.checked)}
-                  className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 h-3.5 w-3.5"
-                />
-                {lockAspectRatio ? (
-                  <Lock size={12} className="text-indigo-600" />
-                ) : (
-                  <Unlock size={12} className="text-slate-400" />
-                )}
-                <span className="font-medium text-[11.5px]">
-                  Lock Aspect Ratio (Auto-Size)
-                </span>
-              </label>
-            </div>
           </>
         )}
       </div>
@@ -1217,6 +1130,9 @@ export function ProductTemplateManagement() {
     }
 
     setFormErrors(errors);
+    if (errors.width_px || errors.height_px) {
+      setFormServerError("Enter a valid width and height for this product.");
+    }
     return Object.keys(errors).length === 0;
   }
 

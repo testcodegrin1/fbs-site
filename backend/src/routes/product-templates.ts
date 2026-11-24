@@ -21,6 +21,7 @@ import {
   listProductSubmissions,
   getProductSubmissionById,
   updateProductSubmissionStatus,
+  deleteProductSubmission,
   getProductSubmissionThread,
   addProductSubmissionMessage,
   addProductSubmissionFile,
@@ -783,6 +784,30 @@ productTemplatesRouter.get(
   requireAuth(),
   handleGetSubmissionById,
 );
+
+// Only super admins can permanently remove submissions.
+productTemplatesRouter.delete("/productSubmissions/:id", requireAuth(), async (req, res) => {
+  try {
+    const user = await getCurrentUser(req);
+    if (!user?.roles?.includes("super_admin")) {
+      res.status(403).json({ message: "Only an administrator can delete submissions." });
+      return;
+    }
+    const id = Number(req.params.id);
+    if (!Number.isSafeInteger(id) || id <= 0) {
+      res.status(400).json({ message: "Valid submission ID is required." });
+      return;
+    }
+    if (!(await deleteProductSubmission(id))) {
+      res.status(404).json({ message: "Product submission not found." });
+      return;
+    }
+    res.json({ message: "Product submission deleted successfully." });
+  } catch (error) {
+    const { message, status } = getErrorResponse(error);
+    res.status(status).json({ message });
+  }
+});
 
 // Update Submission Status
 const handleUpdateSubmissionStatus = async (req: any, res: any) => {

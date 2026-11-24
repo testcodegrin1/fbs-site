@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 /* eslint-disable @next/next/no-img-element -- submission images are uploaded at runtime to the configured API host */
 
 import { useEffect, useMemo, useState } from "react";
@@ -7,10 +7,8 @@ import {
   Eye,
   FileImage,
   LogOut,
-  MessageSquare,
   RefreshCw,
   Search,
-  Send,
   X,
 } from "lucide-react";
 import type { AuthUser } from "@/app/lib/auth/types";
@@ -64,8 +62,6 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
   const [search, setSearch] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
   const [signingOut, setSigningOut] = useState(false);
-  const [reply, setReply] = useState("");
-  const [sendingReply, setSendingReply] = useState(false);
   const [selectedFileIdx, setSelectedFileIdx] = useState(0);
 
   useEffect(() => {
@@ -135,54 +131,6 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
       );
     } finally {
       setDetailLoading(false);
-    }
-  }
-
-  async function sendReview(statusAction?: "approved" | "changes_requested") {
-    if (!selected || sendingReply) return;
-    const message =
-      reply.trim() ||
-      (statusAction === "approved"
-        ? "Approved"
-        : statusAction === "changes_requested"
-          ? "Changes requested"
-          : "");
-    if (!message) return;
-    setSendingReply(true);
-    setError("");
-    try {
-      const activeImageId = thread?.files?.[0]?.id ?? null;
-      await productTemplateApi.sendProductSubmissionMessage(
-        selected.id,
-        message,
-        activeImageId,
-        statusAction,
-      );
-      const updatedThread = await productTemplateApi.getProductSubmissionThread(
-        selected.id,
-      );
-      setThread(updatedThread);
-      setSelected(updatedThread.submission);
-      setReply("");
-      setSubmissions((current) =>
-        current.map((item) =>
-          item.id === selected.id
-            ? {
-                ...item,
-                status: updatedThread.submission.status,
-                updatedAt: updatedThread.submission.updatedAt,
-              }
-            : item,
-        ),
-      );
-    } catch (reviewError) {
-      setError(
-        reviewError instanceof Error
-          ? reviewError.message
-          : "Unable to send your review.",
-      );
-    } finally {
-      setSendingReply(false);
     }
   }
 
@@ -318,7 +266,7 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
                     <Status value={item.status} />
                   </div>
                   <p className="text-xs text-slate-500">
-                    #{item.id} · Qty {item.quantity || 1} ·{" "}
+                    #{item.id} Â· Qty {item.quantity || 1} Â·{" "}
                     {new Date(item.createdAt).toLocaleDateString()}
                   </p>
                   <span className="mt-auto inline-flex items-center gap-1.5 pt-1 text-sm font-semibold text-primary">
@@ -350,7 +298,6 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
             if (event.target === event.currentTarget) {
               setSelected(null);
               setThread(null);
-              setReply("");
               setSelectedFileIdx(0);
             }
           }}
@@ -373,7 +320,6 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
                 onClick={() => {
                   setSelected(null);
                   setThread(null);
-                  setReply("");
                   setSelectedFileIdx(0);
                 }}
                 aria-label="Close submission details"
@@ -390,7 +336,7 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
                 {error}
               </div>
             )}
-            <div className="grid gap-6 p-5 md:grid-cols-[1.1fr_0.9fr] md:p-6">
+            <div className="p-5 md:p-6">
               <div className="space-y-5">
                 {(() => {
                   const activeFiles = thread?.files || [];
@@ -492,70 +438,7 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
                 </div>
               </div>
 
-              <aside className="flex flex-col rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <section className="flex flex-1 flex-col min-h-0">
-                  <h3 className="flex items-center gap-2 font-semibold text-slate-900">
-                    <MessageSquare size={17} />
-                    Review messages
-                  </h3>
-                  <div className="mt-3 flex-1 min-h-[260px] max-h-[420px] space-y-2 overflow-y-auto pr-1">
-                    {thread?.messages?.length ? (
-                      thread.messages.map((message) => (
-                        <div
-                          key={message.id}
-                          className={`rounded-xl p-3 text-sm ${message.senderRole === "user" ? "ml-5 bg-primary text-white" : "mr-5 border border-slate-200 bg-white text-slate-700"}`}
-                        >
-                          <div className="mb-1 flex justify-between gap-2 text-xs opacity-75">
-                            <strong>
-                              {message.senderName || message.senderRole}
-                            </strong>
-                            <span>
-                              {new Date(message.createdAt).toLocaleDateString()}
-                            </span>
-                          </div>
-                          <p className="whitespace-pre-wrap break-words">
-                            {message.message}
-                          </p>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="rounded-lg bg-white p-4 text-sm text-slate-500">
-                        No review messages yet.
-                      </p>
-                    )}
-                  </div>
-                </section>
 
-                <section className="mt-auto border-t border-slate-200 pt-4">
-                  <label
-                    htmlFor="review-reply"
-                    className="text-sm font-semibold text-slate-900"
-                  >
-                    Your review or reply
-                  </label>
-                  <textarea
-                    id="review-reply"
-                    rows={3}
-                    maxLength={5000}
-                    value={reply}
-                    onChange={(event) => setReply(event.target.value)}
-                    disabled={sendingReply}
-                    placeholder="Write a message about this order..."
-                    className="mt-2 w-full rounded-xl border border-slate-300 bg-white p-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                  />
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    <button
-                      type="button"
-                      onClick={() => void sendReview()}
-                      disabled={sendingReply || !reply.trim()}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
-                    >
-                      <Send size={14} />
-                      Send reply
-                    </button>
-                  </div>
-                </section>
-              </aside>
             </div>
           </div>
         </div>

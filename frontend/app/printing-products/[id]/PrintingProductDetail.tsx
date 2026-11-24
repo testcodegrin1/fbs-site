@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useMemo, type FormEvent } from "react";
 import Link from "next/link";
-import { Ruler, Lock } from "lucide-react";
+import { Ruler } from "lucide-react";
 import { buildApiUrl, getApiBaseUrl } from "@/app/lib/client/api-url";
 import { getStoredToken } from "@/app/lib/auth/token";
 import { productTemplateApi } from "@/app/lib/client/product-template-api";
@@ -104,60 +104,33 @@ export default function PrintingProductDetail({ productId }: { productId: string
 
   const [activeImage, setActiveImage] = useState(0);
 
-  // Template dimensions are in inches; image metadata supplies its aspect ratio.
   const [selectedSizeIndex, setSelectedSizeIndex] = useState<number | "custom">(0);
   const [customHeight, setCustomHeight] = useState("");
-  const baseWidth = product?.widthPx ?? 20;
-  const baseHeight = product?.heightPx ?? 11.25;
-  const image = product?.images[activeImage];
-  const ratio = image?.width && image?.height ? image.width / image.height : baseWidth / baseHeight;
-  const height = Number(customHeight);
-  const customWidth = customHeight !== "" && height > 0 && baseWidth > 0 && baseHeight > 0
-    ? Number((ratio * height).toFixed(2))
-    : "";
+  const baseWidth = product?.widthPx ?? 0;
+  const baseHeight = product?.heightPx ?? 0;
 
   const availableSizesList = useMemo(() => {
-    if (
-      product?.availableSizes &&
-      Array.isArray(product.availableSizes) &&
-      product.availableSizes.length > 0
-    ) {
-      return product.availableSizes;
+    const sizes = Array.isArray(product?.availableSizes) ? product.availableSizes : [];
+    const defaultIndex = sizes.findIndex(
+      (size) => Number(size.width) === Number(baseWidth) && Number(size.height) === Number(baseHeight),
+    );
+    const defaultSize = defaultIndex >= 0
+      ? sizes[defaultIndex]
+      : { label: "", width: baseWidth, height: baseHeight };
+    // Older templates could retain the original default when the main size changed.
+    if (defaultIndex < 0 && sizes.length === 1 && sizes[0].label === "Standard") {
+      return [defaultSize];
     }
-    return [
-      { label: "Standard", width: baseWidth, height: baseHeight },
-      {
-        label: "Medium",
-        width: Math.round(baseWidth * 1.5 * 10) / 10,
-        height: Math.round(baseHeight * 1.5 * 10) / 10,
-      },
-      {
-        label: "Large",
-        width: Math.round(baseWidth * 2 * 10) / 10,
-        height: Math.round(baseHeight * 2 * 10) / 10,
-      },
-    ];
+    return [defaultSize, ...sizes.filter((_, index) => index !== defaultIndex)];
   }, [product?.availableSizes, baseWidth, baseHeight]);
 
-  const activeDimensions = useMemo(() => {
-    if (selectedSizeIndex === "custom") {
-      return {
-        width: customWidth === "" ? baseWidth : customWidth,
-        height: height > 0 ? height : baseHeight,
-      };
-    }
-    return (
-      availableSizesList[selectedSizeIndex] ||
-      availableSizesList[0] || { width: baseWidth, height: baseHeight }
-    );
-  }, [
-    selectedSizeIndex,
-    customWidth,
-    height,
-    baseWidth,
-    baseHeight,
-    availableSizesList,
-  ]);
+  const customHeightValue = Number(customHeight);
+  const customWidth = customHeight === "" || !Number.isFinite(customHeightValue)
+    ? null
+    : Math.round((customHeightValue - (baseHeight - baseWidth)) * 100) / 100;
+  const activeDimensions = selectedSizeIndex === "custom"
+    ? { width: customWidth ?? 0, height: customHeightValue }
+    : availableSizesList[selectedSizeIndex] || { width: baseWidth, height: baseHeight };
 
   const [imageError, setImageError] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -185,6 +158,8 @@ export default function PrintingProductDetail({ productId }: { productId: string
         }
         if (!controller.signal.aborted) {
           setProduct(data.product);
+          setSelectedSizeIndex(0);
+          setCustomHeight("");
           // If URL was accessed with numeric ID or unformatted slug, update browser URL to the title slug
           const targetSlug = data.product?.slug || (data.product?.name ? slugify(data.product.name) : "");
           if (targetSlug && typeof window !== "undefined") {
@@ -217,15 +192,17 @@ export default function PrintingProductDetail({ productId }: { productId: string
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!product || !signedIn || submitting) return;
+    if (selectedSizeIndex === "custom" &&
+      (!Number.isFinite(customHeightValue) || customHeightValue <= 0 || customWidth === null || customWidth <= 0)) {
+      setError("Enter a height that produces a positive width.");
+      return;
+    }
     setSubmitting(true);
     setError("");
     try {
       const finalQuantity =
         typeof quantity === "number" && quantity >= 1 ? quantity : 1;
-      const selectedLabel =
-        selectedSizeIndex === "custom"
-          ? "Custom Dynamic Size"
-          : (availableSizesList[selectedSizeIndex]?.label || `${activeDimensions.width} × ${activeDimensions.height} in`);
+      const selectedLabel = `${activeDimensions.width} × ${activeDimensions.height} in`;
       const submissionValues = {
         ...values,
         "Selected Size": `${activeDimensions.width} × ${activeDimensions.height} in`,
@@ -560,22 +537,7 @@ export default function PrintingProductDetail({ productId }: { productId: string
                 <p className="whitespace-pre-wrap leading-relaxed text-slate-600 sm:text-base">
                   {product.description || "Contact our team for details about this printing product."}
                 </p>
-                <dl className="mt-5 grid grid-cols-2 gap-3 border-t border-slate-100 pt-5 text-sm">
-                  {activeDimensions.width > 0 && activeDimensions.height > 0 && (
-                    <div className="rounded-xl bg-slate-50 px-4 py-3">
-                      <dt className="text-slate-500">Size</dt>
-                      <dd className="mt-0.5 font-semibold text-primary-dark">
-                        {activeDimensions.width} × {activeDimensions.height} in
-                      </dd>
-                    </div>
-                  )}
-                  <div className="rounded-xl bg-slate-50 px-4 py-3">
-                    <dt className="text-slate-500">Orientation</dt>
-                    <dd className="mt-0.5 font-semibold capitalize text-primary-dark">
-                      {product.orientation}
-                    </dd>
-                  </div>
-                </dl>
+
               </div>
             </section>
 
@@ -687,9 +649,6 @@ export default function PrintingProductDetail({ productId }: { productId: string
                                 : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
                             }`}
                           >
-                            <span className="text-sm font-bold max-w-full">
-                              {size.label}
-                            </span>
                             <span className="text-xs font-mono text-slate-500">
                               {size.width}×{size.height} in
                             </span>
@@ -698,62 +657,43 @@ export default function PrintingProductDetail({ productId }: { productId: string
                       })}
                       <button
                         type="button"
-                        onClick={() => {
-                          setSelectedSizeIndex("custom");
-                          if (!customHeight) setCustomHeight(String(baseHeight));
-                        }}
-                        className={`flex flex-col items-center justify-center min-h-16 rounded-xl border p-3 text-center transition cursor-pointer ${
+                        onClick={() => setSelectedSizeIndex("custom")}
+                        className={`min-h-16 rounded-xl border p-3 text-sm font-bold transition ${
                           selectedSizeIndex === "custom"
-                            ? "border-primary bg-primary/10 text-primary font-bold shadow-2xs"
+                            ? "border-primary bg-primary/10 text-primary"
                             : "border-slate-200 bg-white text-slate-700 hover:border-slate-300"
                         }`}
                       >
-                        <span className="text-sm font-bold">Custom</span>
-                        <span className="text-xs text-slate-500">Custom Height</span>
+                        Custom Size
                       </button>
                     </div>
-
                     {selectedSizeIndex === "custom" && (
-                      <div className="pt-2 border-t border-slate-200/80 space-y-2">
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <label htmlFor="custom-height" className="text-sm font-semibold text-slate-700 block mb-1">
-                              Custom Height (in)
-                            </label>
-                            <input
-                              id="custom-height"
-                              type="number"
-                              step="any"
-                              min="0.5"
-                              required
-                              value={customHeight}
-                              onChange={(e) => setCustomHeight(e.target.value)}
-                              placeholder={String(baseHeight)}
-                              className="h-11 w-full rounded-lg border border-slate-300 bg-white px-3 text-base font-mono font-medium outline-none focus:border-primary"
-                            />
-                          </div>
-                          <div>
-                            <label htmlFor="custom-width" className="text-sm font-semibold text-slate-700 block mb-1">
-                              Custom Width (in)
-                            </label>
-                            <input
-                              id="custom-width"
-                              type="number"
-                              readOnly
-                              value={customWidth}
-                              placeholder={String(baseWidth)}
-                              className="h-11 w-full cursor-not-allowed rounded-lg border border-slate-300 bg-slate-100 px-3 text-base font-mono font-medium text-slate-600 outline-none"
-                            />
-                          </div>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                        <div>
+                          <label htmlFor="custom-height" className="block text-sm font-semibold text-slate-700">Height (in)</label>
+                          <input
+                            id="custom-height"
+                            type="number"
+                            min="0.01"
+                            step="any"
+                            required
+                            value={customHeight}
+                            onChange={(event) => setCustomHeight(event.target.value)}
+                            className="mt-1 h-11 w-full rounded-lg border border-slate-300 bg-white px-3 outline-none focus:border-primary"
+                          />
                         </div>
-                        <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-slate-500">
-                          <span className="inline-flex items-center gap-1">
-                            <Lock className="h-4 w-4 text-primary" />
-                            Original aspect ratio maintained
-                          </span>
-                          <span className="font-mono text-slate-600">
-                            {activeDimensions.width} × {activeDimensions.height} in
-                          </span>
+                        <div>
+                          <label htmlFor="custom-width" className="block text-sm font-semibold text-slate-700">Width (in)</label>
+                          <input
+                            id="custom-width"
+                            type="number"
+                            readOnly
+                            value={customWidth ?? ""}
+                            className="mt-1 h-11 w-full rounded-lg border border-slate-300 bg-slate-100 px-3 text-slate-600"
+                          />
+                          {customWidth !== null && customWidth <= 0 && (
+                            <p className="mt-1 text-sm text-red-600">Enter a height that produces a positive width.</p>
+                          )}
                         </div>
                       </div>
                     )}

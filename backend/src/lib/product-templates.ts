@@ -40,8 +40,8 @@ export function inchesToPx(inches: number, dpi = DEFAULT_DPI): number {
 function mapTemplate(row: any): ProductTemplateModel {
   const rawW = Number(row.width_px ?? 20);
   const rawH = Number(row.height_px ?? 11.25);
-  const widthIn = rawW >= 100 ? pxToInches(rawW) : rawW;
-  const heightIn = rawH >= 100 ? pxToInches(rawH) : rawH;
+  const widthIn = rawW;
+  const heightIn = rawH;
 
   let availableSizes: { label: string; width: number; height: number }[] | null = null;
   if (row.available_sizes) {
@@ -456,8 +456,8 @@ export async function saveProductTemplate(data: {
             ? Number(data.height_px)
             : Number(existing.height_px || defaultH);
 
-      const widthPx = rawWidth >= 100 ? pxToInches(rawWidth) : rawWidth;
-      const heightPx = rawHeight >= 100 ? pxToInches(rawHeight) : rawHeight;
+      const widthPx = rawWidth;
+      const heightPx = rawHeight;
 
       const isActive =
         data.isActive !== undefined
@@ -537,8 +537,8 @@ export async function saveProductTemplate(data: {
       const defaultH = orientation === "portrait" ? 20 : 11.25;
       const rawW = Number(data.widthPx || data.width_px || defaultW);
       const rawH = Number(data.heightPx || data.height_px || defaultH);
-      const widthPx = rawW >= 100 ? pxToInches(rawW) : rawW;
-      const heightPx = rawH >= 100 ? pxToInches(rawH) : rawH;
+      const widthPx = rawW;
+      const heightPx = rawH;
       const description = data.description || null;
       const isActive =
         data.isActive !== undefined
@@ -838,10 +838,15 @@ export async function getProductCustomization(
     templateId: Number(r.template_id),
     userId: Number(r.user_id),
     customizationValues: vals,
-    status: r.status || "Pending",
+    status: displaySubmissionStatus(r.status),
     createdAt: new Date(r.created_at).toISOString(),
     updatedAt: new Date(r.updated_at).toISOString(),
   };
+}
+
+function displaySubmissionStatus(status: unknown): string {
+  const value = typeof status === "string" ? status : "Pending";
+  return value.toLowerCase().replace(/_/g, " ") === "in review" ? "Pending" : value;
 }
 
 export async function listProductSubmissions(filter?: {
@@ -987,8 +992,8 @@ export async function listProductSubmissions(filter?: {
 
     const rawW = Number(r.width_px || 20);
     const rawH = Number(r.height_px || 11.25);
-    const widthIn = userSelectedW > 0 ? userSelectedW : (rawW >= 100 ? pxToInches(rawW) : rawW);
-    const heightIn = userSelectedH > 0 ? userSelectedH : (rawH >= 100 ? pxToInches(rawH) : rawH);
+    const widthIn = userSelectedW > 0 ? userSelectedW : rawW;
+    const heightIn = userSelectedH > 0 ? userSelectedH : rawH;
 
     return {
       id: Number(r.id),
@@ -1004,7 +1009,7 @@ export async function listProductSubmissions(filter?: {
       userId: Number(r.user_id),
       userName: r.user_name || "Unknown User",
       userEmail: r.user_email || "",
-      status: r.status || "Pending",
+      status: displaySubmissionStatus(r.status),
       customizationValues: vals,
       createdAt: r.created_at
         ? new Date(r.created_at).toISOString()
@@ -1160,8 +1165,8 @@ export async function getProductSubmissionById(
 
   const rawW = Number(r.width_px || 20);
   const rawH = Number(r.height_px || 11.25);
-  const widthIn = userSelectedW > 0 ? userSelectedW : (rawW >= 100 ? pxToInches(rawW) : rawW);
-  const heightIn = userSelectedH > 0 ? userSelectedH : (rawH >= 100 ? pxToInches(rawH) : rawH);
+  const widthIn = userSelectedW > 0 ? userSelectedW : rawW;
+  const heightIn = userSelectedH > 0 ? userSelectedH : rawH;
 
   return {
     id: Number(r.id),
@@ -1178,7 +1183,7 @@ export async function getProductSubmissionById(
     userId: Number(r.user_id),
     userName: r.user_name || "Unknown User",
     userEmail: r.user_email || "",
-    status: r.status || "Pending",
+    status: displaySubmissionStatus(r.status),
     customizationValues: vals,
     submittedFields,
     createdAt: r.created_at
@@ -1188,6 +1193,19 @@ export async function getProductSubmissionById(
       ? new Date(r.updated_at).toISOString()
       : new Date().toISOString(),
   };
+}
+
+export async function deleteProductSubmission(id: number): Promise<boolean> {
+  return withTransaction(async (conn) => {
+    const [rows] = await conn.query<RowDataPacket[]>(
+      "SELECT id FROM product_customizations WHERE id = ? FOR UPDATE", [id],
+    );
+    if (rows.length === 0) return false;
+    await conn.execute("DELETE FROM product_submission_messages WHERE submission_id = ?", [id]);
+    await conn.execute("DELETE FROM product_submission_files WHERE submission_id = ?", [id]);
+    await conn.execute("DELETE FROM product_customizations WHERE id = ?", [id]);
+    return true;
+  });
 }
 
 export async function updateProductSubmissionStatus(
@@ -1234,19 +1252,6 @@ export async function getProductSubmissionThread(
 ): Promise<ProductSubmissionThreadModel | null> {
   const submission = await getProductSubmissionById(submissionId);
   if (!submission) return null;
-
-  // Status Flow: Admin/designer views a pending submission -> automatically mark as "In Review"
-  if (
-    (viewerRole === "super_admin" || viewerRole === "designer") &&
-    submission.status === "Pending"
-  ) {
-    try {
-      await updateProductSubmissionStatus(submissionId, "In Review");
-      submission.status = "In Review";
-    } catch {
-      // Ignore if status column is not ready yet
-    }
-  }
 
   // 1. Fetch files from product_submission_files
   let rawFiles: any[] = [];
@@ -1466,7 +1471,7 @@ export async function addProductSubmissionMessage(params: {
     ).catch(() => {});
   } else if (params.senderRole === "user") {
     await execute(
-      `UPDATE product_customizations SET status = 'In Review', updated_at = NOW() WHERE id = ?`,
+      `UPDATE product_customizations SET status = 'Pending', updated_at = NOW() WHERE id = ?`,
       [params.submissionId],
     ).catch(() => {});
   }
@@ -1530,7 +1535,7 @@ export async function addProductSubmissionFile(params: {
   // Status Flow
   if (params.uploadedByRole === "user" || submission.status === "Changes Requested") {
     await execute(
-      `UPDATE product_customizations SET status = 'In Review', updated_at = NOW() WHERE id = ?`,
+      `UPDATE product_customizations SET status = 'Pending', updated_at = NOW() WHERE id = ?`,
       [params.submissionId],
     ).catch(() => {});
   }
@@ -1600,7 +1605,7 @@ export async function replaceProductSubmissionFile(params: {
   // Status Flow
   if (params.uploadedByRole === "user" || submission.status === "Changes Requested") {
     await execute(
-      `UPDATE product_customizations SET status = 'In Review', updated_at = NOW() WHERE id = ?`,
+      `UPDATE product_customizations SET status = 'Pending', updated_at = NOW() WHERE id = ?`,
       [params.submissionId],
     ).catch(() => {});
   }
