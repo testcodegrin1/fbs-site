@@ -736,7 +736,7 @@ export function ProductSubmissionsManagement() {
 
                             {/* Bottom Actions - Button */}
                             <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                              <Button
+                              {/* <Button
                                 size="sm"
                                 className="h-8 gap-1.5 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-2xs cursor-pointer"
                                 onClick={() =>
@@ -744,7 +744,7 @@ export function ProductSubmissionsManagement() {
                                 }
                               >
                                 <Edit3 size={13} /> View / Edit Product
-                              </Button>
+                              </Button> */}
                             </div>
                           </Card>
                         );
@@ -798,7 +798,7 @@ export function ProductSubmissionsManagement() {
 
                         {/* Bottom Actions - Button */}
                         <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                          <Button
+                          {/* <Button
                             size="sm"
                             className="h-8 gap-1.5 text-xs font-bold bg-slate-900 hover:bg-slate-800 text-white rounded-xl shadow-2xs cursor-pointer"
                             onClick={() =>
@@ -806,7 +806,7 @@ export function ProductSubmissionsManagement() {
                             }
                           >
                             <Edit3 size={13} /> View / Edit Product
-                          </Button>
+                          </Button> */}
                         </div>
                       </Card>
                     </div>

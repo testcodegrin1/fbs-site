@@ -112,6 +112,32 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
     );
   }, [search, submissions]);
 
+  const displayedFields = useMemo(() => {
+    if (!selected) return [];
+    const technicalKeys = new Set(["sizetype", "selectedwidth", "selectedheight", "templateid"]);
+    const sizeKeys = new Set(["selectedsize", "selectedsizelabel", "customsize"]);
+    const fields: ProductSubmissionDetail["submittedFields"] = [];
+    let hasSize = false;
+
+    for (const field of selected.submittedFields || []) {
+      const key = typeof field.id === "string" ? field.id.toLowerCase().replace(/[\s_]+/g, "") : "";
+      if (technicalKeys.has(key)) continue;
+      if (sizeKeys.has(key)) {
+        if (!hasSize) {
+          fields.push({
+            ...field,
+            label: selected.isCustomSize || selected.sizeType === "custom" ? "Custom Size" : "Selected Size",
+            value: selected.dimensionsLabel || field.value,
+          });
+          hasSize = true;
+        }
+        continue;
+      }
+      fields.push(field);
+    }
+    return fields;
+  }, [selected]);
+
   async function openSubmission(id: number) {
     setSelectedFileIdx(0);
     setDetailLoading(true);
@@ -391,9 +417,9 @@ export function ProductSubmissionHistory({ user }: { user: AuthUser }) {
                   <h3 className="mb-2.5 text-sm font-semibold text-slate-900">
                     Submitted information
                   </h3>
-                  {selected.submittedFields?.length ? (
+                  {displayedFields.length ? (
                     <dl className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
-                      {selected.submittedFields.map((field, index) => (
+                      {displayedFields.map((field, index) => (
                         <div
                           key={`${field.id}-${index}`}
                           className={`rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2 ${

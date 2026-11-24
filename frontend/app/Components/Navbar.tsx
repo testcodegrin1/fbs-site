@@ -116,7 +116,7 @@ export default function Navbar() {
 
   const servicesLinks = [
     ["Printing Products", "/services/printing-products"],
-    ["Wingsnob Print Files", "/printing-products"],
+    ["Wingsnob Prints", "/printing-products"],
     ["Signage", "/services/signage"],
     ["Direct Mailing", "/services/direct-mailing"],
     ["Web Design", "/services/web-design"],

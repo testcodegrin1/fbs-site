@@ -394,7 +394,9 @@ export function ProductSubmissionThreadModal({
       className={`bg-white rounded-2xl w-full border border-slate-200 flex flex-col overflow-hidden ${
         embedded
           ? "shadow-xs"
-          : "rounded-[1.5rem] max-w-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-200 max-h-[88vh]"
+          : `rounded-[1.5rem] shadow-2xl animate-in fade-in zoom-in-95 duration-200 ${
+              role === "admin" || role === "super_admin" ? "max-w-5xl max-h-[94vh]" : "max-w-2xl max-h-[88vh]"
+            }`
       }`}
     >
       {/* Modal / Card Header */}
@@ -720,7 +722,7 @@ export function ProductSubmissionThreadModal({
                           )}
 
                           {/* Per-Photo Reply Input (if not read-only) */}
-                          {!isReadOnly && (
+                          {!isReadOnly && role !== "admin" && role !== "super_admin" && (
                             <div className="space-y-1.5 pt-1">
                               <Textarea
                                 rows={2}
@@ -751,8 +753,8 @@ export function ProductSubmissionThreadModal({
                             </div>
                           )}
 
-                          {/* Replace Photo Button - Enabled for Admin / Staff */}
-                          {isStaff && !isReadOnly && (
+                          {/* Replace Photo Button - Enabled for designers */}
+                          {role === "designer" && !isReadOnly && (
                             <label
                               className={`w-full h-8.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer transition shadow-2xs ${
                                 isUpdating
@@ -1622,7 +1624,7 @@ export function ProductSubmissionThreadModal({
                 </Button>
               </div>
 
-              {/* Replace Photo action - Enabled for Admin / Staff */}
+              {/* Replace Photo action - Enabled for Admin / Staff
               {isStaff && activeFile && !isReadOnly && (
                 <div className="pt-1">
                   <label
@@ -1653,8 +1655,8 @@ export function ProductSubmissionThreadModal({
                       }}
                     />
                   </label>
-                </div>
-              )}
+                </div> */}
+              {/* )} */}
             </div>
 
             {/* Submitted Form Fields (Right Column) */}

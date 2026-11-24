@@ -2265,7 +2265,7 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
 
                             {renderOptionalDesignerReply(img.id, true)}
 
-                            <label
+                            {/* <label
                               className={`mt-auto w-full h-9 rounded-full bg-violet-600 hover:bg-violet-700 text-white text-[13px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition shadow-sm ${
                                 isUpdating
                                   ? "opacity-50 pointer-events-none"
@@ -2294,7 +2294,7 @@ function DesignerStudioContent({ designerUser }: { designerUser: any }) {
                                   }
                                 }}
                               />
-                            </label>
+                            </label> */}
                           </div>
                         </div>
                       );
