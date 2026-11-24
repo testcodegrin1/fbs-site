@@ -734,7 +734,7 @@ export default function PrintingProductDetail({ productId }: { productId: string
                           </div>
                           <div>
                             <label htmlFor="custom-width" className="text-sm font-semibold text-slate-700 block mb-1">
-                              Custom Width (in) — calculated automatically
+                              Custom Width (in)
                             </label>
                             <input
                               id="custom-width"
