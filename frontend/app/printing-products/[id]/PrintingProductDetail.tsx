@@ -104,25 +104,15 @@ export default function PrintingProductDetail({ productId }: { productId: string
 
   const [activeImage, setActiveImage] = useState(0);
 
-  const [selectedSizeIndex, setSelectedSizeIndex] = useState<number | "custom">(0);
+  const [selectedSizeIndex, setSelectedSizeIndex] = useState<number | "custom" | null>(null);
   const [customHeight, setCustomHeight] = useState("");
   const baseWidth = product?.widthPx ?? 0;
   const baseHeight = product?.heightPx ?? 0;
 
-  const availableSizesList = useMemo(() => {
-    const sizes = Array.isArray(product?.availableSizes) ? product.availableSizes : [];
-    const defaultIndex = sizes.findIndex(
-      (size) => Number(size.width) === Number(baseWidth) && Number(size.height) === Number(baseHeight),
-    );
-    const defaultSize = defaultIndex >= 0
-      ? sizes[defaultIndex]
-      : { label: "", width: baseWidth, height: baseHeight };
-    // Older templates could retain the original default when the main size changed.
-    if (defaultIndex < 0 && sizes.length === 1 && sizes[0].label === "Standard") {
-      return [defaultSize];
-    }
-    return [defaultSize, ...sizes.filter((_, index) => index !== defaultIndex)];
-  }, [product?.availableSizes, baseWidth, baseHeight]);
+  const availableSizesList = useMemo(
+    () => Array.isArray(product?.availableSizes) ? product.availableSizes : [],
+    [product?.availableSizes],
+  );
 
   const customHeightValue = Number(customHeight);
   const customWidth = customHeight === "" || !Number.isFinite(customHeightValue)
@@ -130,7 +120,7 @@ export default function PrintingProductDetail({ productId }: { productId: string
     : Math.round((customHeightValue - (baseHeight - baseWidth)) * 100) / 100;
   const activeDimensions = selectedSizeIndex === "custom"
     ? { width: customWidth ?? 0, height: customHeightValue }
-    : availableSizesList[selectedSizeIndex] || { width: baseWidth, height: baseHeight };
+    : selectedSizeIndex !== null ? availableSizesList[selectedSizeIndex] : undefined;
 
   const [imageError, setImageError] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -158,7 +148,7 @@ export default function PrintingProductDetail({ productId }: { productId: string
         }
         if (!controller.signal.aborted) {
           setProduct(data.product);
-          setSelectedSizeIndex(0);
+          setSelectedSizeIndex(null);
           setCustomHeight("");
           // If URL was accessed with numeric ID or unformatted slug, update browser URL to the title slug
           const targetSlug = data.product?.slug || (data.product?.name ? slugify(data.product.name) : "");
@@ -195,6 +185,10 @@ export default function PrintingProductDetail({ productId }: { productId: string
     if (selectedSizeIndex === "custom" &&
       (!Number.isFinite(customHeightValue) || customHeightValue <= 0 || customWidth === null || customWidth <= 0)) {
       setError("Enter a height that produces a positive width.");
+      return;
+    }
+    if (!activeDimensions) {
+      setError("Please select a size or enter a custom size.");
       return;
     }
     setSubmitting(true);
@@ -626,7 +620,7 @@ export default function PrintingProductDetail({ productId }: { productId: string
                     </p>
                   )}
 
-                  {/* Size Selection (Predefined 3 Sizes + Custom Height in Inches) */}
+                  {/* Admin-configured sizes and custom size */}
                   <div className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-base font-bold text-slate-800">

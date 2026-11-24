@@ -411,6 +411,7 @@ export function ProductTemplateManagement() {
     setPreviewImageFile(null);
     setPreviewImagePreview(null);
 
+    setShowAddDimForm(false);
     setFormData({
       ...defaultFormData,
       images: [],
@@ -424,9 +425,10 @@ export function ProductTemplateManagement() {
   // Open Edit Modal
   async function handleOpenEditModal(template: ProductTemplateModel) {
     setEditingTemplate(template);
+    setShowAddDimForm(false);
 
-    const rawW = Number(template.widthPx || 20);
-    const rawH = Number(template.heightPx || 11.25);
+    const rawW = Number(template.widthPx ?? 0);
+    const rawH = Number(template.heightPx ?? 0);
     const w = rawW;
     const h = rawH;
 
@@ -436,16 +438,7 @@ export function ProductTemplateManagement() {
       orientation: template.orientation || "landscape",
       width_px: w,
       height_px: h,
-      available_sizes:
-        template.availableSizes && template.availableSizes.length > 0
-          ? template.availableSizes
-          : [
-              {
-                label: "Standard",
-                width: w,
-                height: h,
-              },
-            ],
+      available_sizes: template.availableSizes || [],
       is_active: template.isActive,
       images:
         template.images && template.images.length > 0
@@ -547,55 +540,6 @@ export function ProductTemplateManagement() {
     }));
   }
 
-  // Handle Orientation Change: Swap width & height if needed when toggling landscape <-> portrait
-  function handleOrientationChange(newOrientation: "landscape" | "portrait") {
-    setFormData((prev) => {
-      let w =
-        Number(prev.width_px);
-      let h =
-        Number(prev.height_px);
-
-      if (prev.orientation !== newOrientation) {
-        if (newOrientation === "portrait" && w > h) {
-          const temp = w;
-          w = h;
-          h = temp;
-        } else if (newOrientation === "landscape" && h > w) {
-          const temp = w;
-          w = h;
-          h = temp;
-        } else if (w !== h) {
-          const temp = w;
-          w = h;
-          h = temp;
-        }
-      }
-
-      return { ...updateActiveDimensions(w, h, prev), orientation: newOrientation };
-    });
-  }
-
-  function updateActiveDimensions(width: number, height: number, prev: TemplateFormData) {
-    const index = prev.available_sizes.findIndex(
-      (size) => Number(size.width) === Number(prev.width_px) && Number(size.height) === Number(prev.height_px),
-    );
-    const sizes = [...prev.available_sizes];
-    if (index >= 0) {
-      sizes[index] = { label: "Custom", width, height };
-    } else {
-      sizes.unshift({ label: "Custom", width, height });
-    }
-    return { ...prev, width_px: width, height_px: height, available_sizes: sizes };
-  }
-
-  function handleWidthChange(newVal: number) {
-    setFormData((prev) => updateActiveDimensions(newVal, Number(prev.height_px), prev));
-  }
-
-  function handleHeightChange(newVal: number) {
-    setFormData((prev) => updateActiveDimensions(Number(prev.width_px), newVal, prev));
-  }
-
   function handleApplyPredefinedSize(width: number, height: number) {
     setFormData((prev) => ({
       ...prev,
@@ -671,9 +615,7 @@ export function ProductTemplateManagement() {
       const existing = prev.available_sizes || [];
       return {
         ...prev,
-        orientation: newDimOrientation,
-        width_px: w,
-        height_px: h,
+        ...(existing.length === 0 ? { width_px: w, height_px: h, orientation: newDimOrientation } : {}),
         available_sizes: [...existing, newSize],
       };
     });
@@ -690,25 +632,12 @@ export function ProductTemplateManagement() {
   function handleRemoveDimension(indexToRemove: number) {
     setFormData((prev) => {
       const existing = prev.available_sizes || [];
-      if (existing.length <= 1) {
-        setNotice({
-          type: "error",
-          message: "At least one product dimension is required.",
-        });
-        return prev;
-      }
       const updated = existing.filter((_, i) => i !== indexToRemove);
-      const nextActive = updated[0];
-      return {
-        ...prev,
-        width_px: nextActive.width,
-        height_px: nextActive.height,
-        available_sizes: updated,
-      };
+      return { ...prev, available_sizes: updated };
     });
   }
 
-  function renderDimensionsSection(mode: "create" | "edit") {
+  function renderDimensionsSection() {
     const currentSizes = formData.available_sizes.filter((size) => size.width > 0 && size.height > 0);
 
     const currentW = Number(formData.width_px) || 0;
@@ -723,9 +652,6 @@ export function ProductTemplateManagement() {
               Dimensions & Specification
             </p>
           </div>
-          <span className="text-[11px] font-mono text-slate-500 font-semibold px-2.5 py-1 bg-white border border-slate-200 rounded-md shadow-2xs">
-            96 DPI Standard (Inches)
-          </span>
         </div>
 
         {/* Available Sizes List + Add Dimension (+) */}
@@ -780,7 +706,7 @@ export function ProductTemplateManagement() {
                     >
                       {preset.label || `${preset.width}" × ${preset.height}"`}
                     </span>
-                    {currentSizes.length > 1 && (
+                    {currentSizes.length > 0 && (
                       <button
                         type="button"
                         title="Remove dimension"
@@ -809,8 +735,8 @@ export function ProductTemplateManagement() {
           </div>
         </div>
 
-        {/* Dynamic section: When '+ Add Dimension' is open, show the 3 inputs with Add button; otherwise show the 3 inputs for active card */}
-        {showAddDimForm ? (
+        {/* Dimension inputs appear when adding a size. */}
+        {showAddDimForm && (
           <div className="p-3.5 rounded-xl border border-indigo-200 bg-indigo-50/70 space-y-3 animate-in fade-in duration-150">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
@@ -907,61 +833,6 @@ export function ProductTemplateManagement() {
               </div>
             </div>
           </div>
-        ) : (
-          <>
-            {/* The 3 inputs from Image 2 for active card */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-1">
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-slate-700">
-                  Width (in)
-                </Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  min={0.5}
-                  value={formData.width_px}
-                  onWheel={(e) => e.currentTarget.blur()}
-                  onChange={(e) => handleWidthChange(Number(e.target.value))}
-                  className="h-10 text-sm font-mono font-medium bg-white"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-slate-700">
-                  Height (in)
-                </Label>
-                <Input
-                  id={mode === "create" ? "create-custom-height" : "edit-custom-height"}
-                  type="number"
-                  step="0.01"
-                  min={0.5}
-                  value={formData.height_px}
-                  onWheel={(e) => e.currentTarget.blur()}
-                  onChange={(e) => handleHeightChange(Number(e.target.value))}
-                  className="h-10 text-sm font-mono font-medium bg-white"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-slate-700">
-                  Orientation
-                </Label>
-                <select
-                  value={formData.orientation}
-                  onChange={(e) =>
-                    handleOrientationChange(
-                      e.target.value as "landscape" | "portrait",
-                    )
-                  }
-                  className="w-full h-10 px-3 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="landscape">Landscape</option>
-                  <option value="portrait">Portrait</option>
-                </select>
-              </div>
-            </div>
-
-          </>
         )}
       </div>
     );
@@ -2358,7 +2229,7 @@ export function ProductTemplateManagement() {
               </div>
 
               {/* Row 3: Dimensions & Specification (Inches, Predefined sizes, Custom height, Auto-size) */}
-              {renderDimensionsSection("create")}
+              {renderDimensionsSection()}
 
               {/* Row 4: Image Management & Upload Section */}
               {renderImageUploadSection("create")}
@@ -2505,7 +2376,7 @@ export function ProductTemplateManagement() {
               </div>
 
               {/* Dimensions (Inches, Predefined sizes, Custom height, Auto-size) */}
-              {renderDimensionsSection("edit")}
+              {renderDimensionsSection()}
 
               {/* Image Upload & Edit Section */}
               {renderImageUploadSection("edit")}

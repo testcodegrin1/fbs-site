@@ -533,10 +533,11 @@ export async function saveProductTemplate(data: {
       }
 
       const orientation = data.orientation || "landscape";
-      const defaultW = orientation === "portrait" ? 11.25 : 20;
-      const defaultH = orientation === "portrait" ? 20 : 11.25;
-      const rawW = Number(data.widthPx || data.width_px || defaultW);
-      const rawH = Number(data.heightPx || data.height_px || defaultH);
+      const rawW = Number(data.widthPx ?? data.width_px);
+      const rawH = Number(data.heightPx ?? data.height_px);
+      if (!Number.isFinite(rawW) || rawW <= 0 || !Number.isFinite(rawH) || rawH <= 0) {
+        throw new AuthError("Width and height must be positive numbers.", 400);
+      }
       const widthPx = rawW;
       const heightPx = rawH;
       const description = data.description || null;
